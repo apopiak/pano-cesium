@@ -1,78 +1,78 @@
 (function () {
     "use strict";
 
-    // Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZmEzMjQwMi00MjQ0LTRmZjgtODhlOS0zNDI5ZmU3NGRkODQiLCJpZCI6MTQ5MywiaWF0IjoxNTI4NzE4Mzg0fQ.4h4xuSeZTaiBGtv4sHA7WN6D1eIedRHw-6rFls9QMsQ';
-    //
-    // //////////////////////////////////////////////////////////////////////////
-    // // Creating the Viewer
-    // //////////////////////////////////////////////////////////////////////////
-    //
-    // var viewer = new Cesium.Viewer('cesiumContainer', {
-    //     scene3DOnly: true,
-    //     selectionIndicator: false,
-    //     baseLayerPicker: false
-    // });
-    //
-    // //////////////////////////////////////////////////////////////////////////
-    // // Loading Imagery
-    // //////////////////////////////////////////////////////////////////////////
-    //
-    // // Remove default base layer
-    // viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
-    //
-    // // Add Sentinel-2 imagery
-    // viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
-    //
-    // //////////////////////////////////////////////////////////////////////////
-    // // Loading Terrain
-    // //////////////////////////////////////////////////////////////////////////
-    //
-    // // Load Cesium World Terrain
-    // viewer.terrainProvider = Cesium.createWorldTerrain({
-    //     requestWaterMask : true, // required for water effects
-    //     requestVertexNormals : true // required for terrain lighting
-    // });
-    // // Enable depth testing so things behind the terrain disappear.
-    // viewer.scene.globe.depthTestAgainstTerrain = true;
-    //
-    // //////////////////////////////////////////////////////////////////////////
-    // // Configuring the Scene
-    // //////////////////////////////////////////////////////////////////////////
-    //
-    // // Enable lighting based on sun/moon positions
-    // viewer.scene.globe.enableLighting = true;
-    //
-    // // Create an initial camera view
-    // var initialPosition = new Cesium.Cartesian3.fromDegrees(-73.998114468289017509, 40.674512895646692812, 2631.082799425431);
-    // var initialOrientation = new Cesium.HeadingPitchRoll.fromDegrees(7.1077496389876024807, -31.987223091598949054, 0.025883251314954971306);
-    // var homeCameraView = {
-    //     destination : initialPosition,
-    //     orientation : initialOrientation
-    // }
-    // // Set the initial view
-    // viewer.scene.camera.setView(homeCameraView);
-    //
-    // // Add some camera flight animation options
-    // homeCameraView.duration = 2.0;
-    // homeCameraView.maximumHeight = 2000;
-    // homeCameraView.pitchAdjustHeight = 2000;
-    // homeCameraView.endTransform = Cesium.Matrix4.IDENTITY;
-    // // Override the default home button
-    // viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function (e) {
-    //     e.cancel = true;
-    //     viewer.scene.camera.flyTo(homeCameraView);
-    // });
-    //
-    // // Set up clock and timeline.
-    // viewer.clock.shouldAnimate = true; // default
-    // viewer.clock.startTime = Cesium.JulianDate.fromIso8601("2017-07-11T16:00:00Z");
-    // viewer.clock.stopTime = Cesium.JulianDate.fromIso8601("2017-07-11T16:20:00Z");
-    // viewer.clock.currentTime = Cesium.JulianDate.fromIso8601("2017-07-11T16:00:00Z");
-    // viewer.clock.multiplier = 2; // sets a speedup
-    // viewer.clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER; // tick computation mode
-    // viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; // loop at the end
-    // viewer.timeline.zoomTo(viewer.clock.startTime, viewer.clock.stopTime); // set visible range
-    //
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZmEzMjQwMi00MjQ0LTRmZjgtODhlOS0zNDI5ZmU3NGRkODQiLCJpZCI6MTQ5MywiaWF0IjoxNTI4NzE4Mzg0fQ.4h4xuSeZTaiBGtv4sHA7WN6D1eIedRHw-6rFls9QMsQ';
+
+    //////////////////////////////////////////////////////////////////////////
+    // Creating the Viewer
+    //////////////////////////////////////////////////////////////////////////
+
+    var viewer = new Cesium.Viewer('cesiumContainer', {
+        scene3DOnly: true,
+        selectionIndicator: false,
+        baseLayerPicker: false
+    });
+
+    //////////////////////////////////////////////////////////////////////////
+    // Loading Imagery
+    //////////////////////////////////////////////////////////////////////////
+
+    // Remove default base layer
+    viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+
+    // Add Sentinel-2 imagery
+    viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
+
+    //////////////////////////////////////////////////////////////////////////
+    // Loading Terrain
+    //////////////////////////////////////////////////////////////////////////
+
+    // Load Cesium World Terrain
+    viewer.terrainProvider = Cesium.createWorldTerrain({
+        requestWaterMask : true, // required for water effects
+        requestVertexNormals : true // required for terrain lighting
+    });
+    // Enable depth testing so things behind the terrain disappear.
+    viewer.scene.globe.depthTestAgainstTerrain = true;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Configuring the Scene
+    //////////////////////////////////////////////////////////////////////////
+
+    // Enable lighting based on sun/moon positions
+    viewer.scene.globe.enableLighting = true;
+
+    // Create an initial camera view
+    var initialPosition = new Cesium.Cartesian3.fromDegrees(-73.998114468289017509, 40.674512895646692812, 2631.082799425431);
+    var initialOrientation = new Cesium.HeadingPitchRoll.fromDegrees(7.1077496389876024807, -31.987223091598949054, 0.025883251314954971306);
+    var homeCameraView = {
+        destination : initialPosition,
+        orientation : initialOrientation
+    }
+    // Set the initial view
+    viewer.scene.camera.setView(homeCameraView);
+
+    // Add some camera flight animation options
+    homeCameraView.duration = 2.0;
+    homeCameraView.maximumHeight = 2000;
+    homeCameraView.pitchAdjustHeight = 2000;
+    homeCameraView.endTransform = Cesium.Matrix4.IDENTITY;
+    // Override the default home button
+    viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function (e) {
+        e.cancel = true;
+        viewer.scene.camera.flyTo(homeCameraView);
+    });
+
+    // Set up clock and timeline.
+    viewer.clock.shouldAnimate = true; // default
+    viewer.clock.startTime = Cesium.JulianDate.fromIso8601("2017-07-11T16:00:00Z");
+    viewer.clock.stopTime = Cesium.JulianDate.fromIso8601("2017-07-11T16:20:00Z");
+    viewer.clock.currentTime = Cesium.JulianDate.fromIso8601("2017-07-11T16:00:00Z");
+    viewer.clock.multiplier = 2; // sets a speedup
+    viewer.clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER; // tick computation mode
+    viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; // loop at the end
+    viewer.timeline.zoomTo(viewer.clock.startTime, viewer.clock.stopTime); // set visible range
+
     // //////////////////////////////////////////////////////////////////////////
     // // Loading and Styling Entity Data
     // //////////////////////////////////////////////////////////////////////////

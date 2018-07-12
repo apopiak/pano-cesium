@@ -9,9 +9,10 @@
     "url": "https://github.com/AnalyticalGraphicsInc/cesium-workshop"
   },
   "dependencies": {
-    "express": "^4.15",
     "compression": "^1.6.2",
+    "express": "^4.15",
     "request": "^2.79.0",
+    "underscore": "^1.9.1",
     "yargs": "^8.0.1"
   },
   "engines": {

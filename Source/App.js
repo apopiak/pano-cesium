@@ -4,7 +4,11 @@ let panoramaViewer = null;
 const steinwegUTMzone = 32;
 
 let positions = _.map(steinwegMetaJson, meta => {
-  let utm = new UTMConv.UTMCoords(steinwegUTMzone, meta["X-Ori"], meta["Y-Ori"]);
+  let utm = new UTMConv.UTMCoords(
+    steinwegUTMzone,
+    meta["X-Ori"],
+    meta["Y-Ori"]
+  );
   let degrees = utm.to_deg("wgs84");
   return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
 });
@@ -115,11 +119,10 @@ let lastPicked = undefined;
             viewer.entities.add({
               name: meta.ImageName,
               position: pos,
-              cylinder: {
-                length: 5,
-                topRadius: 2,
-                bottomRadius: 2,
-                material: Cesium.Color.GREEN
+              ellipsoid: {
+                radii: {x: 2, y: 2, z: 2},
+                material: Cesium.Color.MEDIUMSPRINGGREEN
+                //material: new Cesium.ImageMaterialProperty({image: "http://localhost:8080/images/" + meta.ImageName})
               },
               properties: {
                 image: meta.ImageName
@@ -142,11 +145,11 @@ let lastPicked = undefined;
 
     // un-highlight the last picked entity
     if (Cesium.defined(lastPicked)) {
-      lastPicked.cylinder.material = Cesium.Color.GREEN;
+      lastPicked.ellipsoid.material = Cesium.Color.GREEN;
     }
     // Highlight the currently picked entity
     if (Cesium.defined(pickedEntity)) {
-      pickedEntity.cylinder.material = Cesium.Color.ORANGERED;
+      pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
       console.log("picked image: ", pickedEntity.properties.image.getValue());
       panoramaViewer = pannellum.viewer("panorama", {
         panorama: pickedEntity.properties.image.getValue(),

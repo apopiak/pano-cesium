@@ -6,12 +6,14 @@ const steinwegUTMzone = 32;
 let positions = _.map(steinwegMetaJson, meta => {
   let utm = new UTMConv.UTMCoords(
     steinwegUTMzone,
-    meta["X-Ori"],
-    meta["Y-Ori"]
+    meta["X-Sensor"],
+    meta["Y-Sensor"]
   );
   let degrees = utm.to_deg("wgs84");
   return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
 });
+
+let tileset = null;
 
 let lastPicked = undefined;
 
@@ -79,10 +81,15 @@ let lastPicked = undefined;
   viewer.scene.globe.enableLighting = true;
 
   // Create an initial camera view
-  let initialPosition = Cesium.Cartesian3.fromDegrees(
-    6.940606327909218,
-    51.36193491538978,
-    300
+  // let initialPosition = Cesium.Cartesian3.fromDegrees(
+  //   6.940606327909218,
+  //   51.36193491538978,
+  //   300
+  // );
+  let initialPosition = new Cesium.Cartesian3(
+    3961538.873578816,
+    482335.18245185615,
+    4958890.174561147
   );
   let homeCameraView = {
     destination: initialPosition
@@ -101,6 +108,40 @@ let lastPicked = undefined;
     viewer.scene.camera.flyTo(homeCameraView);
   });
 
+  tileset = viewer.scene.primitives.add(
+    new Cesium.Cesium3DTileset({
+      modelMatrix: Cesium.Matrix4.fromTranslation(
+        new Cesium.Cartesian3(30, 1, 40)
+      ),
+      url: "http://localhost:8080/data/pointcloud/tileset.json",
+      skipLevelOfDetail: true,
+      baseScreenSpaceError: 1024,
+      skipScreenSpaceErrorFactor: 16,
+      skipLevels: 1
+    })
+  );
+
+  let fragmentShaderSource =
+    "uniform sampler2D colorTexture; \n" +
+    "uniform sampler2D image; \n" +
+    "varying vec2 v_textureCoordinates; \n" +
+    "const int KERNEL_WIDTH = 16; \n" +
+    "void main(void) \n" +
+    "{ \n" +
+    "    vec2 step = 1.0 / czm_viewport.zw; \n" +
+    "    vec2 integralPos = v_textureCoordinates - mod(v_textureCoordinates, 8.0 * step); \n" +
+    "    vec3 averageValue = vec3(0.0); \n" +
+    "    for (int i = 0; i < KERNEL_WIDTH; i++) \n" +
+    "    { \n" +
+    "        for (int j = 0; j < KERNEL_WIDTH; j++) \n" +
+    "        { \n" +
+    "            averageValue += texture2D(image, integralPos + step * vec2(i, j)).rgb; \n" +
+    "        } \n" +
+    "    } \n" +
+    "    averageValue /= float(KERNEL_WIDTH * KERNEL_WIDTH); \n" +
+    "    gl_FragColor = vec4(averageValue, 1.0); \n" +
+    "} \n";
+
   Cesium.when(
     viewer.terrainProvider.readyPromise,
     () => {
@@ -115,14 +156,14 @@ let lastPicked = undefined;
             _.map(updatedPositions, p => Cesium.Cartographic.toCartesian(p)),
             steinwegMetaJson
           ).forEach(pair => {
-            const [pos, meta] = pair;
+            let [pos, meta] = pair;
+            pos.z += 1.5;
             viewer.entities.add({
               name: meta.ImageName,
               position: pos,
               ellipsoid: {
-                radii: {x: 2, y: 2, z: 2},
-                material: Cesium.Color.MEDIUMSPRINGGREEN
-                //material: new Cesium.ImageMaterialProperty({image: "http://localhost:8080/images/" + meta.ImageName})
+                radii: { x: 2, y: 2, z: 2 },
+                material: Cesium.Color.GREEN
               },
               properties: {
                 image: meta.ImageName
@@ -149,12 +190,28 @@ let lastPicked = undefined;
     }
     // Highlight the currently picked entity
     if (Cesium.defined(pickedEntity)) {
-      pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
-      console.log("picked image: ", pickedEntity.properties.image.getValue());
+      // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
+      let image = pickedEntity.properties.image.getValue();
+      console.log("picked image: ", image);
       panoramaViewer = pannellum.viewer("panorama", {
-        panorama: pickedEntity.properties.image.getValue(),
+        panorama: image,
         ...panoramaConfig
       });
+      viewer.scene.postProcessStages.add(
+        new Cesium.PostProcessStage({
+          fragmentShader: fragmentShaderSource,
+          uniforms: {
+            image: "images/" + image
+          }
+        })
+      );
+      pickedEntity.ellipsoid.material = "images/" + image;
+      // pickedEntity.ellipsoid.material =
+      //   "images/" + pickedEntity.properties.image.getValue();
+      // panoramaViewer.on("load", e => {
+      //   pickedEntity.ellipsoid.material =
+      //     panoramaViewer.getRenderer().getCanvas().toDataURL();
+      // });
       lastPicked = pickedEntity;
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);

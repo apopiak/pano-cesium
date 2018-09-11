@@ -17,9 +17,70 @@ let tileset = null;
 
 let lastPicked = undefined;
 
+let currentPanoramaImage = null;
+
+let fragmentShaderSource = `
+  uniform sampler2D colorTexture;
+  uniform sampler2D panorama;
+  varying vec2 v_textureCoordinates;
+
+  void main(void)
+  {
+      vec4 color = texture2D(colorTexture, v_textureCoordinates);
+      vec4 pano = texture2D(panorama, v_textureCoordinates);
+      if (pano.x + pano.y + pano.z > 0.0) {
+        gl_FragColor = mix(vec4(1.0, 0.0, 0.0, 1.0), color, 0.5);
+      } else {
+        gl_FragColor = mix(vec4(0.0, 1.0, 0.0, 1.0), color, 0.5);
+      }
+      //gl_FragColor = mix(color, pano, 0.5);
+  }
+`;
+
+let getPanellumCanvas = () =>
+  document.querySelector(".pnlm-render-container > canvas:nth-child(1)");
+
+let getThreeCanvas = () => document.querySelector("#container > canvas");
+
+let addPostProcessing = sourceCanvas => {
+  let destCtx = document.getElementById("mycanvas").getContext("2d");
+
+  //call its drawImage() function passing it the source canvas directly
+  destCtx.drawImage(
+    sourceCanvas,
+    0,
+    0,
+    sourceCanvas.width,
+    sourceCanvas.height
+  );
+
+  let context = new Cesium.Context(viewer.scene.canvas, {});
+  let texture = new Cesium.Texture({
+    context: context,
+    width: sourceCanvas.width,
+    height: sourceCanvas.height
+  });
+  texture.copyFrom(sourceCanvas);
+
+  let stages = viewer.scene.postProcessStages;
+
+  if (stages.length != 0) {
+    stages.removeAll();
+  }
+  stages.add(
+    new Cesium.PostProcessStage({
+      fragmentShader: fragmentShaderSource,
+      uniforms: {
+        panorama: texture
+      }
+    })
+  );
+};
+
 (function() {
   "use strict";
 
+  ///////////////////
   // panellum panorama viewer
 
   let panoramaConfig = {
@@ -28,11 +89,7 @@ let lastPicked = undefined;
     basePath: "images/"
   };
 
-  panoramaViewer = pannellum.viewer("panorama", {
-    panorama: "black.png",
-    ...panoramaConfig
-  });
-
+  // Cesium Ion
   Cesium.Ion.defaultAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZmEzMjQwMi00MjQ0LTRmZjgtODhlOS0zNDI5ZmU3NGRkODQiLCJpZCI6MTQ5MywiaWF0IjoxNTI4NzE4Mzg0fQ.4h4xuSeZTaiBGtv4sHA7WN6D1eIedRHw-6rFls9QMsQ";
 
@@ -121,27 +178,6 @@ let lastPicked = undefined;
     })
   );
 
-  let fragmentShaderSource =
-    "uniform sampler2D colorTexture; \n" +
-    "uniform sampler2D image; \n" +
-    "varying vec2 v_textureCoordinates; \n" +
-    "const int KERNEL_WIDTH = 16; \n" +
-    "void main(void) \n" +
-    "{ \n" +
-    "    vec2 step = 1.0 / czm_viewport.zw; \n" +
-    "    vec2 integralPos = v_textureCoordinates - mod(v_textureCoordinates, 8.0 * step); \n" +
-    "    vec3 averageValue = vec3(0.0); \n" +
-    "    for (int i = 0; i < KERNEL_WIDTH; i++) \n" +
-    "    { \n" +
-    "        for (int j = 0; j < KERNEL_WIDTH; j++) \n" +
-    "        { \n" +
-    "            averageValue += texture2D(image, integralPos + step * vec2(i, j)).rgb; \n" +
-    "        } \n" +
-    "    } \n" +
-    "    averageValue /= float(KERNEL_WIDTH * KERNEL_WIDTH); \n" +
-    "    gl_FragColor = vec4(averageValue, 1.0); \n" +
-    "} \n";
-
   Cesium.when(
     viewer.terrainProvider.readyPromise,
     () => {
@@ -193,18 +229,15 @@ let lastPicked = undefined;
       // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
       let image = pickedEntity.properties.image.getValue();
       console.log("picked image: ", image);
+      if (panoramaViewer) {
+        panoramaViewer.destroy();
+      }
       panoramaViewer = pannellum.viewer("panorama", {
         panorama: image,
         ...panoramaConfig
       });
-      viewer.scene.postProcessStages.add(
-        new Cesium.PostProcessStage({
-          fragmentShader: fragmentShaderSource,
-          uniforms: {
-            image: "images/" + image
-          }
-        })
-      );
+      currentPanoramaImage = image;
+
       pickedEntity.ellipsoid.material = "images/" + image;
       // pickedEntity.ellipsoid.material =
       //   "images/" + pickedEntity.properties.image.getValue();

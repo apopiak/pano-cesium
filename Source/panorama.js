@@ -8,6 +8,11 @@ var isUserInteracting = false,
   onMouseDownLat = 0,
   phi = 0,
   theta = 0;
+
+var bufferScene;
+// Create the texture that will store our result
+var bufferTexture;
+var buffer;
 init();
 animate();
 
@@ -26,7 +31,9 @@ function init() {
   // invert the geometry on the x-axis so that all of the faces point inward
   geometry.scale(-1, 1, 1);
   var material = new THREE.MeshBasicMaterial({
-    map: new THREE.TextureLoader().load("images/G360_Steinweg_20180208(1)-000000_000001.jpg")
+    map: new THREE.TextureLoader().load(
+      "images/G360_Steinweg_20180208(1)-000000_000001.jpg"
+    )
   });
   mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
@@ -41,6 +48,20 @@ function init() {
   document.addEventListener("touchstart", onPointerStart, false);
   document.addEventListener("touchmove", onPointerMove, false);
   document.addEventListener("touchend", onPointerUp, false);
+
+  // off-screen rendering
+  bufferScene = new THREE.Scene();
+  bufferTexture = new THREE.WebGLRenderTarget(
+    container.offsetWidth,
+    container.offsetHeight,
+    {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.NearestFilter,
+      wrapS: THREE.ClampToEdgeWrapping,
+      wrapT: THREE.ClampToEdgeWrapping
+    }
+  );
+  buffer = new Uint8Array(container.offsetWidth * container.offsetHeight * 4);
   //
   document.addEventListener(
     "dragover",
@@ -135,5 +156,9 @@ function update() {
   // distortion
   camera.position.copy( camera.target ).negate();
   */
+  renderer.render(bufferScene, camera, bufferTexture);
+  let gl = renderer.getContext();
+  gl.readPixels(0,0, bufferTexture.width, bufferTexture.height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+  // renderer.readRenderTargetPixels(bufferTexture, 0, 0, bufferTexture.width, bufferTexture.height, buffer);
   renderer.render(scene, camera);
 }

@@ -42,7 +42,7 @@ let getPanellumCanvas = () =>
 
 let getThreeCanvas = () => document.querySelector("#container > canvas");
 
-let addPostProcessing = sourceCanvas => {
+let postProcessingFromCanvas = sourceCanvas => {
   let destCtx = document.getElementById("mycanvas").getContext("2d");
 
   //call its drawImage() function passing it the source canvas directly
@@ -72,6 +72,114 @@ let addPostProcessing = sourceCanvas => {
       fragmentShader: fragmentShaderSource,
       uniforms: {
         panorama: texture
+      }
+    })
+  );
+};
+
+function createImageFromTarget(renderer, target) {
+  let width = target.width;
+  let height = target.height;
+
+  // Read the contents of the framebuffer
+  let data = new Uint8Array(width * height * 4);
+  renderer.readRenderTargetPixels(target, 0, 0, width, height, data);
+
+  // Create a 2D canvas to store the result
+  let canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  let context = canvas.getContext("2d");
+
+  // Copy the pixels to a 2D canvas
+  let imageData = context.createImageData(width, height);
+  imageData.data.set(data);
+  context.putImageData(imageData, 0, 0);
+
+  let img = new Image();
+  img.src = canvas.toDataURL();
+  return img;
+}
+
+let copiedImage = null;
+
+let addPostProcessing = (gl, renderer, renderTarget) => {
+  let img = createImageFromTarget(renderer, renderTarget);
+  copiedImage = img;
+
+  img.onload = () => {
+    // testing 2D canvas
+    let destCtx = document.getElementById("mycanvas").getContext("2d");
+    destCtx.drawImage(img, 0, 0, img.width, img.height);
+
+    // Cesium Post Processing
+    let context = viewer.scene.context;
+    let texture = new Cesium.Texture({
+      context: context,
+      width: img.width,
+      height: img.height
+    });
+    texture.copyFrom(img);
+
+    let stages = viewer.scene.postProcessStages;
+
+    if (stages.length != 0) {
+      stages.removeAll();
+    }
+    stages.add(
+      new Cesium.PostProcessStage({
+        fragmentShader: fragmentShaderSource,
+        uniforms: {
+          panorama: texture
+        }
+      })
+    );
+  };
+};
+
+let imagePath = "images/" + steinwegMetaJson[0].ImageName
+
+let projectionFragShader = `
+  uniform sampler2D colorTexture;
+  uniform sampler2D panorama;
+  uniform float u_width;
+  uniform float u_height;
+  uniform mat4 u_inverseViewProjection;
+  varying vec2 v_textureCoordinates;
+
+  void main(void)
+  {
+      vec2 vertex = gl_FragCoord.xy * vec2(u_width, u_height);
+      vec4 ray = u_inverseViewProjection * vec4(gl_FragCoord.xy, 1.0, 1.0);
+
+      vec3 stu = normalize(ray.xyz) * vec3(-1.0, 1.0, -1.0);
+
+      float z = 1.0 - stu.z;
+      float m = sqrt(stu.x * stu.x + stu.y * stu.y + z * z);
+      vec2 uv = 0.5 + 0.5 * vec2(+stu.x, -stu.y) / m;
+
+      vec4 color = texture2D(colorTexture, v_textureCoordinates);
+      vec4 pano = texture2D(panorama, uv);
+      gl_FragColor = mix(color, pano, 0.8);
+  }
+`;
+
+let addProjection = image => {
+  let camera = viewer.scene.camera;
+  let canvas = viewer.scene.canvas;
+
+  let stages = viewer.scene.postProcessStages;
+  if (stages.length != 0) {
+    stages.removeAll();
+  }
+  stages.add(
+    new Cesium.PostProcessStage({
+      fragmentShader: projectionFragShader,
+      uniforms: {
+        panorama: image,
+        u_inverseViewProjection: camera.inverseViewMatrix,
+        u_width: canvas.width,
+        u_height: canvas.height
       }
     })
   );
@@ -215,8 +323,8 @@ let addPostProcessing = sourceCanvas => {
 
   let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
   handler.setInputAction(e => {
-    var pickedPrimitive = viewer.scene.pick(e.position);
-    var pickedEntity = Cesium.defined(pickedPrimitive)
+    let pickedPrimitive = viewer.scene.pick(e.position);
+    let pickedEntity = Cesium.defined(pickedPrimitive)
       ? pickedPrimitive.id
       : undefined;
 
@@ -229,13 +337,13 @@ let addPostProcessing = sourceCanvas => {
       // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
       let image = pickedEntity.properties.image.getValue();
       console.log("picked image: ", image);
-      if (panoramaViewer) {
-        panoramaViewer.destroy();
-      }
-      panoramaViewer = pannellum.viewer("panorama", {
-        panorama: image,
-        ...panoramaConfig
-      });
+      // if (panoramaViewer) {
+      //   panoramaViewer.destroy();
+      // }
+      // panoramaViewer = pannellum.viewer("panorama", {
+      //   panorama: image,
+      //   ...panoramaConfig
+      // });
       currentPanoramaImage = image;
 
       pickedEntity.ellipsoid.material = "images/" + image;
@@ -246,6 +354,17 @@ let addPostProcessing = sourceCanvas => {
       //     panoramaViewer.getRenderer().getCanvas().toDataURL();
       // });
       lastPicked = pickedEntity;
+
+      const size = 50;
+
+      viewer.entities.add({
+        name: image,
+        position: viewer.scene.camera.position,
+        ellipsoid: {
+          radii: { x: size, y: size, z: size },
+          material: "images/" + image
+        }
+      });
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

@@ -1,3 +1,5 @@
+// globals
+
 let viewer = null;
 let panoramaViewer = null;
 
@@ -137,52 +139,33 @@ let addPostProcessing = (gl, renderer, renderTarget) => {
   };
 };
 
-let imagePath = "images/" + steinwegMetaJson[0].ImageName
+let imagePath = "images/" + steinwegMetaJson[0].ImageName;
 
-let projectionFragShader = `
-  uniform sampler2D colorTexture;
-  uniform sampler2D panorama;
-  uniform float u_width;
-  uniform float u_height;
-  uniform mat4 u_inverseViewProjection;
-  varying vec2 v_textureCoordinates;
-
-  void main(void)
-  {
-      vec2 vertex = gl_FragCoord.xy * vec2(u_width, u_height);
-      vec4 ray = u_inverseViewProjection * vec4(gl_FragCoord.xy, 1.0, 1.0);
-
-      vec3 stu = normalize(ray.xyz) * vec3(-1.0, 1.0, -1.0);
-
-      float z = 1.0 - stu.z;
-      float m = sqrt(stu.x * stu.x + stu.y * stu.y + z * z);
-      vec2 uv = 0.5 + 0.5 * vec2(+stu.x, -stu.y) / m;
-
-      vec4 color = texture2D(colorTexture, v_textureCoordinates);
-      vec4 pano = texture2D(panorama, uv);
-      gl_FragColor = mix(color, pano, 0.8);
-  }
-`;
-
-let addProjection = image => {
+let addProjection = () => {
+  let image = "images/" + steinwegMetaJson[0].ImageName;
   let camera = viewer.scene.camera;
   let canvas = viewer.scene.canvas;
-
   let stages = viewer.scene.postProcessStages;
-  if (stages.length != 0) {
-    stages.removeAll();
-  }
-  stages.add(
-    new Cesium.PostProcessStage({
-      fragmentShader: projectionFragShader,
-      uniforms: {
-        panorama: image,
-        u_inverseViewProjection: camera.inverseViewMatrix,
-        u_width: canvas.width,
-        u_height: canvas.height
+
+  fetch("data/projectionShaderFS.glsl")
+    .then(res => res.text())
+    .then(shader => {
+      if (stages.length != 0) {
+        stages.removeAll();
       }
+      stages.add(
+        new Cesium.PostProcessStage({
+          fragmentShader: shader,
+          uniforms: {
+            panorama: image,
+            u_inverseView: camera.inverseViewMatrix,
+            u_width: canvas.width,
+            u_height: canvas.height
+          }
+        })
+      );
     })
-  );
+    .catch(err => console.error(err));
 };
 
 (function() {
@@ -346,25 +329,12 @@ let addProjection = image => {
       // });
       currentPanoramaImage = image;
 
-      pickedEntity.ellipsoid.material = "images/" + image;
-      // pickedEntity.ellipsoid.material =
-      //   "images/" + pickedEntity.properties.image.getValue();
-      // panoramaViewer.on("load", e => {
-      //   pickedEntity.ellipsoid.material =
-      //     panoramaViewer.getRenderer().getCanvas().toDataURL();
-      // });
-      lastPicked = pickedEntity;
-
-      const size = 50;
-
-      viewer.entities.add({
-        name: image,
-        position: viewer.scene.camera.position,
-        ellipsoid: {
-          radii: { x: size, y: size, z: size },
-          material: "images/" + image
-        }
+      pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
+        image: "images/" + image,
+        color: new Cesium.Color(1, 1, 1, 0.5)
       });
+      lastPicked = pickedEntity;
+      viewer.scene.camera.flyTo({ destination: pickedEntity.position._value });
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

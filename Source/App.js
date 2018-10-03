@@ -147,9 +147,15 @@ let addProjection = () => {
   let canvas = viewer.scene.canvas;
   let stages = viewer.scene.postProcessStages;
 
+  let heading = Cesium.Math.toRadians(steinwegMetaJson[0]["H-Sensor"]);
+  let roll    = Cesium.Math.toRadians(steinwegMetaJson[0]["R-Sensor"]);
+  let pitch   = Cesium.Math.toRadians(steinwegMetaJson[0]["P-Sensor"]);
+  let orientation = { heading, roll, pitch };
+
   fetch("data/projectionShaderFS.glsl")
     .then(res => res.text())
     .then(shader => {
+      viewer.scene.camera.flyTo({ destination: sampledPositions[0], orientation });
       if (stages.length != 0) {
         stages.removeAll();
       }
@@ -167,6 +173,25 @@ let addProjection = () => {
     })
     .catch(err => console.error(err));
 };
+
+// add camera rotation
+document.addEventListener('keydown', function(e) {
+    setKey(e);
+}, false);
+
+function setKey(event) {
+    let camera = viewer.scene.camera;
+
+    if (event.keyCode === 39) {  // right arrow
+        camera.rotateRight();
+    } else if (event.keyCode === 37) {  // left arrow
+        camera.rotateLeft();
+    } else if (event.keyCode === 38) {  // up arrow
+        camera.rotateUp();
+    } else if (event.keyCode === 40) {  // down arrow
+        camera.rotateDown();
+    }
+}
 
 (function() {
   "use strict";
@@ -245,11 +270,6 @@ let addProjection = () => {
   // Set the initial view
   viewer.scene.camera.setView(homeCameraView);
 
-  // Add some camera flight animation options
-  homeCameraView.duration = 2.0;
-  homeCameraView.maximumHeight = 2000;
-  homeCameraView.pitchAdjustHeight = 2000;
-  homeCameraView.endTransform = Cesium.Matrix4.IDENTITY;
   // Override the default home button
   viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
     e.cancel = true;
@@ -276,30 +296,31 @@ let addProjection = () => {
         viewer.terrainProvider,
         positions
       );
-      Cesium.when(
-        promise,
-        updatedPositions => {
-          _.zip(
-            _.map(updatedPositions, p => Cesium.Cartographic.toCartesian(p)),
-            steinwegMetaJson
-          ).forEach(pair => {
-            let [pos, meta] = pair;
-            pos.z += 1.5;
-            viewer.entities.add({
-              name: meta.ImageName,
-              position: pos,
-              ellipsoid: {
-                radii: { x: 2, y: 2, z: 2 },
-                material: Cesium.Color.GREEN
-              },
-              properties: {
-                image: meta.ImageName
-              }
-            });
-          });
-        },
-        console.error
-      );
+      Cesium.when(promise, updatedPositions => {
+        sampledPositions = _.map(updatedPositions, p => Cesium.Cartographic.toCartesian(p));
+        console.log("positions loaded");
+      });
+      //     _.zip(
+      //       _.map(updatedPositions, p => Cesium.Cartographic.toCartesian(p)),
+      //       steinwegMetaJson
+      //     ).forEach(pair => {
+      //       let [pos, meta] = pair;
+      //       pos.z += 1.5;
+      //       viewer.entities.add({
+      //         name: meta.ImageName,
+      //         position: pos,
+      //         ellipsoid: {
+      //           radii: { x: 2, y: 2, z: 2 },
+      //           material: Cesium.Color.GREEN
+      //         },
+      //         properties: {
+      //           image: meta.ImageName
+      //         }
+      //       });
+      //     });
+      //   },
+      //   console.error
+      // );
     },
     console.error
   );

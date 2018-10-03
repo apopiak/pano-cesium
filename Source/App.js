@@ -14,6 +14,7 @@ let positions = _.map(steinwegMetaJson, meta => {
   let degrees = utm.to_deg("wgs84");
   return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
 });
+let sampledPositions = [];
 
 let tileset = null;
 

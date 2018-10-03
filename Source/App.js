@@ -20,7 +20,7 @@ let G = {
 function positionsToCartographic(source) {
   const dataSource = source || steinwegMetaJson;
 
-  return _.map(datasource, meta => {
+  return _.map(dataSource, meta => {
     const steinwegUTMzone = 32;
 
     let utm = new UTMConv.UTMCoords(

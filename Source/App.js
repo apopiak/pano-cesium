@@ -1,22 +1,12 @@
 // globals
 
 let G = {
-    // viewers
-    viewer: undefined,
-    panoramaViewer: undefined,
+  // viewers
+  viewer: undefined,
+  panoramaViewer: undefined,
 
-    // positions of the panoramas
-    positions: _.map(steinwegMetaJson, meta => {
-        const steinwegUTMzone = 32;
-
-      let utm = new UTMConv.UTMCoords(
-        steinwegUTMzone,
-        meta["X-Sensor"],
-        meta["Y-Sensor"]
-      );
-      let degrees = utm.to_deg("wgs84");
-      return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
-  }),
+  // positions of the panoramas
+  positions: positionsToCartographic(),
   sampledPositions: undefined,
 
   // cesium 3D tileset
@@ -24,7 +14,23 @@ let G = {
 
   // for selecting panoramas
   lastPicked: undefined,
-  currentPanoramaImage: undefined,
+  currentPanoramaImage: undefined
+};
+
+function positionsToCartographic(source) {
+  const dataSource = source || steinwegMetaJson;
+
+  return _.map(datasource, meta => {
+    const steinwegUTMzone = 32;
+
+    let utm = new UTMConv.UTMCoords(
+      steinwegUTMzone,
+      meta["X-Sensor"],
+      meta["Y-Sensor"]
+    );
+    let degrees = utm.to_deg("wgs84");
+    return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
+  });
 }
 
 const getPanellumCanvas = () =>
@@ -278,7 +284,9 @@ function setKey(event) {
         color: new Cesium.Color(1, 1, 1, 0.5)
       });
       G.lastPicked = pickedEntity;
-      G.viewer.scene.camera.flyTo({ destination: pickedEntity.position._value });
+      G.viewer.scene.camera.flyTo({
+        destination: pickedEntity.position._value
+      });
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

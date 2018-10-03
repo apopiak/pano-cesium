@@ -1,86 +1,38 @@
 // globals
 
-let viewer = null;
-let panoramaViewer = null;
+let G = {
+    // viewers
+    viewer: undefined,
+    panoramaViewer: undefined,
 
-const steinwegUTMzone = 32;
+    // positions of the panoramas
+    positions: _.map(steinwegMetaJson, meta => {
+        const steinwegUTMzone = 32;
 
-let positions = _.map(steinwegMetaJson, meta => {
-  let utm = new UTMConv.UTMCoords(
-    steinwegUTMzone,
-    meta["X-Sensor"],
-    meta["Y-Sensor"]
-  );
-  let degrees = utm.to_deg("wgs84");
-  return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
-});
-let sampledPositions = [];
+      let utm = new UTMConv.UTMCoords(
+        steinwegUTMzone,
+        meta["X-Sensor"],
+        meta["Y-Sensor"]
+      );
+      let degrees = utm.to_deg("wgs84");
+      return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
+  }),
+  sampledPositions: undefined,
 
-let tileset = null;
+  // cesium 3D tileset
+  tileset: undefined,
 
-let lastPicked = undefined;
+  // for selecting panoramas
+  lastPicked: undefined,
+  currentPanoramaImage: undefined,
+}
 
-let currentPanoramaImage = null;
-
-let fragmentShaderSource = `
-  uniform sampler2D colorTexture;
-  uniform sampler2D panorama;
-  varying vec2 v_textureCoordinates;
-
-  void main(void)
-  {
-      vec4 color = texture2D(colorTexture, v_textureCoordinates);
-      vec4 pano = texture2D(panorama, v_textureCoordinates);
-      if (pano.x + pano.y + pano.z > 0.0) {
-        gl_FragColor = mix(vec4(1.0, 0.0, 0.0, 1.0), color, 0.5);
-      } else {
-        gl_FragColor = mix(vec4(0.0, 1.0, 0.0, 1.0), color, 0.5);
-      }
-      //gl_FragColor = mix(color, pano, 0.5);
-  }
-`;
-
-let getPanellumCanvas = () =>
+const getPanellumCanvas = () =>
   document.querySelector(".pnlm-render-container > canvas:nth-child(1)");
 
-let getThreeCanvas = () => document.querySelector("#container > canvas");
+const getThreeCanvas = () => document.querySelector("#container > canvas");
 
-let postProcessingFromCanvas = sourceCanvas => {
-  let destCtx = document.getElementById("mycanvas").getContext("2d");
-
-  //call its drawImage() function passing it the source canvas directly
-  destCtx.drawImage(
-    sourceCanvas,
-    0,
-    0,
-    sourceCanvas.width,
-    sourceCanvas.height
-  );
-
-  let context = new Cesium.Context(viewer.scene.canvas, {});
-  let texture = new Cesium.Texture({
-    context: context,
-    width: sourceCanvas.width,
-    height: sourceCanvas.height
-  });
-  texture.copyFrom(sourceCanvas);
-
-  let stages = viewer.scene.postProcessStages;
-
-  if (stages.length != 0) {
-    stages.removeAll();
-  }
-  stages.add(
-    new Cesium.PostProcessStage({
-      fragmentShader: fragmentShaderSource,
-      uniforms: {
-        panorama: texture
-      }
-    })
-  );
-};
-
-function createImageFromTarget(renderer, target) {
+const createImageFromTarget = (renderer, target) => {
   let width = target.width;
   let height = target.height;
 
@@ -102,61 +54,27 @@ function createImageFromTarget(renderer, target) {
   let img = new Image();
   img.src = canvas.toDataURL();
   return img;
-}
-
-let copiedImage = null;
-
-let addPostProcessing = (gl, renderer, renderTarget) => {
-  let img = createImageFromTarget(renderer, renderTarget);
-  copiedImage = img;
-
-  img.onload = () => {
-    // testing 2D canvas
-    let destCtx = document.getElementById("mycanvas").getContext("2d");
-    destCtx.drawImage(img, 0, 0, img.width, img.height);
-
-    // Cesium Post Processing
-    let context = viewer.scene.context;
-    let texture = new Cesium.Texture({
-      context: context,
-      width: img.width,
-      height: img.height
-    });
-    texture.copyFrom(img);
-
-    let stages = viewer.scene.postProcessStages;
-
-    if (stages.length != 0) {
-      stages.removeAll();
-    }
-    stages.add(
-      new Cesium.PostProcessStage({
-        fragmentShader: fragmentShaderSource,
-        uniforms: {
-          panorama: texture
-        }
-      })
-    );
-  };
 };
 
-let imagePath = "images/" + steinwegMetaJson[0].ImageName;
+const addOrReplacePostProcessing = index => {
+  const idx = index || 0;
+  const image = "images/" + steinwegMetaJson[idx].ImageName;
+  const camera = G.viewer.scene.camera;
+  const canvas = G.viewer.scene.canvas;
+  const stages = G.viewer.scene.postProcessStages;
 
-let addProjection = () => {
-  let image = "images/" + steinwegMetaJson[0].ImageName;
-  let camera = viewer.scene.camera;
-  let canvas = viewer.scene.canvas;
-  let stages = viewer.scene.postProcessStages;
-
-  let heading = Cesium.Math.toRadians(steinwegMetaJson[0]["H-Sensor"]);
-  let roll    = Cesium.Math.toRadians(steinwegMetaJson[0]["R-Sensor"]);
-  let pitch   = Cesium.Math.toRadians(steinwegMetaJson[0]["P-Sensor"]);
-  let orientation = { heading, roll, pitch };
+  const heading = Cesium.Math.toRadians(steinwegMetaJson[idx]["H-Sensor"]);
+  const roll = Cesium.Math.toRadians(steinwegMetaJson[idx]["R-Sensor"]);
+  const pitch = Cesium.Math.toRadians(steinwegMetaJson[idx]["P-Sensor"]);
+  const orientation = { heading, roll, pitch };
 
   fetch("data/projectionShaderFS.glsl")
     .then(res => res.text())
     .then(shader => {
-      viewer.scene.camera.flyTo({ destination: sampledPositions[0], orientation });
+      G.viewer.scene.camera.flyTo({
+        destination: G.sampledPositions[idx],
+        orientation
+      });
       if (stages.length != 0) {
         stages.removeAll();
       }
@@ -176,22 +94,24 @@ let addProjection = () => {
 };
 
 // add camera rotation
-document.addEventListener('keydown', function(e) {
-    setKey(e);
-}, false);
+document.addEventListener("keydown", e => setKey(e), false);
 
 function setKey(event) {
-    let camera = viewer.scene.camera;
+  const camera = G.viewer.scene.camera;
 
-    if (event.keyCode === 39) {  // right arrow
-        camera.rotateRight();
-    } else if (event.keyCode === 37) {  // left arrow
-        camera.rotateLeft();
-    } else if (event.keyCode === 38) {  // up arrow
-        camera.rotateUp();
-    } else if (event.keyCode === 40) {  // down arrow
-        camera.rotateDown();
-    }
+  if (event.keyCode === 39) {
+    // right arrow
+    camera.rotateRight();
+  } else if (event.keyCode === 37) {
+    // left arrow
+    camera.rotateLeft();
+  } else if (event.keyCode === 38) {
+    // up arrow
+    camera.rotateUp();
+  } else if (event.keyCode === 40) {
+    // down arrow
+    camera.rotateDown();
+  }
 }
 
 (function() {
@@ -200,7 +120,7 @@ function setKey(event) {
   ///////////////////
   // panellum panorama viewer
 
-  let panoramaConfig = {
+  const panoramaConfig = {
     type: "equirectangular",
     autoLoad: true,
     basePath: "images/"
@@ -214,7 +134,7 @@ function setKey(event) {
   // Creating the Viewer
   //////////////////////////////////////////////////////////////////////////
 
-  viewer = new Cesium.Viewer("cesiumContainer", {
+  G.viewer = new Cesium.Viewer("cesiumContainer", {
     scene3DOnly: true,
     selectionIndicator: false,
     baseLayerPicker: false
@@ -225,13 +145,13 @@ function setKey(event) {
   //////////////////////////////////////////////////////////////////////////
 
   // Remove default base layer
-  viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+  G.viewer.imageryLayers.remove(G.viewer.imageryLayers.get(0));
 
   // Add Sentinel-2 imagery
   // viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
 
   // Add Bing Maps
-  viewer.imageryLayers.addImageryProvider(
+  G.viewer.imageryLayers.addImageryProvider(
     new Cesium.IonImageryProvider({ assetId: 4 })
   );
 
@@ -240,19 +160,19 @@ function setKey(event) {
   //////////////////////////////////////////////////////////////////////////
 
   // Load Cesium World Terrain
-  viewer.terrainProvider = Cesium.createWorldTerrain({
+  G.viewer.terrainProvider = Cesium.createWorldTerrain({
     requestWaterMask: true, // required for water effects
     requestVertexNormals: true // required for terrain lighting
   });
   // Enable depth testing so things behind the terrain disappear.
-  viewer.scene.globe.depthTestAgainstTerrain = true;
+  G.viewer.scene.globe.depthTestAgainstTerrain = true;
 
   //////////////////////////////////////////////////////////////////////////
   // Configuring the Scene
   //////////////////////////////////////////////////////////////////////////
 
   // Enable lighting based on sun/moon positions
-  viewer.scene.globe.enableLighting = true;
+  G.viewer.scene.globe.enableLighting = true;
 
   // Create an initial camera view
   // let initialPosition = Cesium.Cartesian3.fromDegrees(
@@ -269,15 +189,15 @@ function setKey(event) {
     destination: initialPosition
   };
   // Set the initial view
-  viewer.scene.camera.setView(homeCameraView);
+  G.viewer.scene.camera.setView(homeCameraView);
 
   // Override the default home button
-  viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
+  G.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
     e.cancel = true;
-    viewer.scene.camera.flyTo(homeCameraView);
+    G.viewer.scene.camera.flyTo(homeCameraView);
   });
 
-  tileset = viewer.scene.primitives.add(
+  G.tileset = G.viewer.scene.primitives.add(
     new Cesium.Cesium3DTileset({
       modelMatrix: Cesium.Matrix4.fromTranslation(
         new Cesium.Cartesian3(30, 1, 40)
@@ -291,14 +211,16 @@ function setKey(event) {
   );
 
   Cesium.when(
-    viewer.terrainProvider.readyPromise,
+    G.viewer.terrainProvider.readyPromise,
     () => {
       let promise = Cesium.sampleTerrainMostDetailed(
-        viewer.terrainProvider,
-        positions
+        G.viewer.terrainProvider,
+        G.positions
       );
       Cesium.when(promise, updatedPositions => {
-        sampledPositions = _.map(updatedPositions, p => Cesium.Cartographic.toCartesian(p));
+        G.sampledPositions = _.map(updatedPositions, p =>
+          Cesium.Cartographic.toCartesian(p)
+        );
         console.log("positions loaded");
       });
       //     _.zip(
@@ -307,7 +229,7 @@ function setKey(event) {
       //     ).forEach(pair => {
       //       let [pos, meta] = pair;
       //       pos.z += 1.5;
-      //       viewer.entities.add({
+      //       G.viewer.entities.add({
       //         name: meta.ImageName,
       //         position: pos,
       //         ellipsoid: {
@@ -326,37 +248,37 @@ function setKey(event) {
     console.error
   );
 
-  let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
   handler.setInputAction(e => {
-    let pickedPrimitive = viewer.scene.pick(e.position);
+    let pickedPrimitive = G.viewer.scene.pick(e.position);
     let pickedEntity = Cesium.defined(pickedPrimitive)
       ? pickedPrimitive.id
       : undefined;
 
     // un-highlight the last picked entity
-    if (Cesium.defined(lastPicked)) {
-      lastPicked.ellipsoid.material = Cesium.Color.GREEN;
+    if (Cesium.defined(G.lastPicked)) {
+      G.lastPicked.ellipsoid.material = Cesium.Color.GREEN;
     }
     // Highlight the currently picked entity
     if (Cesium.defined(pickedEntity)) {
       // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
       let image = pickedEntity.properties.image.getValue();
       console.log("picked image: ", image);
-      // if (panoramaViewer) {
-      //   panoramaViewer.destroy();
+      // if (G.panoramaViewer) {
+      //   G.panoramaViewer.destroy();
       // }
-      // panoramaViewer = pannellum.viewer("panorama", {
+      // G.panoramaViewer = pannellum.viewer("panorama", {
       //   panorama: image,
       //   ...panoramaConfig
       // });
-      currentPanoramaImage = image;
+      G.currentPanoramaImage = image;
 
       pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
         image: "images/" + image,
         color: new Cesium.Color(1, 1, 1, 0.5)
       });
-      lastPicked = pickedEntity;
-      viewer.scene.camera.flyTo({ destination: pickedEntity.position._value });
+      G.lastPicked = pickedEntity;
+      G.viewer.scene.camera.flyTo({ destination: pickedEntity.position._value });
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

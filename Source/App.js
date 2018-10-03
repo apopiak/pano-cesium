@@ -1,3 +1,20 @@
+// monkey patching Cesium.Camera
+Cesium.Camera.prototype.rotateView = function(rotation) {
+  let { heading, pitch, roll } = rotation;
+  heading = this.heading + (heading || 0);
+  pitch = this.pitch + (pitch || 0);
+  roll = this.roll + (roll || 0);
+  const destination = this.position;
+  this.setView({
+    destination,
+    orientation: {
+      heading,
+      pitch,
+      roll
+    }
+  });
+};
+
 // globals
 
 let G = {
@@ -107,16 +124,16 @@ function setKey(event) {
 
   if (event.keyCode === 39) {
     // right arrow
-    camera.rotateRight();
+    camera.rotateView({ heading: 0.15 });
   } else if (event.keyCode === 37) {
     // left arrow
-    camera.rotateLeft();
+    camera.rotateView({ heading: -0.15 });
   } else if (event.keyCode === 38) {
     // up arrow
-    camera.rotateUp();
+    camera.rotateView({ pitch: 0.15 });
   } else if (event.keyCode === 40) {
     // down arrow
-    camera.rotateDown();
+    camera.rotateView({ pitch: -0.15 });
   }
 }
 

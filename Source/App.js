@@ -116,27 +116,42 @@ const addOrReplacePostProcessing = index => {
     .catch(err => console.error(err));
 };
 
-// add camera rotation
-document.addEventListener("keydown", e => setKey(e), false);
+function rotate(code) {
+    const camera = G.viewer.scene.camera;
+    const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
 
-function setKey(event) {
-  const camera = G.viewer.scene.camera;
-  const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
-
-  if (event.keyCode === 39) {
-    // right arrow
-    camera.rotateView({ heading: rotation });
-  } else if (event.keyCode === 37) {
-    // left arrow
-    camera.rotateView({ heading: -rotation });
-  } else if (event.keyCode === 38) {
-    // up arrow
-    camera.rotateView({ pitch: rotation });
-  } else if (event.keyCode === 40) {
-    // down arrow
-    camera.rotateView({ pitch: -rotation });
-  }
+    if (code === 39) {
+      // right arrow
+      camera.rotateView({ heading: rotation });
+    } else if (code=== 37) {
+      // left arrow
+      camera.rotateView({ heading: -rotation });
+    } else if (code === 38) {
+      // up arrow
+      camera.rotateView({ pitch: rotation });
+    } else if (code === 40) {
+      // down arrow
+      camera.rotateView({ pitch: -rotation });
+    }
 }
+
+function moveUp() {
+    G.viewer.scene.camera.moveUp(0.2);
+}
+
+function keyDownListener(event) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
+    if (event.which <= 40 && event.which >= 37) { // [37;40] == arrow keys
+        rotate(event.which);
+    }
+    const SPACE = 32;
+    if (event.which == SPACE) {
+        moveUp();
+    }
+}
+
+// add camera rotation
+document.addEventListener("keydown", keyDownListener, false);
 
 (function() {
   "use strict";

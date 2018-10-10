@@ -7,9 +7,28 @@ uniform float u_height;
 uniform mat4 u_inverseView;
 varying vec2 v_textureCoordinates;
 
+mat4 rotationMatrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
+
 vec2 equirectangular(vec3 ray)
 {
-    vec3 stu = normalize(ray) * vec3(-1.0, 1.0, 1.0);
+    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -3.14159265359 / 2.0);
+    vec4 rota = rot * vec4(ray, 1.0);
+    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), 3.14159265359 / 4.0);
+    vec4 rotated = rot2 * vec4(rota.xyz, 1.0);
+
+    // orig: vec3 stu = normalize(final.xyz) * vec3(-1.0, 1.0, 1.0);
+    vec3 stu = normalize(rotated.xyz);
 
     const float c_1Over2Pi = 0.1591549430918953357688837633725;
     const float c_1OverPi  = 0.3183098861837906715377675267450;
@@ -41,7 +60,7 @@ vec2 polar(vec3 ray)
 
 void main(void)
 {
-    vec2 vertex = (gl_FragCoord.xy / vec2(u_width, u_height)) * 2.0 - 1.0;
+    vec2 vertex = gl_FragCoord.xy / vec2(u_width, u_height) * 2.0 - 1.0;
     // czm_inverseProjection provided by Cesium
     vec4 ray = u_inverseView * czm_inverseProjection * vec4(vertex.xy, 1.0, 1.0);
 
@@ -49,5 +68,5 @@ void main(void)
 
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
     vec4 pano = texture2D(panorama, uv);
-    gl_FragColor = mix(color, pano, 0.8);
+    gl_FragColor = mix(color, pano, 0.6);
 }

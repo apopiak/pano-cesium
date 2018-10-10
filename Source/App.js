@@ -121,19 +121,20 @@ document.addEventListener("keydown", e => setKey(e), false);
 
 function setKey(event) {
   const camera = G.viewer.scene.camera;
+  const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
 
   if (event.keyCode === 39) {
     // right arrow
-    camera.rotateView({ heading: 0.15 });
+    camera.rotateView({ heading: rotation });
   } else if (event.keyCode === 37) {
     // left arrow
-    camera.rotateView({ heading: -0.15 });
+    camera.rotateView({ heading: -rotation });
   } else if (event.keyCode === 38) {
     // up arrow
-    camera.rotateView({ pitch: 0.15 });
+    camera.rotateView({ pitch: rotation });
   } else if (event.keyCode === 40) {
     // down arrow
-    camera.rotateView({ pitch: -0.15 });
+    camera.rotateView({ pitch: -rotation });
   }
 }
 

@@ -7,13 +7,14 @@ function positionsToCartographic(source) {
   return _.map(dataSource, meta => {
     const steinwegUTMzone = 32;
 
-    let utm = new UTMConv.UTMCoords(
+    const utm = new UTMConv.UTMCoords(
       steinwegUTMzone,
       meta["X-Sensor"],
       meta["Y-Sensor"]
     );
-    let degrees = utm.to_deg("wgs84");
-    return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd);
+    const degrees = utm.to_deg("wgs84");
+    const height = meta["Z-Sensor"];
+    return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
   });
 }
 
@@ -62,7 +63,7 @@ function addOrReplacePostProcessing(index) {
     .then(res => res.text())
     .then(shader => {
       G.viewer.scene.camera.flyTo({
-        destination: G.sampledPositions[idx],
+        destination: G.cartesianPositions[idx],
         orientation
       });
       if (stages.length != 0) {
@@ -124,6 +125,8 @@ document.addEventListener("keydown", keyDownListener, false);
 (function() {
   "use strict";
 
+  const cartographicPositions = positionsToCartographic();
+
   // globals
   G = {
     // viewers
@@ -131,8 +134,11 @@ document.addEventListener("keydown", keyDownListener, false);
     panoramaViewer: undefined,
 
     // positions of the panoramas
-    positions: positionsToCartographic(),
-    sampledPositions: undefined,
+    cartographicPositions: cartographicPositions,
+    cartesianPositions: _.map(cartographicPositions, p =>
+      Cesium.Cartographic.toCartesian(p)
+    ),
+    // sampledPositions: undefined,
 
     // cesium 3D tileset
     tileset: undefined,
@@ -176,21 +182,21 @@ document.addEventListener("keydown", keyDownListener, false);
   // viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
 
   // Add Bing Maps
-  G.viewer.imageryLayers.addImageryProvider(
-    new Cesium.IonImageryProvider({ assetId: 4 })
-  );
+  // G.viewer.imageryLayers.addImageryProvider(
+  //   new Cesium.IonImageryProvider({ assetId: 4 })
+  // );
 
   //////////////////////////////////////////////////////////////////////////
   // Loading Terrain
   //////////////////////////////////////////////////////////////////////////
 
   // Load Cesium World Terrain
-  G.viewer.terrainProvider = Cesium.createWorldTerrain({
-    requestWaterMask: true, // required for water effects
-    requestVertexNormals: true // required for terrain lighting
-  });
+  // G.viewer.terrainProvider = Cesium.createWorldTerrain({
+  //   requestWaterMask: true, // required for water effects
+  //   requestVertexNormals: true // required for terrain lighting
+  // });
   // Enable depth testing so things behind the terrain disappear.
-  G.viewer.scene.globe.depthTestAgainstTerrain = true;
+  // G.viewer.scene.globe.depthTestAgainstTerrain = true;
 
   //////////////////////////////////////////////////////////////////////////
   // Configuring the Scene
@@ -199,22 +205,33 @@ document.addEventListener("keydown", keyDownListener, false);
   // Enable lighting based on sun/moon positions
   G.viewer.scene.globe.enableLighting = true;
 
-  // Create an initial camera view
-  // let initialPosition = Cesium.Cartesian3.fromDegrees(
-  //   6.940606327909218,
-  //   51.36193491538978,
-  //   300
-  // );
-  let initialPosition = new Cesium.Cartesian3(
+  const birdsEye = new Cesium.Cartesian3(
     3961538.873578816,
     482335.18245185615,
     4958890.174561147
   );
-  let homeCameraView = {
-    destination: initialPosition
+  const inTheStreet = {
+    x: 3961467.550069339,
+    y: 482298.0868178488,
+    z: 4958811.655684536
+  };
+  const homeCameraView = {
+    destination: inTheStreet,
+    orientation: {
+      direction: {
+        x: 0.028642267278155248,
+        y: 0.9168583988712383,
+        z: -0.39818374771509196
+      },
+      up: {
+        x: 0.6449769314801278,
+        y: 0.28737711124775434,
+        z: 0.7081095634076512
+      }
+    }
   };
   // Set the initial view
-  G.viewer.scene.camera.setView(homeCameraView);
+  G.viewer.scene.camera.flyTo(homeCameraView);
 
   // Override the default home button
   G.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
@@ -224,9 +241,9 @@ document.addEventListener("keydown", keyDownListener, false);
 
   G.tileset = G.viewer.scene.primitives.add(
     new Cesium.Cesium3DTileset({
-      modelMatrix: Cesium.Matrix4.fromTranslation(
-        new Cesium.Cartesian3(30, 1, 40)
-      ),
+      // modelMatrix: Cesium.Matrix4.fromTranslation(
+      //   new Cesium.Cartesian3(30, 1, 40)
+      // ),
       url: "http://localhost:8080/data/pointcloud/tileset.json",
       skipLevelOfDetail: true,
       baseScreenSpaceError: 1024,
@@ -235,77 +252,73 @@ document.addEventListener("keydown", keyDownListener, false);
     })
   );
 
-  Cesium.when(
-    G.viewer.terrainProvider.readyPromise,
-    () => {
-      let promise = Cesium.sampleTerrainMostDetailed(
-        G.viewer.terrainProvider,
-        G.positions
-      );
-      Cesium.when(promise, updatedPositions => {
-        G.sampledPositions = _.map(updatedPositions, p =>
-          Cesium.Cartographic.toCartesian(p)
-        );
-        console.log("positions loaded");
-      });
-      //     _.zip(
-      //       _.map(updatedPositions, p => Cesium.Cartographic.toCartesian(p)),
-      //       steinwegMetaJson
-      //     ).forEach(pair => {
-      //       let [pos, meta] = pair;
-      //       pos.z += 1.5;
-      //       G.viewer.entities.add({
-      //         name: meta.ImageName,
-      //         position: pos,
-      //         ellipsoid: {
-      //           radii: { x: 2, y: 2, z: 2 },
-      //           material: Cesium.Color.GREEN
-      //         },
-      //         properties: {
-      //           image: meta.ImageName
-      //         }
-      //       });
-      //     });
-      //   },
-      //   console.error
-      // );
-    },
-    console.error
-  );
-
-  let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
-  handler.setInputAction(e => {
-    let pickedPrimitive = G.viewer.scene.pick(e.position);
-    let pickedEntity = Cesium.defined(pickedPrimitive)
-      ? pickedPrimitive.id
-      : undefined;
-
-    // un-highlight the last picked entity
-    if (Cesium.defined(G.lastPicked)) {
-      G.lastPicked.ellipsoid.material = Cesium.Color.GREEN;
-    }
-    // Highlight the currently picked entity
-    if (Cesium.defined(pickedEntity)) {
-      // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
-      let image = pickedEntity.properties.image.getValue();
-      console.log("picked image: ", image);
-      // if (G.panoramaViewer) {
-      //   G.panoramaViewer.destroy();
-      // }
-      // G.panoramaViewer = pannellum.viewer("panorama", {
-      //   panorama: image,
-      //   ...panoramaConfig
-      // });
-      G.currentPanoramaImage = image;
-
-      pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
-        image: "images/" + image,
-        color: new Cesium.Color(1, 1, 1, 0.5)
-      });
-      G.lastPicked = pickedEntity;
-      G.viewer.scene.camera.flyTo({
-        destination: pickedEntity.position._value
-      });
-    }
-  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  // Cesium.when(
+  //   G.viewer.terrainProvider.readyPromise,
+  //   () => {
+  //     let promise = Cesium.sampleTerrainMostDetailed(
+  //       G.viewer.terrainProvider,
+  //       G.cartographicPositions
+  //     );
+  //     Cesium.when(promise, updatedPositions => {
+  //       G.sampledPositions = _.map(updatedPositions, p =>
+  //         Cesium.Cartographic.toCartesian(p)
+  //       );
+  //       console.log("positions loaded");
+  //     });
+  _.zip(G.cartesianPositions, steinwegMetaJson).forEach(pair => {
+    let [pos, meta] = pair;
+    G.viewer.entities.add({
+      name: meta.ImageName,
+      position: pos,
+      ellipsoid: {
+        radii: { x: 1, y: 1, z: 1 },
+        material: Cesium.Color.DARKGREEN
+      },
+      properties: {
+        image: meta.ImageName
+      }
+    });
+  });
+  // },
+  //     //   console.error
+  //     // );
+  //   },
+  //   console.error
+  // );
+  //
+  // let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
+  // handler.setInputAction(e => {
+  //   let pickedPrimitive = G.viewer.scene.pick(e.position);
+  //   let pickedEntity = Cesium.defined(pickedPrimitive)
+  //     ? pickedPrimitive.id
+  //     : undefined;
+  //
+  //   // un-highlight the last picked entity
+  //   if (Cesium.defined(G.lastPicked)) {
+  //     G.lastPicked.ellipsoid.material = Cesium.Color.GREEN;
+  //   }
+  //   // Highlight the currently picked entity
+  //   if (Cesium.defined(pickedEntity)) {
+  //     // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
+  //     let image = pickedEntity.properties.image.getValue();
+  //     console.log("picked image: ", image);
+  //     // if (G.panoramaViewer) {
+  //     //   G.panoramaViewer.destroy();
+  //     // }
+  //     // G.panoramaViewer = pannellum.viewer("panorama", {
+  //     //   panorama: image,
+  //     //   ...panoramaConfig
+  //     // });
+  //     G.currentPanoramaImage = image;
+  //
+  //     pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
+  //       image: "images/" + image,
+  //       color: new Cesium.Color(1, 1, 1, 0.5)
+  //     });
+  //     G.lastPicked = pickedEntity;
+  //     G.viewer.scene.camera.flyTo({
+  //       destination: pickedEntity.position._value
+  //     });
+  //   }
+  // }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

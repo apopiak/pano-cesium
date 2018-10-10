@@ -1,38 +1,5 @@
-// monkey patching Cesium.Camera
-Cesium.Camera.prototype.rotateView = function(rotation) {
-  let { heading, pitch, roll } = rotation;
-  heading = this.heading + (heading || 0);
-  pitch = this.pitch + (pitch || 0);
-  roll = this.roll + (roll || 0);
-  const destination = this.position;
-  this.setView({
-    destination,
-    orientation: {
-      heading,
-      pitch,
-      roll
-    }
-  });
-};
-
 // globals
-
-let G = {
-  // viewers
-  viewer: undefined,
-  panoramaViewer: undefined,
-
-  // positions of the panoramas
-  positions: positionsToCartographic(),
-  sampledPositions: undefined,
-
-  // cesium 3D tileset
-  tileset: undefined,
-
-  // for selecting panoramas
-  lastPicked: undefined,
-  currentPanoramaImage: undefined
-};
+let G = {};
 
 function positionsToCartographic(source) {
   const dataSource = source || steinwegMetaJson;
@@ -55,7 +22,7 @@ const getPanellumCanvas = () =>
 
 const getThreeCanvas = () => document.querySelector("#container > canvas");
 
-const createImageFromTarget = (renderer, target) => {
+function createImageFromTarget(renderer, target) {
   let width = target.width;
   let height = target.height;
 
@@ -77,9 +44,9 @@ const createImageFromTarget = (renderer, target) => {
   let img = new Image();
   img.src = canvas.toDataURL();
   return img;
-};
+}
 
-const addOrReplacePostProcessing = index => {
+function addOrReplacePostProcessing(index) {
   const idx = index || 0;
   const image = "images/" + steinwegMetaJson[idx].ImageName;
   const camera = G.viewer.scene.camera;
@@ -114,40 +81,41 @@ const addOrReplacePostProcessing = index => {
       );
     })
     .catch(err => console.error(err));
-};
+}
 
 function rotate(code) {
-    const camera = G.viewer.scene.camera;
-    const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
+  const camera = G.viewer.scene.camera;
+  const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
 
-    if (code === 39) {
-      // right arrow
-      camera.rotateView({ heading: rotation });
-    } else if (code=== 37) {
-      // left arrow
-      camera.rotateView({ heading: -rotation });
-    } else if (code === 38) {
-      // up arrow
-      camera.rotateView({ pitch: rotation });
-    } else if (code === 40) {
-      // down arrow
-      camera.rotateView({ pitch: -rotation });
-    }
+  if (code === 39) {
+    // right arrow
+    camera.rotateView({ heading: rotation });
+  } else if (code === 37) {
+    // left arrow
+    camera.rotateView({ heading: -rotation });
+  } else if (code === 38) {
+    // up arrow
+    camera.rotateView({ pitch: rotation });
+  } else if (code === 40) {
+    // down arrow
+    camera.rotateView({ pitch: -rotation });
+  }
 }
 
 function moveUp() {
-    G.viewer.scene.camera.moveUp(0.2);
+  G.viewer.scene.camera.moveUp(0.2);
 }
 
 function keyDownListener(event) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
-    if (event.which <= 40 && event.which >= 37) { // [37;40] == arrow keys
-        rotate(event.which);
-    }
-    const SPACE = 32;
-    if (event.which == SPACE) {
-        moveUp();
-    }
+  // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
+  if (event.which <= 40 && event.which >= 37) {
+    // [37;40] == arrow keys
+    rotate(event.which);
+  }
+  const SPACE = 32;
+  if (event.which == SPACE) {
+    moveUp();
+  }
 }
 
 // add camera rotation
@@ -155,6 +123,24 @@ document.addEventListener("keydown", keyDownListener, false);
 
 (function() {
   "use strict";
+
+  // globals
+  G = {
+    // viewers
+    viewer: undefined,
+    panoramaViewer: undefined,
+
+    // positions of the panoramas
+    positions: positionsToCartographic(),
+    sampledPositions: undefined,
+
+    // cesium 3D tileset
+    tileset: undefined,
+
+    // for selecting panoramas
+    lastPicked: undefined,
+    currentPanoramaImage: undefined
+  };
 
   ///////////////////
   // panellum panorama viewer

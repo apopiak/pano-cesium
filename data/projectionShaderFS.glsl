@@ -22,13 +22,8 @@ mat4 rotationMatrix(vec3 axis, float angle)
 
 vec2 equirectangular(vec3 ray)
 {
-    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -3.14159265359 / 2.0);
-    vec4 rota = rot * vec4(ray, 1.0);
-    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), 3.14159265359 / 4.0);
-    vec4 rotated = rot2 * vec4(rota.xyz, 1.0);
-
     // orig: vec3 stu = normalize(final.xyz) * vec3(-1.0, 1.0, 1.0);
-    vec3 stu = normalize(rotated.xyz);
+    vec3 stu = normalize(ray.xyz);
 
     const float c_1Over2Pi = 0.1591549430918953357688837633725;
     const float c_1OverPi  = 0.3183098861837906715377675267450;
@@ -64,7 +59,13 @@ void main(void)
     // czm_inverseProjection provided by Cesium
     vec4 ray = u_inverseView * czm_inverseProjection * vec4(vertex.xy, 1.0, 1.0);
 
-    vec2 uv = equirectangular(ray.xyz);
+    // 90° around x-axis
+    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -3.14159265359 / 2.0);
+    // 45° around z-axis
+    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), 3.14159265359 / 4.0);
+    vec4 rotated = rot2 * rot * ray;
+
+    vec2 uv = equirectangular(rotated.xyz);
 
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
     vec4 pano = texture2D(panorama, uv);

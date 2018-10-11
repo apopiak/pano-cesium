@@ -15,6 +15,7 @@ let G = {};
   const addOrUpdatePostProcessing = index => {
     const idx = index || 0;
     const meta = steinwegMetaJson[idx];
+    G.currentPanoramaImage = meta.ImageName;
     const image = imagePath(meta.ImageName);
     const camera = G.viewer.scene.camera;
 
@@ -263,40 +264,32 @@ let G = {};
     });
   });
 
-  //
-  // let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
-  // handler.setInputAction(e => {
-  //   let pickedPrimitive = G.viewer.scene.pick(e.position);
-  //   let pickedEntity = Cesium.defined(pickedPrimitive)
-  //     ? pickedPrimitive.id
-  //     : undefined;
-  //
-  //   // un-highlight the last picked entity
-  //   if (Cesium.defined(G.lastPicked)) {
-  //     G.lastPicked.ellipsoid.material = Cesium.Color.GREEN;
-  //   }
-  //   // Highlight the currently picked entity
-  //   if (Cesium.defined(pickedEntity)) {
-  //     // pickedEntity.ellipsoid.material = Cesium.Color.ORANGERED;
-  //     let image = pickedEntity.properties.image.getValue();
-  //     console.log("picked image: ", image);
-  //     // if (G.panoramaViewer) {
-  //     //   G.panoramaViewer.destroy();
-  //     // }
-  //     // G.panoramaViewer = pannellum.viewer("panorama", {
-  //     //   panorama: image,
-  //     //   ...panoramaConfig
-  //     // });
-  //     G.currentPanoramaImage = image;
-  //
-  //     pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
-  //       image: imagePath(image),
-  //       color: new Cesium.Color(1, 1, 1, 0.5)
-  //     });
-  //     G.lastPicked = pickedEntity;
-  //     G.viewer.scene.camera.flyTo({
-  //       destination: pickedEntity.position._value
-  //     });
-  //   }
-  // }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+  let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
+  handler.setInputAction(e => {
+    let pickedPrimitive = G.viewer.scene.pick(e.position);
+    let pickedEntity = Cesium.defined(pickedPrimitive)
+      ? pickedPrimitive.id
+      : undefined;
+
+    if (Cesium.defined(G.lastPicked)) {
+      G.lastPicked.show = true;
+    }
+    if (Cesium.defined(pickedEntity)) {
+      let image = pickedEntity.properties.image.getValue();
+      console.log("picked image: ", image);
+
+      G.currentPanoramaImage = image;
+
+      // // set the panorama image as sphere texture
+      // pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
+      //   image: imagePath(image),
+      //   color: new Cesium.Color(1, 1, 1, 0.5)
+      // });
+      G.lastPicked = pickedEntity;
+
+      addOrUpdatePostProcessing(pickedEntity.properties.index.getValue());
+      pickedEntity.show = false;
+    }
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

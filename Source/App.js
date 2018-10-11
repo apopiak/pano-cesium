@@ -1,137 +1,133 @@
 // globals
 let G = {};
 
-function positionsToCartographic(source) {
-  const dataSource = source || steinwegMetaJson;
-
-  return _.map(dataSource, meta => {
-    const steinwegUTMzone = 32;
-
-    const utm = new UTMConv.UTMCoords(
-      steinwegUTMzone,
-      meta["X-Sensor"],
-      meta["Y-Sensor"]
-    );
-    const degrees = utm.to_deg("wgs84");
-    const height = meta["Z-Sensor"];
-    return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
-  });
-}
-
-const getPanellumCanvas = () =>
-  document.querySelector(".pnlm-render-container > canvas:nth-child(1)");
-
-const getThreeCanvas = () => document.querySelector("#container > canvas");
-
-function createImageFromTarget(renderer, target) {
-  let width = target.width;
-  let height = target.height;
-
-  // Read the contents of the framebuffer
-  let data = new Uint8Array(width * height * 4);
-  renderer.readRenderTargetPixels(target, 0, 0, width, height, data);
-
-  // Create a 2D canvas to store the result
-  let canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  let context = canvas.getContext("2d");
-
-  // Copy the pixels to a 2D canvas
-  let imageData = context.createImageData(width, height);
-  imageData.data.set(data);
-  context.putImageData(imageData, 0, 0);
-
-  let img = new Image();
-  img.src = canvas.toDataURL();
-  return img;
-}
-
-function addOrReplacePostProcessing(index) {
-  const idx = index || 0;
-  const image = "images/" + steinwegMetaJson[idx].ImageName;
-  const camera = G.viewer.scene.camera;
-  const canvas = G.viewer.scene.canvas;
-  const stages = G.viewer.scene.postProcessStages;
-
-  const heading = Cesium.Math.toRadians(steinwegMetaJson[idx]["H-Sensor"]);
-  const roll = Cesium.Math.toRadians(steinwegMetaJson[idx]["R-Sensor"]);
-  const pitch = Cesium.Math.toRadians(steinwegMetaJson[idx]["P-Sensor"]);
-  const orientation = { heading, roll, pitch };
-
-  fetch("data/projectionShaderFS.glsl")
-    .then(res => res.text())
-    .then(shader => {
-      G.viewer.scene.camera.flyTo({
-        destination: G.cartesianPositions[idx],
-        orientation
-      });
-      if (stages.length != 0) {
-        stages.removeAll();
-      }
-      stages.add(
-        new Cesium.PostProcessStage({
-          fragmentShader: shader,
-          uniforms: {
-            panorama: image,
-            u_inverseView: camera.inverseViewMatrix,
-            u_width: canvas.width,
-            u_height: canvas.height
-          }
-        })
-      );
-    })
-    .catch(err => console.error(err));
-}
-
-function rotate(code) {
-  const camera = G.viewer.scene.camera;
-  const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
-
-  if (code === 39) {
-    // right arrow
-    camera.rotateView({ heading: rotation });
-  } else if (code === 37) {
-    // left arrow
-    camera.rotateView({ heading: -rotation });
-  } else if (code === 38) {
-    // up arrow
-    camera.rotateView({ pitch: rotation });
-  } else if (code === 40) {
-    // down arrow
-    camera.rotateView({ pitch: -rotation });
-  }
-}
-
-function moveUp() {
-  G.viewer.scene.camera.moveUp(0.2);
-}
-
-function keyDownListener(event) {
-  // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
-  if (event.which <= 40 && event.which >= 37) {
-    // [37;40] == arrow keys
-    rotate(event.which);
-  }
-  const SPACE = 32;
-  if (event.which == SPACE) {
-    moveUp();
-  }
-}
-
-// add camera rotation
-document.addEventListener("keydown", keyDownListener, false);
-
 (function() {
   "use strict";
 
+  // util function
+  const imagePath = imageName => "images/" + imageName;
+
+  const updatePostProcessing = image => {
+    G.postProcessStage.uniforms.panorama = image;
+  };
+
+  // add a panorama rendering in post processing
+  const addOrUpdatePostProcessing = index => {
+    const idx = index || 0;
+    const meta = steinwegMetaJson[idx];
+    const image = imagePath(meta.ImageName);
+    const camera = G.viewer.scene.camera;
+
+    const heading = Cesium.Math.toRadians(meta["H-Sensor"]);
+    const roll = Cesium.Math.toRadians(meta["R-Sensor"]);
+    const pitch = Cesium.Math.toRadians(meta["P-Sensor"]);
+    const orientation = { heading, roll, pitch };
+    const destination = G.cartesianPositions[idx];
+
+    if (Cesium.defined(G.postProcessStage)) {
+      // we don't need to do anything if the right image is already being displayed
+      if (G.postProcessStage.uniforms.panorama === image) {
+        return;
+      }
+      // otherwise we fly to the right location and update the panorama texture
+      camera.flyTo({ destination, orientation });
+      updatePostProcessing(image);
+      return;
+    }
+
+    const canvas = G.viewer.scene.canvas;
+    const stages = G.viewer.scene.postProcessStages;
+
+    fetch("data/projectionShaderFS.glsl")
+      .then(res => res.text())
+      .then(shader => {
+        camera.flyTo({ destination, orientation });
+        if (stages.length != 0) {
+          stages.removeAll();
+        }
+        G.postProcessStage = stages.add(
+          new Cesium.PostProcessStage({
+            fragmentShader: shader,
+            uniforms: {
+              panorama: image,
+              u_inverseView: camera.inverseViewMatrix,
+              u_width: canvas.width,
+              u_height: canvas.height
+            }
+          })
+        );
+      })
+      .catch(err => console.error(err));
+  };
+
+  function positionsToCartographic(source) {
+    const dataSource = source || steinwegMetaJson;
+
+    return _.map(dataSource, meta => {
+      const steinwegUTMzone = 32;
+
+      const utm = new UTMConv.UTMCoords(
+        steinwegUTMzone,
+        meta["X-Sensor"],
+        meta["Y-Sensor"]
+      );
+      const degrees = utm.to_deg("wgs84");
+      const height = meta["Z-Sensor"];
+      return Cesium.Cartographic.fromDegrees(
+        degrees.lngd,
+        degrees.latd,
+        height
+      );
+    });
+  }
+
+  // interaction setup
+  function rotate(code) {
+    const camera = G.viewer.scene.camera;
+    const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
+
+    if (code === 39) {
+      // right arrow
+      camera.rotateView({ heading: rotation });
+    } else if (code === 37) {
+      // left arrow
+      camera.rotateView({ heading: -rotation });
+    } else if (code === 38) {
+      // up arrow
+      camera.rotateView({ pitch: rotation });
+    } else if (code === 40) {
+      // down arrow
+      camera.rotateView({ pitch: -rotation });
+    }
+  }
+
+  function moveUp() {
+    G.viewer.scene.camera.moveUp(0.2);
+  }
+
+  function keyDownListener(event) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
+    // [37;40] == arrow keys
+    if (event.which <= 40 && event.which >= 37) {
+      rotate(event.which);
+    }
+    const SPACE = 32;
+    if (event.which == SPACE) {
+      moveUp();
+    }
+  }
+
+  document.addEventListener("keydown", keyDownListener, false);
+
+  // convert positions to Cesium coordinate system
   const cartographicPositions = positionsToCartographic();
 
-  // globals
+  ///////////////////////
+  // Globals
+  ///////////////////////
   G = {
     // viewers
     viewer: undefined,
-    panoramaViewer: undefined,
 
     // positions of the panoramas
     cartographicPositions: cartographicPositions,
@@ -145,16 +141,14 @@ document.addEventListener("keydown", keyDownListener, false);
 
     // for selecting panoramas
     lastPicked: undefined,
-    currentPanoramaImage: undefined
-  };
+    currentPanoramaImage: undefined,
 
-  ///////////////////
-  // panellum panorama viewer
+    // post-processing stage
+    postProcessStage: undefined,
 
-  const panoramaConfig = {
-    type: "equirectangular",
-    autoLoad: true,
-    basePath: "images/"
+    fn: {
+      addOrUpdatePostProcessing
+    }
   };
 
   // Cesium Ion
@@ -205,6 +199,7 @@ document.addEventListener("keydown", keyDownListener, false);
   // Enable lighting based on sun/moon positions
   G.viewer.scene.globe.enableLighting = true;
 
+  // Set the initial view
   const birdsEye = new Cesium.Cartesian3(
     3961538.873578816,
     482335.18245185615,
@@ -230,7 +225,6 @@ document.addEventListener("keydown", keyDownListener, false);
       }
     }
   };
-  // Set the initial view
   G.viewer.scene.camera.flyTo(homeCameraView);
 
   // Override the default home button
@@ -252,20 +246,8 @@ document.addEventListener("keydown", keyDownListener, false);
     })
   );
 
-  // Cesium.when(
-  //   G.viewer.terrainProvider.readyPromise,
-  //   () => {
-  //     let promise = Cesium.sampleTerrainMostDetailed(
-  //       G.viewer.terrainProvider,
-  //       G.cartographicPositions
-  //     );
-  //     Cesium.when(promise, updatedPositions => {
-  //       G.sampledPositions = _.map(updatedPositions, p =>
-  //         Cesium.Cartographic.toCartesian(p)
-  //       );
-  //       console.log("positions loaded");
-  //     });
-  _.zip(G.cartesianPositions, steinwegMetaJson).forEach(pair => {
+  // place spheres representing the panorama pictures
+  _.zip(G.cartesianPositions, steinwegMetaJson).forEach((pair, index) => {
     let [pos, meta] = pair;
     G.viewer.entities.add({
       name: meta.ImageName,
@@ -275,16 +257,12 @@ document.addEventListener("keydown", keyDownListener, false);
         material: Cesium.Color.DARKGREEN
       },
       properties: {
-        image: meta.ImageName
+        image: meta.ImageName,
+        index
       }
     });
   });
-  // },
-  //     //   console.error
-  //     // );
-  //   },
-  //   console.error
-  // );
+
   //
   // let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
   // handler.setInputAction(e => {
@@ -312,7 +290,7 @@ document.addEventListener("keydown", keyDownListener, false);
   //     G.currentPanoramaImage = image;
   //
   //     pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
-  //       image: "images/" + image,
+  //       image: imagePath(image),
   //       color: new Cesium.Color(1, 1, 1, 0.5)
   //     });
   //     G.lastPicked = pickedEntity;

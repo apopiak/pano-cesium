@@ -89,28 +89,40 @@ let G = {};
     });
   }
 
-  // interaction setup
-  function rotate(which) {
+  ///////////////////////
+  // Interaction Setup
+  ///////////////////////
+  function look(which) {
     const camera = G.viewer.scene.camera;
-    const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
+    const rotation = Cesium.Math.toRadians(4.5); // degrees
 
     if (which === 39) {
       // right arrow
-      camera.rotateView({ heading: rotation });
+      const worldUp = Cesium.Matrix4.multiplyByPoint(
+        camera.inverseTransform,
+        camera.positionWC,
+        new Cesium.Cartesian3()
+      );
+      camera.look(worldUp, rotation);
     } else if (which === 37) {
       // left arrow
-      camera.rotateView({ heading: -rotation });
+      const worldUp = Cesium.Matrix4.multiplyByPoint(
+        camera.inverseTransform,
+        camera.positionWC,
+        new Cesium.Cartesian3()
+      );
+      camera.look(worldUp, -rotation);
     } else if (which === 38) {
       // up arrow
-      camera.rotateView({ pitch: rotation });
+      camera.lookUp(rotation);
     } else if (which === 40) {
       // down arrow
-      camera.rotateView({ pitch: -rotation });
+      camera.lookDown(rotation);
     }
   }
 
   function move(code) {
-    const defaultSpeed = 0.1;
+    const defaultSpeed = 0.12; // meters
 
     // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
     if (code === "KeyA") {
@@ -132,7 +144,7 @@ let G = {};
     // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
     // [37;40] == arrow keys
     if (event.which <= 40 && event.which >= 37) {
-      rotate(event.which);
+      look(event.which);
     }
     move(event.code);
   }

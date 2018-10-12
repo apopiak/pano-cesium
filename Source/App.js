@@ -90,27 +90,42 @@ let G = {};
   }
 
   // interaction setup
-  function rotate(code) {
+  function rotate(which) {
     const camera = G.viewer.scene.camera;
     const rotation = 3.14159265359 / 20.0; // 180° / 20 --> 9°
 
-    if (code === 39) {
+    if (which === 39) {
       // right arrow
       camera.rotateView({ heading: rotation });
-    } else if (code === 37) {
+    } else if (which === 37) {
       // left arrow
       camera.rotateView({ heading: -rotation });
-    } else if (code === 38) {
+    } else if (which === 38) {
       // up arrow
       camera.rotateView({ pitch: rotation });
-    } else if (code === 40) {
+    } else if (which === 40) {
       // down arrow
       camera.rotateView({ pitch: -rotation });
     }
   }
 
-  function moveUp() {
-    G.viewer.scene.camera.moveUp(0.2);
+  function move(code) {
+    const defaultSpeed = 0.1;
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
+    if (code === "KeyA") {
+      G.viewer.camera.moveLeft(defaultSpeed);
+    } else if (code === "KeyD") {
+      G.viewer.camera.moveRight(defaultSpeed);
+    } else if (code === "KeyW") {
+      G.viewer.camera.moveForward(defaultSpeed);
+    } else if (code === "KeyS") {
+      G.viewer.camera.moveBackward(defaultSpeed);
+    } else if (code === "KeyQ") {
+      G.viewer.camera.moveUp(defaultSpeed);
+    } else if (code === "KeyE") {
+      G.viewer.camera.moveDown(defaultSpeed);
+    }
   }
 
   function keyDownListener(event) {
@@ -119,10 +134,7 @@ let G = {};
     if (event.which <= 40 && event.which >= 37) {
       rotate(event.which);
     }
-    const SPACE = 32;
-    if (event.which == SPACE) {
-      moveUp();
-    }
+    move(event.code);
   }
 
   document.addEventListener("keydown", keyDownListener, false);

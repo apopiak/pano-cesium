@@ -11,6 +11,13 @@ let G = {};
     G.postProcessStage.uniforms.panorama = image;
   };
 
+  const headingPitchRoll = meta => {
+    const heading = Cesium.Math.toRadians(meta["H-Sensor"]);
+    const roll = Cesium.Math.toRadians(meta["R-Sensor"]);
+    const pitch = Cesium.Math.toRadians(meta["P-Sensor"]);
+    return { heading, roll, pitch };
+  };
+
   // add a panorama rendering in post processing
   const addOrUpdatePostProcessing = index => {
     const idx = index || 0;

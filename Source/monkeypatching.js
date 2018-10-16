@@ -1,3 +1,4 @@
+// synonym for look
 Cesium.Camera.prototype.rotateView = function(rotation) {
   let { heading, pitch, roll } = rotation;
   heading = this.heading + (heading || 0);

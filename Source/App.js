@@ -4,42 +4,46 @@ let G = {};
 (function() {
   "use strict";
 
-  // util function
-  const imagePath = imageName => "images/" + imageName;
 
-  const updatePostProcessing = image => {
-    G.postProcessStage.uniforms.panorama = image;
-  };
 
-  const headingPitchRoll = meta => {
-    const heading = Cesium.Math.toRadians(meta["H-Sensor"]);
-    const roll = Cesium.Math.toRadians(meta["R-Sensor"]);
-    const pitch = Cesium.Math.toRadians(meta["P-Sensor"]);
-    return { heading, roll, pitch };
-  };
+  ////////////////////////////
+  // Panorama Rendering
+  ////////////////////////////
+
+  function updatePostProcessing(imagePath) {
+    if (Cesium.defined(G.postProcessStage)) {
+      G.postProcessStage.uniforms.panorama = imagePath;
+    } else {
+      console.console.error("no post processing stage found");
+    }
+  }
 
   // add a panorama rendering in post processing
-  const addOrUpdatePostProcessing = index => {
-    const idx = index || 0;
-    const meta = steinwegMetaJson[idx];
-    G.currentPanoramaImage = meta.ImageName;
-    const image = imagePath(meta.ImageName);
+  function addOrUpdatePostProcessing(idx) {
+    const index = idx || 0;
+    const meta = G.metaData[index];
     const camera = G.viewer.scene.camera;
 
-    const heading = Cesium.Math.toRadians(meta["H-Sensor"]);
-    const roll = Cesium.Math.toRadians(meta["R-Sensor"]);
-    const pitch = Cesium.Math.toRadians(meta["P-Sensor"]);
-    const orientation = { heading, roll, pitch };
-    const destination = G.cartesianPositions[idx];
+    G.currentPanoramaImage = meta.image;
+
+    const destination = meta.cartesianPos;
+    // TODO: check for end of array
+    const nextPos = G.metaData[index + 1].cartesianPos;
+    // console.log("nextPos", nextPos);
+    // const orientation = {
+    //     direction: Cesium.Cartesian3.subtract(nextPos, destination),
+    //     up: camera.up
+    // };
+    const orientation = meta.cameraOrientation;
 
     if (Cesium.defined(G.postProcessStage)) {
       // we don't need to do anything if the right image is already being displayed
-      if (G.postProcessStage.uniforms.panorama === image) {
+      if (G.postProcessStage.uniforms.panorama === meta.imagePath) {
         return;
       }
       // otherwise we fly to the right location and update the panorama texture
       camera.flyTo({ destination, orientation });
-      updatePostProcessing(image);
+      updatePostProcessing(meta.imagePath);
       return;
     }
 
@@ -57,7 +61,7 @@ let G = {};
           new Cesium.PostProcessStage({
             fragmentShader: shader,
             uniforms: {
-              panorama: image,
+              panorama: meta.imagePath,
               u_inverseView: camera.inverseViewMatrix,
               u_width: canvas.width,
               u_height: canvas.height
@@ -66,7 +70,93 @@ let G = {};
         );
       })
       .catch(err => console.error(err));
-  };
+  }
+
+  function addPanoramaSphere(idx) {
+    const index = idx || 0;
+    const meta = G.metaData[index];
+    const camera = G.viewer.scene.camera;
+
+    G.currentPanoramaImage = meta.image;
+
+    const destination = meta.cartesianPos;
+
+    // TODO: check for end of array
+    const nextPos = G.metaData[index + 1].cartesianPos;
+    // console.log("nextPos", nextPos);
+    // const orientation = {
+    //     direction: Cesium.Cartesian3.subtract(nextPos, destination),
+    //     up: camera.up
+    // };
+    const orientation = meta.cameraOrientation;
+
+    const size = 50;
+    G.panoramaSphere = G.viewer.entities.add({
+      name: meta.image,
+      position: destination,
+      // orientation: new Cesium.HeadingPitchRoll(
+      //   orient.heading,
+      //   orient.pitch,
+      //   orient.roll
+      // ),
+      ellipsoid: {
+        radii: { x: size, y: size, z: size },
+        material: new Cesium.ImageMaterialProperty({
+          image: meta.imagePath,
+          color: new Cesium.Color(1, 1, 1, 0.95)
+        })
+      },
+      properties: {
+        index
+      }
+    });
+
+    camera.flyTo({ destination, orientation });
+    return;
+  }
+
+  ///////////////////////
+  // Data Processing
+  ///////////////////////
+  function origToCartographic(meta, utmZone) {
+    const steinwegUTMzone = 32;
+    utmZone = utmZone || steinwegUTMzone;
+
+    const utm = new UTMConv.UTMCoords(
+      steinwegUTMzone,
+      meta["X-Sensor"],
+      meta["Y-Sensor"]
+    );
+    const degrees = utm.to_deg("wgs84");
+    const height = meta["Z-Sensor"];
+    return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
+  }
+
+  function headingPitchRoll(meta) {
+    return Cesium.HeadingPitchRoll.fromDegrees(
+      meta["H-Sensor"],
+      meta["P-Sensor"],
+      meta["R-Sensor"]
+    );
+  }
+
+  function processData(originalJson) {
+    return _.map(originalJson, (meta, index) => {
+      const cartographicPos = origToCartographic(meta);
+
+      return {
+        index,
+        cartographicPos,
+        cartesianPos: Cesium.Cartographic.toCartesian(cartographicPos),
+        cameraOrientation: headingPitchRoll(meta),
+
+        image: meta.ImageName,
+        imagePath: "images/" + meta.ImageName,
+
+        orig: meta
+      };
+    });
+  }
 
   function positionsToCartographic(source) {
     const dataSource = source || steinwegMetaJson;
@@ -122,21 +212,22 @@ let G = {};
   }
 
   function move(code) {
+    const camera = G.viewer.scene.camera;
     const defaultSpeed = 0.12; // meters
 
     // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
     if (code === "KeyA") {
-      G.viewer.camera.moveLeft(defaultSpeed);
+      camera.moveLeft(defaultSpeed);
     } else if (code === "KeyD") {
-      G.viewer.camera.moveRight(defaultSpeed);
+      camera.moveRight(defaultSpeed);
     } else if (code === "KeyW") {
-      G.viewer.camera.moveForward(defaultSpeed);
+      camera.moveForward(defaultSpeed);
     } else if (code === "KeyS") {
-      G.viewer.camera.moveBackward(defaultSpeed);
+      camera.moveBackward(defaultSpeed);
     } else if (code === "KeyQ") {
-      G.viewer.camera.moveUp(defaultSpeed);
+      camera.moveUp(defaultSpeed);
     } else if (code === "KeyE") {
-      G.viewer.camera.moveDown(defaultSpeed);
+      camera.moveDown(defaultSpeed);
     }
   }
 
@@ -167,6 +258,7 @@ let G = {};
       Cesium.Cartographic.toCartesian(p)
     ),
     // sampledPositions: undefined,
+    metaData: processData(steinwegMetaJson),
 
     // cesium 3D tileset
     tileset: undefined,
@@ -265,11 +357,8 @@ let G = {};
     G.viewer.scene.camera.flyTo(homeCameraView);
   });
 
-  G.tileset = G.viewer.scene.primitives.add(
+  let tileset = G.viewer.scene.primitives.add(
     new Cesium.Cesium3DTileset({
-      // modelMatrix: Cesium.Matrix4.fromTranslation(
-      //   new Cesium.Cartesian3(30, 1, 40)
-      // ),
       url: "http://localhost:8080/data/pointcloud/tileset.json",
       skipLevelOfDetail: true,
       baseScreenSpaceError: 1024,
@@ -278,23 +367,40 @@ let G = {};
     })
   );
 
+  G.tileset = tileset;
+
+  // TODO: how to keep default shading and add color?
+  // tileset.pointCloudShading.maximumAttenuation = 4.0; // Don't allow points larger than 8 pixels.
+  // tileset.pointCloudShading.baseResolution = 0.1; // Assume an original capture resolution of 5 centimeters between neighboring points.
+  // tileset.pointCloudShading.geometricErrorScale = 1.0; // Applies to both geometric error and the base resolution.
+  // tileset.pointCloudShading.attenuation = true;
+  // tileset.pointCloudShading.eyeDomeLighting = true;
+  //
+  // tileset.style = new Cesium.Cesium3DTileStyle({
+  //   color: 'color("red")'
+  // });
+
+  // G.tileset.style.color.evaluateColor = (frameState, feature, result) => {
+  //   if (Cesium.defined(feature)) {
+  //     console.log(feature);
+  //     return Cesium.Color.clone(Cesium.Color.WHITE, result);
+  //   }
+  // };
+
   // place spheres representing the panorama pictures
-  _.zip(G.cartesianPositions, steinwegMetaJson).forEach((pair, index) => {
-    let [pos, meta] = pair;
+  G.metaData.forEach(m => {
     G.viewer.entities.add({
-      name: meta.ImageName,
-      position: pos,
+      name: m.image,
+      position: m.cartesianPos,
       ellipsoid: {
         radii: { x: 1, y: 1, z: 1 },
         material: Cesium.Color.DARKGREEN
       },
       properties: {
-        image: meta.ImageName,
-        index
+        index: m.index
       }
     });
   });
-
 
   let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
   handler.setInputAction(e => {
@@ -307,20 +413,22 @@ let G = {};
       G.lastPicked.show = true;
     }
     if (Cesium.defined(pickedEntity)) {
-      let image = pickedEntity.properties.image.getValue();
-      console.log("picked image: ", image);
+      const index = pickedEntity.properties.index.getValue();
+      const meta = G.metaData[index];
+      console.log("picked image: ", meta.image);
 
-      G.currentPanoramaImage = image;
+      addPanoramaSphere(index);
 
-      // // set the panorama image as sphere texture
-      // pickedEntity.ellipsoid.material = new Cesium.ImageMaterialProperty({
-      //   image: imagePath(image),
-      //   color: new Cesium.Color(1, 1, 1, 0.5)
-      // });
+      // hide next spheres
+      const hide = entity => {
+        if (Cesium.defined(entity)) {
+          entity.show = false;
+        }
+      };
+      hide(pickedEntity);
+      hide(G.viewer.entities.values[index + 1]);
+      hide(G.viewer.entities.values[index + 2]);
       G.lastPicked = pickedEntity;
-
-      addOrUpdatePostProcessing(pickedEntity.properties.index.getValue());
-      pickedEntity.show = false;
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();

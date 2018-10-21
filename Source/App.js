@@ -398,7 +398,7 @@ let G = {};
       const meta = G.metaData[index];
       console.log("picked image: ", meta.image);
 
-      addPanoramaSphere(index);
+      addOrUpdatePostProcessing(index);
 
       // hide next spheres
       const hide = entity => {

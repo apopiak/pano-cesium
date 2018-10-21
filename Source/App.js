@@ -4,8 +4,6 @@ let G = {};
 (function() {
   "use strict";
 
-
-
   ////////////////////////////
   // Panorama Rendering
   ////////////////////////////
@@ -79,31 +77,40 @@ let G = {};
 
     G.currentPanoramaImage = meta.image;
 
-    const destination = meta.cartesianPos;
+    const position = meta.cartesianPos;
 
     // TODO: check for end of array
     const nextPos = G.metaData[index + 1].cartesianPos;
-    // console.log("nextPos", nextPos);
-    // const orientation = {
-    //     direction: Cesium.Cartesian3.subtract(nextPos, destination),
-    //     up: camera.up
-    // };
-    const orientation = meta.cameraOrientation;
+    // const direction = Cesium.Cartesian3.subtract(
+    //   nextPos,
+    //   position,
+    //   new Cesium.Cartesian3()
+    // );
+    // const spherical = Cesium.Spherical.fromCartesian3(direction);
+    // const hpr = new Cesium.HeadingPitchRoll(spherical.cone, spherical.clock, 0);
+    // const orientation = Cesium.Transforms.headingPitchRollQuaternion(
+    //   position,
+    //   hpr
+    // );
+    const orientation = Cesium.Quaternion.fromHeadingPitchRoll(
+      new Cesium.HeadingPitchRoll()
+    );
 
     const size = 50;
+    // remove old sphere
+    if (Cesium.defined(G.panoramaSphere)) {
+      G.viewer.entities.remove(G.panoramaSphere);
+      G.panoramaSphere = undefined;
+    }
     G.panoramaSphere = G.viewer.entities.add({
       name: meta.image,
-      position: destination,
-      // orientation: new Cesium.HeadingPitchRoll(
-      //   orient.heading,
-      //   orient.pitch,
-      //   orient.roll
-      // ),
+      position,
+      orientation,
       ellipsoid: {
         radii: { x: size, y: size, z: size },
         material: new Cesium.ImageMaterialProperty({
           image: meta.imagePath,
-          color: new Cesium.Color(1, 1, 1, 0.95)
+          color: new Cesium.Color(1, 1, 1, 0.99)
         })
       },
       properties: {
@@ -111,7 +118,10 @@ let G = {};
       }
     });
 
-    camera.flyTo({ destination, orientation });
+    camera.flyTo({
+      destination: position,
+      orientation: meta.cameraOrientation
+    });
     return;
   }
 
@@ -155,27 +165,6 @@ let G = {};
 
         orig: meta
       };
-    });
-  }
-
-  function positionsToCartographic(source) {
-    const dataSource = source || steinwegMetaJson;
-
-    return _.map(dataSource, meta => {
-      const steinwegUTMzone = 32;
-
-      const utm = new UTMConv.UTMCoords(
-        steinwegUTMzone,
-        meta["X-Sensor"],
-        meta["Y-Sensor"]
-      );
-      const degrees = utm.to_deg("wgs84");
-      const height = meta["Z-Sensor"];
-      return Cesium.Cartographic.fromDegrees(
-        degrees.lngd,
-        degrees.latd,
-        height
-      );
     });
   }
 
@@ -242,9 +231,6 @@ let G = {};
 
   document.addEventListener("keydown", keyDownListener, false);
 
-  // convert positions to Cesium coordinate system
-  const cartographicPositions = positionsToCartographic();
-
   ///////////////////////
   // Globals
   ///////////////////////
@@ -252,12 +238,6 @@ let G = {};
     // viewers
     viewer: undefined,
 
-    // positions of the panoramas
-    cartographicPositions: cartographicPositions,
-    cartesianPositions: _.map(cartographicPositions, p =>
-      Cesium.Cartographic.toCartesian(p)
-    ),
-    // sampledPositions: undefined,
     metaData: processData(steinwegMetaJson),
 
     // cesium 3D tileset
@@ -271,7 +251,8 @@ let G = {};
     postProcessStage: undefined,
 
     fn: {
-      addOrUpdatePostProcessing
+      addOrUpdatePostProcessing,
+      addPanoramaSphere
     }
   };
 

@@ -61,8 +61,8 @@ let G = {};
             uniforms: {
               panorama: meta.imagePath,
               u_inverseView: camera.inverseViewMatrix,
-              u_width: canvas.width,
-              u_height: canvas.height
+              u_width: () => canvas.width,
+              u_height: () => canvas.height
             }
           })
         );

@@ -1,6 +1,7 @@
 precision highp float;
 
 uniform sampler2D colorTexture;
+uniform sampler2D depthTexture;
 uniform sampler2D panorama;
 uniform float u_width;
 uniform float u_height;
@@ -59,15 +60,22 @@ void main(void)
     // czm_inverseProjection provided by Cesium
     vec4 ray = u_inverseView * czm_inverseProjection * vec4(vertex.xy, 1.0, 1.0);
 
+    float pi = 3.14159265359;
+
     // 90° around x-axis
-    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -3.14159265359 / 2.0);
+    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -pi / 2.0);
     // 45° around z-axis
-    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), 3.14159265359 / 4.0);
-    vec4 rotated = rot2 * rot * ray;
+    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), pi / 4.0);
+    // 20° around y-axis
+    mat4 rot3 = rotationMatrix(vec3(0.0, 1.0, 0.0), pi / 8.5);
+    // °  around x-axis
+    mat4 rot4 = rotationMatrix(vec3(1.0, 0.0, 0.0), -pi / 20.5);
+    vec4 rotated = rot4 * rot3 * rot2 * rot * ray;
 
     vec2 uv = equirectangular(rotated.xyz);
 
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
+    float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 pano = texture2D(panorama, uv);
-    gl_FragColor = mix(color, pano, 0.6);
+    gl_FragColor = mix(color, pano, depth);
 }

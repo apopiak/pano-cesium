@@ -59,10 +59,7 @@ let G = {};
           new Cesium.PostProcessStage({
             fragmentShader: shader,
             uniforms: {
-              panorama: meta.imagePath,
-              u_inverseView: camera.inverseViewMatrix,
-              u_width: () => canvas.width,
-              u_height: () => canvas.height
+              panorama: meta.imagePath
             }
           })
         );
@@ -144,9 +141,9 @@ let G = {};
 
   function headingPitchRoll(meta) {
     return Cesium.HeadingPitchRoll.fromDegrees(
-      meta["H-Sensor"],
-      meta["P-Sensor"],
-      meta["R-Sensor"]
+      meta["H-Veh"] + meta["H-Sensor"],
+      meta["P-Veh"] + meta["P-Sensor"],
+      meta["R-Veh"] + meta["R-Sensor"]
     );
   }
 

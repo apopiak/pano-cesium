@@ -3,9 +3,6 @@ precision highp float;
 uniform sampler2D colorTexture;
 uniform sampler2D depthTexture;
 uniform sampler2D panorama;
-uniform float u_width;
-uniform float u_height;
-uniform mat4 u_inverseView;
 varying vec2 v_textureCoordinates;
 
 mat4 rotationMatrix(vec3 axis, float angle)
@@ -23,7 +20,8 @@ mat4 rotationMatrix(vec3 axis, float angle)
 
 vec2 equirectangular(vec3 ray)
 {
-    // orig: vec3 stu = normalize(final.xyz) * vec3(-1.0, 1.0, 1.0);
+    // orig:
+    // vec3 stu = normalize(ray.xyz) * vec3(-1.0, 1.0, 1.0);
     vec3 stu = normalize(ray.xyz);
 
     const float c_1Over2Pi = 0.1591549430918953357688837633725;
@@ -56,26 +54,29 @@ vec2 polar(vec3 ray)
 
 void main(void)
 {
-    vec2 vertex = gl_FragCoord.xy / vec2(u_width, u_height) * 2.0 - 1.0;
-    // czm_inverseProjection provided by Cesium
-    vec4 ray = u_inverseView * czm_inverseProjection * vec4(vertex.xy, 1.0, 1.0);
+    vec2 vertex = (gl_FragCoord.xy / czm_viewport.zw) * 2.0 - 1.0;
+    vec4 clipPos = vec4(vertex, 1.0, 1.0) / gl_FragCoord.w;
+    vec4 ray = normalize(czm_inverseView * czm_inverseProjection * clipPos);
+    // vec4 ray = normalize(czm_inverseViewProjection * clipPos);
 
     float pi = 3.14159265359;
 
-    // 90° around x-axis
-    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -pi / 2.0);
-    // 45° around z-axis
-    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), pi / 4.0);
-    // 20° around y-axis
-    mat4 rot3 = rotationMatrix(vec3(0.0, 1.0, 0.0), pi / 8.5);
-    // °  around x-axis
-    mat4 rot4 = rotationMatrix(vec3(1.0, 0.0, 0.0), -pi / 20.5);
-    vec4 rotated = rot4 * rot3 * rot2 * rot * ray;
+    // // 90° around x-axis
+    // mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -pi / 2.0);
+    // // 45° around z-axis
+    // mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), pi / 4.0);
+    // // 20° around y-axis
+    // mat4 rot3 = rotationMatrix(vec3(0.0, 1.0, 0.0), pi / 8.5);
+    // // °  around x-axis
+    // mat4 rot4 = rotationMatrix(vec3(1.0, 0.0, 0.0), -pi / 20.5);
+    vec4 rotated = ray; //rot4 * rot3 * rot2 * rot * ray;
 
     vec2 uv = equirectangular(rotated.xyz);
 
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
     float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 pano = texture2D(panorama, uv);
-    gl_FragColor = mix(color, pano, depth);
+
+    // gl_FragColor = vec4((ray.xyz + 1.0) * 0.5, 1.0);
+    gl_FragColor = mix(color, pano, clamp(depth + 0.33, 0.0, 1.0));
 }

@@ -48,7 +48,7 @@ let G = {};
     const canvas = G.viewer.scene.canvas;
     const stages = G.viewer.scene.postProcessStages;
 
-    fetch("data/projectionShaderFS.glsl")
+    fetch("data/projectionShader.fs.glsl")
       .then(res => res.text())
       .then(shader => {
         camera.flyTo({ destination, orientation });
@@ -59,7 +59,9 @@ let G = {};
           new Cesium.PostProcessStage({
             fragmentShader: shader,
             uniforms: {
-              panorama: meta.imagePath
+              panorama: meta.imagePath,
+              u_direction: () => camera.directionWC,
+              u_camPos: () => camera.position
             }
           })
         );
@@ -141,9 +143,9 @@ let G = {};
 
   function headingPitchRoll(meta) {
     return Cesium.HeadingPitchRoll.fromDegrees(
-      meta["H-Veh"] + meta["H-Sensor"],
-      meta["P-Veh"] + meta["P-Sensor"],
-      meta["R-Veh"] + meta["R-Sensor"]
+      meta["H-Sensor"],
+      meta["P-Sensor"],
+      meta["R-Sensor"]
     );
   }
 

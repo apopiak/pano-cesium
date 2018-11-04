@@ -32,7 +32,8 @@ let G = {};
     //     direction: Cesium.Cartesian3.subtract(nextPos, destination),
     //     up: camera.up
     // };
-    const orientation = meta.cameraOrientation;
+    let orientation = meta.cameraOrientation;
+    const duration = 0.5; // seconds
 
     if (Cesium.defined(G.postProcessStage)) {
       // we don't need to do anything if the right image is already being displayed
@@ -40,7 +41,7 @@ let G = {};
         return;
       }
       // otherwise we fly to the right location and update the panorama texture
-      camera.flyTo({ destination, orientation });
+      camera.flyTo({ destination, orientation, duration });
       updatePostProcessing(meta.imagePath);
       return;
     }
@@ -51,7 +52,7 @@ let G = {};
     fetch("data/projectionShader.fs.glsl")
       .then(res => res.text())
       .then(shader => {
-        camera.flyTo({ destination, orientation });
+        camera.flyTo({ destination, orientation, duration });
         if (stages.length != 0) {
           stages.removeAll();
         }
@@ -59,9 +60,16 @@ let G = {};
           new Cesium.PostProcessStage({
             fragmentShader: shader,
             uniforms: {
-              panorama: meta.imagePath,
+              u_panorama: meta.imagePath,
+              u_camPos: () => camera.positionWC,
               u_direction: () => camera.directionWC,
-              u_camPos: () => camera.position
+              u_nearPlaneDistance: () => camera.frustum.near,
+              u_nearPlaneSize: () => {
+                const frustum = camera.frustum;
+                const height = 2 * Math.tan(frustum.fov) * frustum.near;
+	              const width = height * frustum.aspectRatio;
+                return new Cesium.Cartesian2(width, height);
+              }
             }
           })
         );
@@ -119,7 +127,8 @@ let G = {};
 
     camera.flyTo({
       destination: position,
-      orientation: meta.cameraOrientation
+      orientation: meta.cameraOrientation,
+      duration: 0.5
     });
     return;
   }
@@ -269,6 +278,8 @@ let G = {};
     baseLayerPicker: false
   });
 
+  // G.viewer.scene.debugShowFrustumPlanes = true; // show frustums
+
   //////////////////////////////////////////////////////////////////////////
   // Loading Imagery
   //////////////////////////////////////////////////////////////////////////
@@ -329,12 +340,12 @@ let G = {};
       }
     }
   };
-  G.viewer.scene.camera.flyTo(homeCameraView);
+  G.viewer.scene.camera.flyTo({ duration: 0, ...homeCameraView });
 
   // Override the default home button
   G.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
     e.cancel = true;
-    G.viewer.scene.camera.flyTo(homeCameraView);
+    G.viewer.scene.camera.flyTo({ duration: 0.5, ...homeCameraView });
   });
 
   let tileset = G.viewer.scene.primitives.add(
@@ -348,6 +359,23 @@ let G = {};
   );
 
   G.tileset = tileset;
+
+  // view port squad
+  // var viewportQuad = new PanoramaViewportQuad(new Cesium.BoundingRectangle(200, 200, 300, 200));
+  // viewportQuad.material.uniforms.color = new Cesium.Color(1.0, 0.0, 0.0, 1.0);
+  // G.viewer.scene.primitives.add(viewportQuad);
+  // let instance = new Cesium.GeometryInstance({
+  //   geometry: new Cesium.PlaneGeometry({
+  //     vertexFormat: Cesium.VertexFormat.ALL
+  //   })
+  // });
+  // let primitive = new Cesium.Primitive({
+  //   geometryInstances: [instance],
+  //   appearance: new Cesium.DebugAppearance({
+  //     attributeName: "normal"
+  //   })
+  // });
+  // G.viewer.scene.primitives.add(primitive);
 
   // TODO: how to keep default shading and add color?
   // tileset.pointCloudShading.maximumAttenuation = 4.0; // Don't allow points larger than 8 pixels.
@@ -412,3 +440,5 @@ let G = {};
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();
+
+// G.fn.addOrUpdatePostProcessing(15);

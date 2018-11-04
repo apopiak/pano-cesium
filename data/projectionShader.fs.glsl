@@ -1,16 +1,24 @@
 precision highp float;
 
-uniform sampler2D colorTexture;
-uniform sampler2D depthTexture;
-uniform sampler2D panorama;
-varying vec2 v_textureCoordinates;
-
 // cesium
 // uniform vec4 czm_viewport;
+uniform sampler2D colorTexture;
+uniform sampler2D depthTexture;
+
+varying vec2 v_textureCoordinates;
+
+// custom uniforms
+uniform sampler2D u_panorama;
+
 uniform vec3 u_camPos;
 uniform vec3 u_direction;
+uniform float u_nearPlaneDistance;
+uniform vec2 u_nearPlaneSize;
 
 const float PI = 3.14159265359;
+const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
+const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
+const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
 
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -102,41 +110,35 @@ int digit(float value, int dig) { //3.13
   return x1 - (x2*10);
 }
 
+vec4 rotate(vec4 ray)
+{
+    mat4 rot = rotationMatrix(X_AXIS, -PI / 2.0); // 90 around x-axis
+    mat4 rot2 = rotationMatrix(Z_AXIS, PI / 4.0); // 45 around z-axis
+    mat4 rot3 = rotationMatrix(Y_AXIS, PI / 8.5);
+    mat4 rot4 = rotationMatrix(X_AXIS, -PI / 20.5);
+    return rot4 * rot3 * rot2 * rot * ray;
+}
 
 void main(void)
 {
-    vec2 vertex = (gl_FragCoord.xy / czm_viewport.zw) * 2.0 - 1.0;
-    vec4 clipPos = vec4(vertex, 1.0, 1.0) / gl_FragCoord.w;
-    // vec4 eyePos = czm_inverseProjection * clipPos;
-    // vec4 worldPos = czm_inverseViewProjection * clipPos;
-    // vec4 worldPos = clipPos * czm_viewProjection;
-    // vec4 worldPos = clipPos * (czm_projection * czm_view);
-    // mat4 ivp = czm_inverseView * czm_inverseProjection;
-    // vec4 worldPos = ivp * clipPos;
-    // vec4 worldPos = (czm_inverseProjection * czm_inverseView) * clipPos;
-    vec4 worldPos = (czm_inverseView * czm_inverseProjection) * clipPos;
-    // vec4 worldPos = vec4(normalize(u_direction), 1.0) + vec4(vertex, 0.0, 0.0);
-    vec4 ray = worldPos;
+    vec2 screenPos = (gl_FragCoord.xy / czm_viewport.zw) * 2.0 - 1.0;
+    // we want the virtual sphere to be as far away as possible == on the
+    // far plane --> ndc.z = 1.0
+    vec4 ndcPos = vec4(screenPos, 1.0, 1.0);
+    vec4 clipPos =  ndcPos / gl_FragCoord.w;
+    vec4 eyePos = czm_inverseProjection * clipPos;
+    vec4 worldPos = czm_inverseView * eyePos;
 
-    // 90 around x-axis
-    mat4 rot = rotationMatrix(vec3(1.0, 0.0, 0.0), -PI / 2.0);
-    // 45 around z-axis
-    mat4 rot2 = rotationMatrix(vec3(0.0, 0.0, 1.0), PI / 4.0);
-    // 20 around y-axis
-    mat4 rot3 = rotationMatrix(vec3(0.0, 1.0, 0.0), PI / 8.5);
-    //   around x-axis
-    mat4 rot4 = rotationMatrix(vec3(1.0, 0.0, 0.0), -PI / 20.5);
-    vec4 rotated = rot4 * rot3 * rot2 * rot * ray;
+    vec4 ray = vec4(normalize(worldPos.xyz), 1.0);
 
-    vec2 uv = equirectangular(rotated.xyz);
+    // ray = rotate(ray);
+
+    vec2 uv = equirectangular(ray.xyz);
 
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
     float depth = texture2D(depthTexture, v_textureCoordinates).x;
-    vec4 pano = texture2D(panorama, uv);
+    vec4 pano = texture2D(u_panorama, uv);
 
-    // vec3 n = normalize(ray.xyz);
-    // vec3 stu = vec3(max(max(n.x, n.y), n.z), -1.0, -1.0);
-    // vec4 debug = stu.x > 0.98 ? vec4(0.0, 1.0, 0.0, 1.0) : vec4((stu + 1.0) * 0.5, 1.0);
     vec3 normWorld = normalize(worldPos.xyz);
 
     vec4 debug = 1.0 * vec4(normWorld.xyz, 1.0);
@@ -144,6 +146,6 @@ void main(void)
     if (digit(debug.x,2) == 0) debug.x = 1.0;
     if (digit(debug.y,2) == 0) debug.y = 1.0;
     if (digit(debug.z,2) == 0) debug.z = 1.0;
-    gl_FragColor = mix(color, clamp(debug, 0.0, 1.0), 0.6);
-    // gl_FragColor = mix(color, pano, clamp(depth + 0.33, 0.0, 1.0));
+    vec4 combined = mix(pano, clamp(debug, 0.0, 1.0), 0.4);
+    gl_FragColor = mix(color, combined, clamp(depth + 0.33, 0.0, 1.0));
 }

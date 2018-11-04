@@ -2,6 +2,8 @@ precision highp float;
 
 // cesium
 // uniform vec4 czm_viewport;
+// uniform mat4 czm_inverseProjection;
+// uniform mat4 czm_inverseView;
 uniform sampler2D colorTexture;
 uniform sampler2D depthTexture;
 

@@ -127,11 +127,12 @@ void main(void)
     // we want the virtual sphere to be as far away as possible == on the
     // far plane --> ndc.z = 1.0
     vec4 ndcPos = vec4(screenPos, 1.0, 1.0);
-    vec4 clipPos =  ndcPos / gl_FragCoord.w;
+    vec4 clipPos = ndcPos / gl_FragCoord.w;
     vec4 eyePos = czm_inverseProjection * clipPos;
     vec4 worldPos = czm_inverseView * eyePos;
+    vec4 modelPos = czm_inverseModelView * eyePos;
 
-    vec4 ray = vec4(normalize(worldPos.xyz), 1.0);
+    vec3 ray = normalize(modelPos.xyz);
 
     // ray = rotate(ray);
 
@@ -141,7 +142,7 @@ void main(void)
     float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 pano = texture2D(u_panorama, uv);
 
-    vec3 normWorld = normalize(worldPos.xyz);
+    vec3 normWorld = normalize(modelPos.xyz);
 
     vec4 debug = 1.0 * vec4(normWorld.xyz, 1.0);
     // gl_FragColor = debug;

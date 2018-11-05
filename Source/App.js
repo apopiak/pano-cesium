@@ -67,7 +67,7 @@ let G = {};
               u_nearPlaneSize: () => {
                 const frustum = camera.frustum;
                 const height = 2 * Math.tan(frustum.fov) * frustum.near;
-	              const width = height * frustum.aspectRatio;
+                const width = height * frustum.aspectRatio;
                 return new Cesium.Cartesian2(width, height);
               }
             }
@@ -133,21 +133,89 @@ let G = {};
     return;
   }
 
+  function addImageRectangle(idx) {
+    const index = idx || 0;
+    const meta = G.metaData[index];
+    const camera = G.viewer.scene.camera;
+
+    const destination = meta.cartesianPos;
+    const orientation = meta.cameraOrientation;
+    const duration = 0.5; // seconds
+
+    camera.flyTo({ destination, orientation, duration });
+
+    const rect = meta.rectangle;
+
+    const bottomCenter = Cesium.Cartesian3.midpoint(
+      rect.bottomLeft,
+      rect.bottomRight,
+      new Cesium.Cartesian3()
+    );
+    const topCenter = Cesium.Cartesian3.midpoint(
+      rect.topLeft,
+      rect.topRight,
+      new Cesium.Cartesian3()
+    );
+    const center = Cesium.Cartesian3.midpoint(
+      topCenter,
+      bottomCenter,
+      new Cesium.Cartesian3()
+    );
+
+    const v1 = Cesium.Cartesian3.subtract(
+      rect.bottomLeft,
+      rect.bottomRight,
+      new Cesium.Cartesian3()
+    );
+    const v2 = Cesium.Cartesian3.subtract(
+      rect.bottomLeft,
+      rect.topLeft,
+      new Cesium.Cartesian3()
+    );
+
+    let scratch = new Cesium.Cartesian3();
+    const normal = Cesium.Cartesian3.normalize(
+      Cesium.Cartesian3.cross(v1, v2, scratch),
+      scratch
+    );
+
+    let panoramaPlane = G.viewer.entities.add({
+      name: "Panorama plane",
+      position: center,
+      plane: {
+        plane: new Cesium.Plane(normal, 0.0),
+        dimensions: new Cesium.Cartesian2(
+          Cesium.Cartesian3.magnitude(v1),
+          Cesium.Cartesian3.magnitude(v2)
+        ),
+        material: Cesium.Color.BLUE
+      }
+    });
+  }
+
   ///////////////////////
   // Data Processing
   ///////////////////////
-  function origToCartographic(meta, utmZone) {
+  function utmToCartographic(position, utmZone) {
     const steinwegUTMzone = 32;
     utmZone = utmZone || steinwegUTMzone;
 
-    const utm = new UTMConv.UTMCoords(
-      steinwegUTMzone,
-      meta["X-Sensor"],
-      meta["Y-Sensor"]
-    );
+    const utm = new UTMConv.UTMCoords(steinwegUTMzone, position.x, position.y);
     const degrees = utm.to_deg("wgs84");
-    const height = meta["Z-Sensor"];
+    const height = position.z;
     return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
+  }
+
+  function utmToCartesian(x, y, z) {
+    return Cesium.Cartographic.toCartesian(utmToCartographic({ x, y, z }));
+  }
+
+  function origToCartographic(meta) {
+    return utmToCartographic({
+      x: meta["X-Sensor"],
+      y: meta["Y-Sensor"],
+      z: meta["Z-Sensor"]
+    });
   }
 
   function headingPitchRoll(meta) {
@@ -161,15 +229,23 @@ let G = {};
   function processData(originalJson) {
     return _.map(originalJson, (meta, index) => {
       const cartographicPos = origToCartographic(meta);
+      const cartesianPos = Cesium.Cartographic.toCartesian(cartographicPos);
 
       return {
         index,
         cartographicPos,
-        cartesianPos: Cesium.Cartographic.toCartesian(cartographicPos),
+        cartesianPos,
         cameraOrientation: headingPitchRoll(meta),
 
         image: meta.ImageName,
         imagePath: "images/" + meta.ImageName,
+
+        rectangle: {
+          bottomLeft: utmToCartesian(meta.lbx, meta.lby, meta.lbz),
+          topLeft: utmToCartesian(meta.ltx, meta.lty, meta.ltz),
+          topRight: utmToCartesian(meta.rtx, meta.rty, meta.rtz),
+          bottomRight: utmToCartesian(meta.rbx, meta.rby, meta.rbz)
+        },
 
         orig: meta
       };
@@ -260,7 +336,8 @@ let G = {};
 
     fn: {
       addOrUpdatePostProcessing,
-      addPanoramaSphere
+      addPanoramaSphere,
+      addImageRectangle
     }
   };
 
@@ -278,6 +355,19 @@ let G = {};
     baseLayerPicker: false
   });
 
+  // setup scene
+  const scene = G.viewer.scene;
+  scene.globe.show = false;
+  // scene.skyBox = new Cesium.SkyBox({
+  //   sources: {
+  //     positiveX: "cubemap/face-l.png", //'skybox_px.png',
+  //     negativeX: "cubemap/face-r.png", //'skybox_nx.png',
+  //     positiveY: "cubemap/face-f.png", //'skybox_py.png',
+  //     negativeY: "cubemap/face-b.png", //'skybox_ny.png',
+  //     positiveZ: "cubemap/face-t.png", //'skybox_pz.png',
+  //     negativeZ: "cubemap/face-d.png" //'skybox_nz.png'
+  //   }
+  // });
   // G.viewer.scene.debugShowFrustumPlanes = true; // show frustums
 
   //////////////////////////////////////////////////////////////////////////
@@ -425,7 +515,8 @@ let G = {};
       const meta = G.metaData[index];
       console.log("picked image: ", meta.image);
 
-      addOrUpdatePostProcessing(index);
+      // addOrUpdatePostProcessing(index);
+      addImageRectangle(index);
 
       // hide next spheres
       const hide = entity => {
@@ -442,3 +533,4 @@ let G = {};
 })();
 
 // G.fn.addOrUpdatePostProcessing(15);
+G.fn.addImageRectangle(15);

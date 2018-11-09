@@ -9,6 +9,12 @@ let G = {};
   ////////////////////////////
 
   const degToRad = deg => (deg * Math.PI) / 180.0;
+  const mat4FromQuaternion = quaternion =>
+    Cesium.Matrix4.fromRotationTranslation(
+      Cesium.Matrix3.fromQuaternion(quaternion, new Cesium.Matrix3()),
+      Cesium.Cartesian3.ZERO,
+      new Cesium.Matrix4()
+    );
 
   // add a panorama rendering in post processing
   function addOrUpdatePostProcessing(idx) {
@@ -24,72 +30,47 @@ let G = {};
     const canvas = scene.canvas;
     const stages = scene.postProcessStages;
 
-    // var transform = Cesium.Transforms.eastNorthUpToFixedFrame(destination);
-    // camera.constrainedAxis = Cesium.Cartesian3.UNIT_Z;
-    // camera.lookAtTransform(transform, new Cesium.Cartesian3(-1.0, 0.0, 0.0));
-
     const addStage = (fragmentShader, imagePath) => {
+      const headingOffset = 0.03;
+      let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
+        Cesium.Cartesian3.UNIT_Y,
+        -meta.cameraOrientation.heading + headingOffset
+      );
+      const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
+        Cesium.Cartesian3.UNIT_Z,
+        meta.cameraOrientation.pitch
+      );
+      const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
+        Cesium.Cartesian3.UNIT_X,
+        -meta.cameraOrientation.roll
+      );
+      Cesium.Quaternion.multiply(
+        cameraQuaternion,
+        rollQuaternion,
+        cameraQuaternion
+      );
+      Cesium.Quaternion.multiply(
+        cameraQuaternion,
+        pitchQuaternion,
+        cameraQuaternion
+      );
+      const cameraRotation = mat4FromQuaternion(cameraQuaternion);
+
       const uniforms = {
         u_panorama: imagePath,
-        u_inverseCameraTranform: () => {
-          let scratch = new Cesium.Matrix4();
-          return Cesium.Matrix4.inverse(
+
+        u_cameraRotation: () => cameraRotation,
+        u_inverseCameraTranform: () =>
+          Cesium.Matrix4.inverse(
             Cesium.Transforms.eastNorthUpToFixedFrame(
               camera.positionWC,
               Cesium.Ellipsoid.WGS84,
-              scratch
+              new Cesium.Matrix4()
             ),
-            scratch
-          );
-        },
-        u_cameraRotation: () => {
-          // console.log("camera headingPitchRoll", meta.cameraOrientation);
-          // let quat = Cesium.Quaternion.fromHeadingPitchRoll(
-          //   meta.cameraOrientation,
-          //   new Cesium.Quaternion()
-          // );
-          let quat = Cesium.Quaternion.fromAxisAngle(
-            Cesium.Cartesian3.UNIT_Y,
-            -meta.cameraOrientation.heading
-          );
-          let quatPitch = Cesium.Quaternion.fromAxisAngle(
-            Cesium.Cartesian3.UNIT_Z,
-            meta.cameraOrientation.pitch
-          );
-          let quatRoll = Cesium.Quaternion.fromAxisAngle(
-            Cesium.Cartesian3.UNIT_X,
-            -meta.cameraOrientation.roll
-          )
-          Cesium.Quaternion.multiply(quat, quatPitch, quat);
-          Cesium.Quaternion.multiply(quat, quatRoll, quat);
-          // console.log("quaternion", quat);
-          let rot3 = Cesium.Matrix3.fromQuaternion(quat, new Cesium.Matrix3());
-          // console.log("rot3", rot3);
-          let rot = Cesium.Matrix4.fromRotationTranslation(
-            rot3,
-            Cesium.Cartesian3.ZERO,
             new Cesium.Matrix4()
-          );
-          // console.log("rot", rot);
-          return rot;
-        },
-        u_direction: () => camera.directionWC,
-        u_globeTransform: () => {
-          const icrfToFixed = Cesium.Transforms.computeIcrfToFixedMatrix(
-            scene.lastRenderTime || Cesium.JulianDate.now()
-          );
-          if (!Cesium.defined(icrfToFixed)) {
-            return Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
-          }
-          return Cesium.Matrix4.fromRotationTranslation(icrfToFixed);
-        },
-        u_nearPlaneDistance: () => camera.frustum.near,
-        u_nearPlaneSize: () => {
-          const frustum = camera.frustum;
-          const height = 2 * Math.tan(frustum.fov) * frustum.near;
-          const width = height * frustum.aspectRatio;
-          return new Cesium.Cartesian2(width, height);
-        }
+          ),
+
+        u_interpolation: () => G.interpolation
       };
 
       G.postProcessStage = stages.add(
@@ -379,6 +360,8 @@ let G = {};
 
     // post-processing stage
     postProcessStage: undefined,
+    // [-1, 1] how much to prioritize the pointcloud (-1) or panorama (1) when interpolating
+    interpolation: 0.2,
 
     fn: {
       addOrUpdatePostProcessing,
@@ -578,5 +561,5 @@ let G = {};
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();
 
-G.fn.addOrUpdatePostProcessing(15);
+// G.fn.addOrUpdatePostProcessing(15);
 // G.fn.addImageRectangle(15);

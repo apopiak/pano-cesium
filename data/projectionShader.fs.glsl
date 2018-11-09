@@ -14,10 +14,8 @@ uniform sampler2D u_panorama;
 
 uniform mat4 u_cameraRotation;
 uniform mat4 u_inverseCameraTranform;
-uniform vec3 u_direction;
-uniform mat4 u_globeTransform;
-uniform float u_nearPlaneDistance;
-uniform vec2 u_nearPlaneSize;
+
+uniform float u_interpolation;
 
 const float PI = 3.14159265359;
 const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
@@ -115,5 +113,5 @@ void main(void)
     if (digit(debug.y,2) == 0) debug.y = 1.0;
     if (digit(debug.z,2) == 0) debug.z = 1.0;
     vec4 combined = mix(pano, clamp(debug, 0.0, 1.0), 0.15);
-    gl_FragColor = mix(color, combined, clamp(depth + 0.1, 0.0, 1.0));
+    gl_FragColor = mix(color, combined, clamp(depth + u_interpolation, 0.0, 1.0));
 }

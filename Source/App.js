@@ -31,14 +31,18 @@ let G = {};
     const stages = scene.postProcessStages;
 
     const addStage = (fragmentShader, imagePath) => {
+      // TODO: where do these offsets come from?
+      //       and why are they not consistent between pictures?
       const headingOffset = 0.03;
+      const pitchOffset = 0.015;
+
       let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
         Cesium.Cartesian3.UNIT_Y,
         -meta.cameraOrientation.heading + headingOffset
       );
       const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
         Cesium.Cartesian3.UNIT_Z,
-        meta.cameraOrientation.pitch
+        meta.cameraOrientation.pitch + pitchOffset
       );
       const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
         Cesium.Cartesian3.UNIT_X,
@@ -434,56 +438,58 @@ let G = {};
   G.viewer.scene.globe.enableLighting = true;
 
   // Set the initial view
-  const birdsEye = new Cesium.Cartesian3(
-    3961538.873578816,
-    482335.18245185615,
-    4958890.174561147
-  );
-  const inTheStreet = {
-    x: 3961467.550069339,
-    y: 482298.0868178488,
-    z: 4958811.655684536
+  const birdsEye = new Cesium.Cartesian3(3961538.873, 482335.1824, 4958890.174);
+  const startOfStreetView = {
+    destination: { x: 3961452.238, y: 482230.0739, z: 4958837.392 },
+    orientation: {
+      direction: { x: 0.107284457, y: 0.92035867, z: -0.376071 },
+      up: { x: 0.6698224, y: 0.212619, z: 0.711428 }
+    }
   };
   const homeCameraView = {
-    destination: inTheStreet,
+    destination: {
+      x: 3961467.55,
+      y: 482298.086,
+      z: 4958811.655
+    },
     orientation: {
       direction: {
-        x: 0.028642267278155248,
-        y: 0.9168583988712383,
-        z: -0.39818374771509196
+        x: 0.0286422,
+        y: 0.9168583,
+        z: -0.398183
       },
       up: {
-        x: 0.6449769314801278,
-        y: 0.28737711124775434,
-        z: 0.7081095634076512
+        x: 0.6449769,
+        y: 0.2873771,
+        z: 0.7081095
       }
     }
   };
   const furtherDownTheStreetView = {
     destination: {
-      x: 3961456.7206823328,
-      y: 482483.0411192975,
-      z: 4958797.780259386
+      x: 3961456.72,
+      y: 482483.041,
+      z: 4958797.78
     },
     orientation: {
       direction: {
-        x: 0.45308282553465157,
-        y: 0.21370752688496647,
-        z: -0.8654738853126926
+        x: 0.4530828,
+        y: 0.2137075,
+        z: -0.8654738
       },
       up: {
-        x: 0.8646370106018242,
-        y: 0.1310491460377492,
-        z: 0.4850040837150939
+        x: 0.864637,
+        y: 0.1310491,
+        z: 0.485004
       }
     }
   };
-  G.viewer.scene.camera.flyTo({ duration: 0, ...furtherDownTheStreetView });
+  G.viewer.scene.camera.flyTo({ duration: 0, ...startOfStreetView });
 
   // Override the default home button
   G.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
     e.cancel = true;
-    G.viewer.scene.camera.flyTo({ duration: 0.5, ...furtherDownTheStreetView });
+    G.viewer.scene.camera.flyTo({ duration: 0.5, ...startOfStreetView });
   });
 
   let tileset = G.viewer.scene.primitives.add(

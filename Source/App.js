@@ -564,7 +564,6 @@ let G = {};
       console.log("picked image: ", meta.image);
 
       addOrUpdatePostProcessing(index);
-      // addImageRectangle(index);
 
       // hide next spheres
       const hide = entity => {
@@ -579,6 +578,3 @@ let G = {};
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 })();
-
-// G.fn.addOrUpdatePostProcessing(15);
-// G.fn.addImageRectangle(15);

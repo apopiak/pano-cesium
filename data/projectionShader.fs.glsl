@@ -13,7 +13,10 @@ varying vec2 v_textureCoordinates;
 uniform sampler2D u_panorama;
 
 uniform vec3 u_camPos;
+uniform mat4 u_cameraRotation;
+uniform mat4 u_inverseCameraTranform;
 uniform vec3 u_direction;
+uniform mat4 u_globeTransform;
 uniform float u_nearPlaneDistance;
 uniform vec2 u_nearPlaneSize;
 
@@ -114,11 +117,11 @@ int digit(float value, int dig) { //3.13
 
 vec4 rotate(vec4 ray)
 {
-    mat4 rot = rotationMatrix(X_AXIS, -PI / 2.0); // 90 around x-axis
-    mat4 rot2 = rotationMatrix(Z_AXIS, PI / 4.0); // 45 around z-axis
-    mat4 rot3 = rotationMatrix(Y_AXIS, PI / 8.5);
-    mat4 rot4 = rotationMatrix(X_AXIS, -PI / 20.5);
-    return rot4 * rot3 * rot2 * rot * ray;
+    mat4 rot = rotationMatrix(X_AXIS, radians(-90.0)); // 90 around x-axis
+    // mat4 heading = rotationMatrix(Y_AXIS, radians(112.233));
+    // mat4 roll = rotationMatrix(X_AXIS, radians(1.636));
+    // mat4 pitch = rotationMatrix(Z_AXIS, radians(-4.233));
+    return u_cameraRotation * rot * ray;
 }
 
 void main(void)
@@ -130,11 +133,14 @@ void main(void)
     vec4 clipPos = ndcPos / gl_FragCoord.w;
     vec4 eyePos = czm_inverseProjection * clipPos;
     vec4 worldPos = czm_inverseView * eyePos;
-    vec4 modelPos = czm_inverseModelView * eyePos;
+
+    // transform coordinates to camera reference frame
+    vec4 modelPos = u_inverseCameraTranform * worldPos;
+
+    modelPos = rotate(modelPos);
+    // modelPos = u_cameraRotation * modelPos;
 
     vec3 ray = normalize(modelPos.xyz);
-
-    // ray = rotate(ray);
 
     vec2 uv = equirectangular(ray.xyz);
 

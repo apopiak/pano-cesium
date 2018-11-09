@@ -12,7 +12,6 @@ varying vec2 v_textureCoordinates;
 // custom uniforms
 uniform sampler2D u_panorama;
 
-uniform vec3 u_camPos;
 uniform mat4 u_cameraRotation;
 uniform mat4 u_inverseCameraTranform;
 uniform vec3 u_direction;
@@ -38,22 +37,6 @@ mat4 rotationMatrix(vec3 axis, float angle)
                 0.0,                                0.0,                                0.0,                                1.0);
 }
 
-// vec2 latLong(vec3 cartesian) {
-//     const float c_1OverPi  = 0.3183098861837906715377675267450;
-//     float latitude = asin(cartesian.z) * c_1OverPi;
-//
-//     float arctan = atan(cartesian.y, cartesian.x) * c_1OverPi;
-//     float longitude = 0.0;
-//     if (cartesian.x > 0.0) {
-//         longitude = arctan;
-//     } else if(cartesian.y > 0.0) {
-//         longitude = arctan + PI;
-//     } else {
-//         longitude = arctan - PI;
-//     }
-//     return vec2(latitude, longitude);
-// }
-
 vec2 equirectangular(vec3 ray)
 {
     // orig:
@@ -65,27 +48,6 @@ vec2 equirectangular(vec3 ray)
 
     float v = (acos(stu.y) * c_1OverPi);
     vec2 uv = vec2(atan(stu.x, stu.z) * c_1Over2Pi + 0.5, v);
-    return uv;
-}
-
-vec2 equi2(vec3 ray)
-{
-    vec3 stu = normalize(ray);
-
-    const float c_1OverPi  = 0.3183098861837906715377675267450;
-    float latitude = asin(stu.z) * c_1OverPi;
-
-    float arctan = atan(stu.y, stu.x) * c_1OverPi;
-    float longitude = 0.0;
-    if (stu.x > 0.0) {
-        longitude = arctan;
-    } else if(stu.y > 0.0) {
-        longitude = arctan + PI;
-    } else {
-        longitude = arctan - PI;
-    }
-    vec2 ll = vec2(latitude, longitude);
-    vec2 uv = (ll / vec2(PI, 2.0 * PI)) + vec2(0.5, 0.5);
     return uv;
 }
 
@@ -109,10 +71,10 @@ vec2 polar(vec3 ray)
     return uv;
 }
 
-int digit(float value, int dig) { //3.13
-  int x1 = int(abs(value) * pow(10.0, float(dig))); //13
-  int x2 = int(float(x1) / pow(10.0, float(dig - 1))); // 1
-  return x1 - (x2*10);
+int digit(float value, int dig) {
+  int x1 = int(abs(value) * pow(10.0, float(dig)));
+  int x2 = int(float(x1) / pow(10.0, float(dig - 1)));
+  return x1 - (x2 * 10);
 }
 
 vec4 rotate(vec4 ray)
@@ -138,7 +100,6 @@ void main(void)
     vec4 modelPos = u_inverseCameraTranform * worldPos;
 
     modelPos = rotate(modelPos);
-    // modelPos = u_cameraRotation * modelPos;
 
     vec3 ray = normalize(modelPos.xyz);
 
@@ -148,13 +109,11 @@ void main(void)
     float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 pano = texture2D(u_panorama, uv);
 
-    vec3 normWorld = normalize(modelPos.xyz);
-
-    vec4 debug = 1.0 * vec4(normWorld.xyz, 1.0);
+    vec4 debug = 1.0 * vec4(ray.xyz, 1.0);
     // gl_FragColor = debug;
     if (digit(debug.x,2) == 0) debug.x = 1.0;
     if (digit(debug.y,2) == 0) debug.y = 1.0;
     if (digit(debug.z,2) == 0) debug.z = 1.0;
-    vec4 combined = mix(pano, clamp(debug, 0.0, 1.0), 0.4);
-    gl_FragColor = mix(color, combined, clamp(depth + 0.33, 0.0, 1.0));
+    vec4 combined = mix(pano, clamp(debug, 0.0, 1.0), 0.15);
+    gl_FragColor = mix(color, combined, clamp(depth + 0.1, 0.0, 1.0));
 }

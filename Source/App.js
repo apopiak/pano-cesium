@@ -31,7 +31,6 @@ let G = {};
     const addStage = (fragmentShader, imagePath) => {
       const uniforms = {
         u_panorama: imagePath,
-        u_camPos: () => camera.positionWC,
         u_inverseCameraTranform: () => {
           let scratch = new Cesium.Matrix4();
           return Cesium.Matrix4.inverse(

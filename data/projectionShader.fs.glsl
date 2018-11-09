@@ -17,11 +17,13 @@ uniform mat4 u_inverseCameraTranform;
 
 uniform float u_interpolation;
 
+// constants
 const float PI = 3.14159265359;
 const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
 const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
 const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
 
+// compute a rotation matrix for the given axis and angle
 mat4 rotationMatrix(vec3 axis, float angle)
 {
     axis = normalize(axis);
@@ -49,46 +51,56 @@ vec2 equirectangular(vec3 ray)
     return uv;
 }
 
-vec2 sphere(vec3 ray)
-{
-    vec3 stu = normalize(ray) * vec3(-1.0, 1.0, -1.0);
+// alternate panorama formats
+// vec2 sphere(vec3 ray)
+// {
+//     vec3 stu = normalize(ray) * vec3(-1.0, 1.0, -1.0);
+//
+//     float z = 1.0 - stu.z;
+//     float m = sqrt(stu.x * stu.x + stu.y * stu.y + z * z);
+//     vec2 uv = 0.5 + 0.5 * vec2(+stu.x, -stu.y) / m;
+//     return uv;
+// }
+//
+// vec2 polar(vec3 ray)
+// {
+//     vec3 stu = normalize(ray) * vec3(-1.0, 1.0, 1.0);
+//
+//     stu.y = asin(stu.y) * 2.0 / 3.14159265359;
+//     float m = stu.y > 0.0 ? 1.0 + stu.y : 1.0 - stu.y;
+//     vec2 uv = 0.5 + 0.5 * vec2(stu.x, stu.z) / m;
+//     return uv;
+// }
 
-    float z = 1.0 - stu.z;
-    float m = sqrt(stu.x * stu.x + stu.y * stu.y + z * z);
-    vec2 uv = 0.5 + 0.5 * vec2(+stu.x, -stu.y) / m;
-    return uv;
-}
-
-vec2 polar(vec3 ray)
-{
-    vec3 stu = normalize(ray) * vec3(-1.0, 1.0, 1.0);
-
-    stu.y = asin(stu.y) * 2.0 / 3.14159265359;
-    float m = stu.y > 0.0 ? 1.0 + stu.y : 1.0 - stu.y;
-    vec2 uv = 0.5 + 0.5 * vec2(stu.x, stu.z) / m;
-    return uv;
-}
-
+// <debugging>
 int digit(float value, int dig) {
   int x1 = int(abs(value) * pow(10.0, float(dig)));
   int x2 = int(float(x1) / pow(10.0, float(dig - 1)));
   return x1 - (x2 * 10);
 }
 
+vec4 visualizeDirection(vec3 ray)
+{
+  vec4 debug = vec4(0.8 * ray, 1.0);
+  if (digit(debug.x, 2) == 0) debug.x = 1.0;
+  if (digit(debug.y, 2) == 0) debug.y = 1.0;
+  if (digit(debug.z, 2) == 0) debug.z = 1.0;
+  return debug;
+}
+// </debugging>
+
 vec4 rotate(vec4 ray)
 {
-    mat4 rot = rotationMatrix(X_AXIS, radians(-90.0)); // 90 around x-axis
-    // mat4 heading = rotationMatrix(Y_AXIS, radians(112.233));
-    // mat4 roll = rotationMatrix(X_AXIS, radians(1.636));
-    // mat4 pitch = rotationMatrix(Z_AXIS, radians(-4.233));
+    mat4 rot = rotationMatrix(X_AXIS, radians(-90.0));
     return u_cameraRotation * rot * ray;
 }
 
 void main(void)
 {
+    // gl_FragCoord coordinates are in pixels (for x and y) --> transform to [0, 1]
     vec2 screenPos = (gl_FragCoord.xy / czm_viewport.zw) * 2.0 - 1.0;
-    // we want the virtual sphere to be as far away as possible == on the
-    // far plane --> ndc.z = 1.0
+    // we want the virtual sphere to be as far away as possible
+    // --> on the far plane --> ndc.z = 1.0
     vec4 ndcPos = vec4(screenPos, 1.0, 1.0);
     vec4 clipPos = ndcPos / gl_FragCoord.w;
     vec4 eyePos = czm_inverseProjection * clipPos;
@@ -97,22 +109,22 @@ void main(void)
     // transform coordinates to camera reference frame
     vec4 modelPos = u_inverseCameraTranform * worldPos;
 
+    // correct the rotation of the model position
     modelPos = rotate(modelPos);
 
     vec3 ray = normalize(modelPos.xyz);
 
+    // compute texture coordinates from ray
     vec2 uv = equirectangular(ray.xyz);
-
-    vec4 color = texture2D(colorTexture, v_textureCoordinates);
-    color = vec4(length(color.xyz), 0.0, 0.0, 1.0);
-    float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 pano = texture2D(u_panorama, uv);
 
-    vec4 debug = 1.0 * vec4(ray.xyz, 1.0);
-    // gl_FragColor = debug;
-    if (digit(debug.x,2) == 0) debug.x = 1.0;
-    if (digit(debug.y,2) == 0) debug.y = 1.0;
-    if (digit(debug.z,2) == 0) debug.z = 1.0;
-    vec4 combined = mix(pano, clamp(debug, 0.0, 1.0), 0.15);
+    vec4 color = texture2D(colorTexture, v_textureCoordinates);
+    // color geometry/pointcloud red for better contrast
+    color = vec4(length(color.xyz), 0.0, 0.0, 1.0);
+
+    vec4 dirColor = clamp(visualizeDirection(ray.xyz), 0.0, 1.0);
+    vec4 combined = mix(pano, dirColor, 0.15);
+    float depth = texture2D(depthTexture, v_textureCoordinates).x;
+    // interpolate between panorama and geometry based on depth and user defined value
     gl_FragColor = mix(color, combined, clamp(depth + u_interpolation, 0.0, 1.0));
 }

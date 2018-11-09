@@ -459,12 +459,31 @@ let G = {};
       }
     }
   };
-  G.viewer.scene.camera.flyTo({ duration: 0, ...homeCameraView });
+  const furtherDownTheStreetView = {
+    destination: {
+      x: 3961456.7206823328,
+      y: 482483.0411192975,
+      z: 4958797.780259386
+    },
+    orientation: {
+      direction: {
+        x: 0.45308282553465157,
+        y: 0.21370752688496647,
+        z: -0.8654738853126926
+      },
+      up: {
+        x: 0.8646370106018242,
+        y: 0.1310491460377492,
+        z: 0.4850040837150939
+      }
+    }
+  };
+  G.viewer.scene.camera.flyTo({ duration: 0, ...furtherDownTheStreetView });
 
   // Override the default home button
   G.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
     e.cancel = true;
-    G.viewer.scene.camera.flyTo({ duration: 0.5, ...homeCameraView });
+    G.viewer.scene.camera.flyTo({ duration: 0.5, ...furtherDownTheStreetView });
   });
 
   let tileset = G.viewer.scene.primitives.add(

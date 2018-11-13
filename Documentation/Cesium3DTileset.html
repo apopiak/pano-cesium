@@ -46,7 +46,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L157">Scene/Cesium3DTileset.js 157</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L165">Scene/Cesium3DTileset.js 165</a>
 </div>
 
 
@@ -58,7 +58,8 @@
 
 
 <div class="description">
-    A <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/README.md">3D Tiles tileset</a>,used for streaming massive heterogeneous 3D geospatial datasets.
+    A <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification">3D Tiles tileset</a>,
+used for streaming massive heterogeneous 3D geospatial datasets.
 </div>
 
 
@@ -889,6 +890,76 @@
 
         <tr>
             
+                <td class="name"><code>imageBasedLightingFactor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Cartesian2.html">Cartesian2</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                    <code class="language-javascript">new Cartesian2(1.0, 1.0)</code>
+                
+                </td>
+            
+
+            <td class="description last">
+            
+                
+                        <span class="optional">optional</span>
+                
+                
+
+                
+            
+                Scales the diffuse and specular image-based lighting from the earth, sky, atmosphere and star skybox.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lightColor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Cartesian3.html">Cartesian3</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">
+            
+                
+                        <span class="optional">optional</span>
+                
+                
+
+                
+            
+                The color and intensity of the sunlight used to shade models.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>debugFreezeFrame</code></td>
             
 
@@ -1275,7 +1346,7 @@
         
 <span class="param-type"><a href="DeveloperError.html">DeveloperError</a></span>
 
-: The tileset must be 3D Tiles version 0.0 or 1.0.  See <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles#spec-status">https://github.com/AnalyticalGraphicsInc/3d-tiles#spec-status</a>
+: The tileset must be 3D Tiles version 0.0 or 1.0.
     </div>
 
 </li>
@@ -1305,11 +1376,30 @@
     
         <h5>Examples:</h5>
         
-    <pre><code class="language-javascript">var tileset = scene.primitives.add(new Cesium.Cesium3DTileset({     url : 'http://localhost:8002/tilesets/Seattle/tileset.json'}));</code></pre>
+    <pre><code class="language-javascript">var tileset = scene.primitives.add(new Cesium.Cesium3DTileset({
+     url : 'http://localhost:8002/tilesets/Seattle/tileset.json'
+}));</code></pre>
 
-    <pre><code class="language-javascript">// Common setting for the skipLevelOfDetail optimizationvar tileset = scene.primitives.add(new Cesium.Cesium3DTileset({     url : 'http://localhost:8002/tilesets/Seattle/tileset.json',     skipLevelOfDetail : true,     baseScreenSpaceError : 1024,     skipScreenSpaceErrorFactor : 16,     skipLevels : 1,     immediatelyLoadDesiredLevelOfDetail : false,     loadSiblings : false,     cullWithChildrenBounds : true}));</code></pre>
+    <pre><code class="language-javascript">// Common setting for the skipLevelOfDetail optimization
+var tileset = scene.primitives.add(new Cesium.Cesium3DTileset({
+     url : 'http://localhost:8002/tilesets/Seattle/tileset.json',
+     skipLevelOfDetail : true,
+     baseScreenSpaceError : 1024,
+     skipScreenSpaceErrorFactor : 16,
+     skipLevels : 1,
+     immediatelyLoadDesiredLevelOfDetail : false,
+     loadSiblings : false,
+     cullWithChildrenBounds : true
+}));</code></pre>
 
-    <pre><code class="language-javascript">// Common settings for the dynamicScreenSpaceError optimizationvar tileset = scene.primitives.add(new Cesium.Cesium3DTileset({     url : 'http://localhost:8002/tilesets/Seattle/tileset.json',     dynamicScreenSpaceError : true,     dynamicScreenSpaceErrorDensity : 0.00278,     dynamicScreenSpaceErrorFactor : 4.0,     dynamicScreenSpaceErrorHeightFalloff : 0.25}));</code></pre>
+    <pre><code class="language-javascript">// Common settings for the dynamicScreenSpaceError optimization
+var tileset = scene.primitives.add(new Cesium.Cesium3DTileset({
+     url : 'http://localhost:8002/tilesets/Seattle/tileset.json',
+     dynamicScreenSpaceError : true,
+     dynamicScreenSpaceErrorDensity : 0.00278,
+     dynamicScreenSpaceErrorFactor : 4.0,
+     dynamicScreenSpaceErrorHeightFalloff : 0.25
+}));</code></pre>
 
     
 
@@ -1322,7 +1412,7 @@
     
     <h5>See:</h5>
     <ul class="see-list">
-        <li><a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/README.md">3D Tiles specification</a></li>
+        <li><a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification">3D Tiles specification</a></li>
     </ul>
     
 
@@ -1355,7 +1445,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L369">Scene/Cesium3DTileset.js 369</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L372">Scene/Cesium3DTileset.js 372</a>
 </div>
 
 
@@ -1366,7 +1456,11 @@
 
 
 <div class="description">
-    The event fired to indicate that all tiles that meet the screen space error this frame are loaded. The tilesetis completely loaded for this view.<p>This event is fired at the end of the frame after the scene is rendered.</p>
+    The event fired to indicate that all tiles that meet the screen space error this frame are loaded. The tileset
+is completely loaded for this view.
+<p>
+This event is fired at the end of the frame after the scene is rendered.
+</p>
 </div>
 
 
@@ -1398,7 +1492,9 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.allTilesLoaded.addEventListener(function() {    console.log('All tiles are loaded');});</code></pre>
+    <pre><code class="language-javascript">tileset.allTilesLoaded.addEventListener(function() {
+    console.log('All tiles are loaded');
+});</code></pre>
 
     
 
@@ -1428,7 +1524,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L796">Scene/Cesium3DTileset.js 796</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L779">Scene/Cesium3DTileset.js 779</a>
 </div>
 
 
@@ -1439,7 +1535,11 @@
 
 
 <div class="description">
-    Gets the tileset's asset object property, which contains metadata about the tileset.<p>See the <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/schema/asset.schema.json">asset schema</a>in the 3D Tiles spec for the full set of properties.</p>
+    Gets the tileset's asset object property, which contains metadata about the tileset.
+<p>
+See the <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#reference-asset">asset schema reference</a>
+in the 3D Tiles spec for the full set of properties.
+</p>
 </div>
 
 
@@ -1488,7 +1588,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L943">Scene/Cesium3DTileset.js 943</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L926">Scene/Cesium3DTileset.js 926</a>
 </div>
 
 
@@ -1551,7 +1651,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L501">Scene/Cesium3DTileset.js 501</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L523">Scene/Cesium3DTileset.js 523</a>
 </div>
 
 
@@ -1562,7 +1662,10 @@
 
 
 <div class="description">
-    The screen space error that must be reached before skipping levels of detail.<p>Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.</p>
+    The screen space error that must be reached before skipping levels of detail.
+<p>
+Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.
+</p>
 </div>
 
 
@@ -1614,7 +1717,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1090">Scene/Cesium3DTileset.js 1090</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1095">Scene/Cesium3DTileset.js 1095</a>
 </div>
 
 
@@ -1654,7 +1757,14 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({    url : 'http://localhost:8002/tilesets/Seattle/tileset.json'}));tileset.readyPromise.then(function(tileset) {    // Set the camera to view the newly added tileset    viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(0, -0.5, 0));});</code></pre>
+    <pre><code class="language-javascript">var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+    url : 'http://localhost:8002/tilesets/Seattle/tileset.json'
+}));
+
+tileset.readyPromise.then(function(tileset) {
+    // Set the camera to view the newly added tileset
+    viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(0, -0.5, 0));
+});</code></pre>
 
     
 
@@ -1679,7 +1789,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1212">Scene/Cesium3DTileset.js 1212</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1231">Scene/Cesium3DTileset.js 1231</a>
 </div>
 
 
@@ -1690,7 +1800,23 @@
 
 
 <div class="description">
-    Determines whether terrain, 3D Tiles or both will be classified by this tileset.<p>This option is only applied to tilesets containing batched 3D models, geometry data, or vector data. Even when undefined, vector data and geometry datamust render as classifications and will default to rendering on both terrain and other 3D Tiles tilesets.</p><p>When enabled for batched 3D model tilesets, there are a few requirements/limitations on the glTF:<ul>    <li>POSITION and _BATCHID semantics are required.</li>    <li>All indices with the same batch id must occupy contiguous sections of the index buffer.</li>    <li>All shaders and techniques are ignored. The generated shader simply multiplies the position by the model-view-projection matrix.</li>    <li>The only supported extensions are CESIUM_RTC and WEB3D_quantized_attributes.</li>    <li>Only one node is supported.</li>    <li>Only one mesh per node is supported.</li>    <li>Only one primitive per mesh is supported.</li></ul></p>
+    Determines whether terrain, 3D Tiles or both will be classified by this tileset.
+<p>
+This option is only applied to tilesets containing batched 3D models, geometry data, or vector data. Even when undefined, vector data and geometry data
+must render as classifications and will default to rendering on both terrain and other 3D Tiles tilesets.
+</p>
+<p>
+When enabled for batched 3D model tilesets, there are a few requirements/limitations on the glTF:
+<ul>
+    <li>POSITION and _BATCHID semantics are required.</li>
+    <li>All indices with the same batch id must occupy contiguous sections of the index buffer.</li>
+    <li>All shaders and techniques are ignored. The generated shader simply multiplies the position by the model-view-projection matrix.</li>
+    <li>The only supported extensions are CESIUM_RTC and WEB3D_quantized_attributes.</li>
+    <li>Only one node is supported.</li>
+    <li>Only one mesh per node is supported.</li>
+    <li>Only one primitive per mesh is supported.</li>
+</ul>
+</p>
 </div>
 
 
@@ -1749,7 +1875,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L814">Scene/Cesium3DTileset.js 814</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L797">Scene/Cesium3DTileset.js 797</a>
 </div>
 
 
@@ -1809,7 +1935,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L315">Scene/Cesium3DTileset.js 315</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L318">Scene/Cesium3DTileset.js 318</a>
 </div>
 
 
@@ -1820,7 +1946,9 @@
 
 
 <div class="description">
-    Defines the value used to linearly interpolate between the source color and feature color when the <a href="Cesium3DTileset.html#colorBlendMode"><code>Cesium3DTileset#colorBlendMode</code></a> is <code>MIX</code>.A value of 0.0 results in the source color while a value of 1.0 results in the feature color, with any value in-betweenresulting in a mix of the source color and feature color.
+    Defines the value used to linearly interpolate between the source color and feature color when the <a href="Cesium3DTileset.html#colorBlendMode"><code>Cesium3DTileset#colorBlendMode</code></a> is <code>MIX</code>.
+A value of 0.0 results in the source color while a value of 1.0 results in the feature color, with any value in-between
+resulting in a mix of the source color and feature color.
 </div>
 
 
@@ -1872,7 +2000,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L305">Scene/Cesium3DTileset.js 305</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L308">Scene/Cesium3DTileset.js 308</a>
 </div>
 
 
@@ -1883,7 +2011,8 @@
 
 
 <div class="description">
-    Defines how per-feature colors set from the Cesium API or declarative styling blend with the source colors fromthe original feature, e.g. glTF material or per-point color in the tile.
+    Defines how per-feature colors set from the Cesium API or declarative styling blend with the source colors from
+the original feature, e.g. glTF material or per-point color in the tile.
 </div>
 
 
@@ -1935,7 +2064,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L579">Scene/Cesium3DTileset.js 579</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L616">Scene/Cesium3DTileset.js 616</a>
 </div>
 
 
@@ -1946,7 +2075,12 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, assigns a random color to each tile.  This is useful for visualizingwhat features belong to what tiles, especially with additive refinement where featuresfrom parent tiles may be interleaved with features from child tiles.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, assigns a random color to each tile.  This is useful for visualizing
+what features belong to what tiles, especially with additive refinement where features
+from parent tiles may be interleaved with features from child tiles.
+</p>
 </div>
 
 
@@ -1998,7 +2132,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L566">Scene/Cesium3DTileset.js 566</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L603">Scene/Cesium3DTileset.js 603</a>
 </div>
 
 
@@ -2009,7 +2143,12 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>Determines if only the tiles from last frame should be used for rendering.  Thiseffectively "freezes" the tileset to the previous frame so it is possible to zoomout and see what was rendered.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+Determines if only the tiles from last frame should be used for rendering.  This
+effectively "freezes" the tileset to the previous frame so it is possible to zoom
+out and see what was rendered.
+</p>
 </div>
 
 
@@ -2061,7 +2200,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L603">Scene/Cesium3DTileset.js 603</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L640">Scene/Cesium3DTileset.js 640</a>
 </div>
 
 
@@ -2072,7 +2211,12 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, renders the bounding volume for each visible tile.  The bounding volume iswhite if the tile has a content bounding volume; otherwise, it is red.  Tiles that don't meet thescreen space error and are still refining to their descendants are yellow.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, renders the bounding volume for each visible tile.  The bounding volume is
+white if the tile has a content bounding volume or is empty; otherwise, it is red.  Tiles that don't meet the
+screen space error and are still refining to their descendants are yellow.
+</p>
 </div>
 
 
@@ -2124,7 +2268,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L615">Scene/Cesium3DTileset.js 615</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L652">Scene/Cesium3DTileset.js 652</a>
 </div>
 
 
@@ -2135,7 +2279,11 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, renders the bounding volume for each visible tile's content. The bounding volume isblue if the tile has a content bounding volume; otherwise it is red.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, renders the bounding volume for each visible tile's content. The bounding volume is
+blue if the tile has a content bounding volume; otherwise it is red.
+</p>
 </div>
 
 
@@ -2187,7 +2335,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L642">Scene/Cesium3DTileset.js 642</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L679">Scene/Cesium3DTileset.js 679</a>
 </div>
 
 
@@ -2198,7 +2346,10 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, draws labels to indicate the geometric error of each tile.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, draws labels to indicate the geometric error of each tile.
+</p>
 </div>
 
 
@@ -2250,7 +2401,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L664">Scene/Cesium3DTileset.js 664</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L701">Scene/Cesium3DTileset.js 701</a>
 </div>
 
 
@@ -2261,7 +2412,10 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, draws labels to indicate the geometry and texture memory usage of each tile.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, draws labels to indicate the geometry and texture memory usage of each tile.
+</p>
 </div>
 
 
@@ -2313,7 +2467,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L653">Scene/Cesium3DTileset.js 653</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L690">Scene/Cesium3DTileset.js 690</a>
 </div>
 
 
@@ -2324,7 +2478,10 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, draws labels to indicate the number of commands, points, triangles and features of each tile.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, draws labels to indicate the number of commands, points, triangles and features of each tile.
+</p>
 </div>
 
 
@@ -2376,7 +2533,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L675">Scene/Cesium3DTileset.js 675</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L712">Scene/Cesium3DTileset.js 712</a>
 </div>
 
 
@@ -2387,7 +2544,10 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, draws labels to indicate the url of each tile.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, draws labels to indicate the url of each tile.
+</p>
 </div>
 
 
@@ -2439,7 +2599,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L626">Scene/Cesium3DTileset.js 626</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L663">Scene/Cesium3DTileset.js 663</a>
 </div>
 
 
@@ -2450,7 +2610,10 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, renders the viewer request volume for each tile.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, renders the viewer request volume for each tile.
+</p>
 </div>
 
 
@@ -2502,7 +2665,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L590">Scene/Cesium3DTileset.js 590</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L627">Scene/Cesium3DTileset.js 627</a>
 </div>
 
 
@@ -2513,7 +2676,10 @@
 
 
 <div class="description">
-    This property is for debugging only; it is not optimized for production use.<p>When true, renders each tile's content as a wireframe.</p>
+    This property is for debugging only; it is not optimized for production use.
+<p>
+When true, renders each tile's content as a wireframe.
+</p>
 </div>
 
 
@@ -2565,7 +2731,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L230">Scene/Cesium3DTileset.js 230</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L233">Scene/Cesium3DTileset.js 233</a>
 </div>
 
 
@@ -2576,7 +2742,11 @@
 
 
 <div class="description">
-    Optimization option. Whether the tileset should refine based on a dynamic screen space error. Tiles that are furtheraway will be rendered with lower detail than closer tiles. This improves performance by rendering fewertiles and making less requests, but may result in a slight drop in visual quality for tiles in the distance.The algorithm is biased towards "street views" where the camera is close to the ground plane of the tileset and lookingat the horizon. In addition results are more accurate for tightly fitting bounding volumes like box and region.
+    Optimization option. Whether the tileset should refine based on a dynamic screen space error. Tiles that are further
+away will be rendered with lower detail than closer tiles. This improves performance by rendering fewer
+tiles and making less requests, but may result in a slight drop in visual quality for tiles in the distance.
+The algorithm is biased towards "street views" where the camera is close to the ground plane of the tileset and looking
+at the horizon. In addition results are more accurate for tightly fitting bounding volumes like box and region.
 </div>
 
 
@@ -2628,7 +2798,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L250">Scene/Cesium3DTileset.js 250</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L253">Scene/Cesium3DTileset.js 253</a>
 </div>
 
 
@@ -2639,7 +2809,19 @@
 
 
 <div class="description">
-    A scalar that determines the density used to adjust the dynamic screen space error, similar to <a href="Fog.html"><code>Fog</code></a>. Increasing thisvalue has the effect of increasing the maximum screen space error for all tiles, but in a non-linear fashion.The error starts at 0.0 and increases exponentially until a midpoint is reached, and then approaches 1.0 asymptotically.This has the effect of keeping high detail in the closer tiles and lower detail in the further tiles, with all tilesbeyond a certain distance all roughly having an error of 1.0.<p>The dynamic error is in the range [0.0, 1.0) and is multiplied by <code>dynamicScreenSpaceErrorFactor</code> to produce thefinal dynamic error. This dynamic error is then subtracted from the tile's actual screen space error.</p><p>Increasing <code>dynamicScreenSpaceErrorDensity</code> has the effect of moving the error midpoint closer to the camera.It is analogous to moving fog closer to the camera.</p>
+    A scalar that determines the density used to adjust the dynamic screen space error, similar to <a href="Fog.html"><code>Fog</code></a>. Increasing this
+value has the effect of increasing the maximum screen space error for all tiles, but in a non-linear fashion.
+The error starts at 0.0 and increases exponentially until a midpoint is reached, and then approaches 1.0 asymptotically.
+This has the effect of keeping high detail in the closer tiles and lower detail in the further tiles, with all tiles
+beyond a certain distance all roughly having an error of 1.0.
+<p>
+The dynamic error is in the range [0.0, 1.0) and is multiplied by <code>dynamicScreenSpaceErrorFactor</code> to produce the
+final dynamic error. This dynamic error is then subtracted from the tile's actual screen space error.
+</p>
+<p>
+Increasing <code>dynamicScreenSpaceErrorDensity</code> has the effect of moving the error midpoint closer to the camera.
+It is analogous to moving fog closer to the camera.
+</p>
 </div>
 
 
@@ -2691,7 +2873,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L259">Scene/Cesium3DTileset.js 259</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L262">Scene/Cesium3DTileset.js 262</a>
 </div>
 
 
@@ -2702,7 +2884,8 @@
 
 
 <div class="description">
-    A factor used to increase the screen space error of tiles for dynamic screen space error. As this value increases less tilesare requested for rendering and tiles in the distance will have lower detail. If set to zero, the feature will be disabled.
+    A factor used to increase the screen space error of tiles for dynamic screen space error. As this value increases less tiles
+are requested for rendering and tiles in the distance will have lower detail. If set to zero, the feature will be disabled.
 </div>
 
 
@@ -2754,7 +2937,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L272">Scene/Cesium3DTileset.js 272</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L275">Scene/Cesium3DTileset.js 275</a>
 </div>
 
 
@@ -2765,7 +2948,12 @@
 
 
 <div class="description">
-    A ratio of the tileset's height at which the density starts to falloff. If the camera is below this height thefull computed density is applied, otherwise the density falls off. This has the effect of higher density atstreet level views.<p>Valid values are between 0.0 and 1.0.</p>
+    A ratio of the tileset's height at which the density starts to falloff. If the camera is below this height the
+full computed density is applied, otherwise the density falls off. This has the effect of higher density at
+street level views.
+<p>
+Valid values are between 0.0 and 1.0.
+</p>
 </div>
 
 
@@ -2817,7 +3005,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1226">Scene/Cesium3DTileset.js 1226</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1245">Scene/Cesium3DTileset.js 1245</a>
 </div>
 
 
@@ -2871,13 +3059,13 @@
         
             
 <div class="nameContainer">
-<h4 class="name" id="immediatelyLoadDesiredLevelOfDetail">
-    <a href="#immediatelyLoadDesiredLevelOfDetail" class="doc-link"></a>
-    immediatelyLoadDesiredLevelOfDetail<span class="type-signature"> : Boolean</span>
+<h4 class="name" id="extras">
+    <a href="#extras" class="doc-link"></a>
+    <span class="type-signature attribute-readonly">readonly</span>extras<span class="type-signature"> : *</span>
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L538">Scene/Cesium3DTileset.js 538</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1264">Scene/Cesium3DTileset.js 1264</a>
 </div>
 
 
@@ -2888,7 +3076,77 @@
 
 
 <div class="description">
-    When true, only tiles that meet the maximum screen space error will ever be downloaded.Skipping factors are ignored and just the desired tiles are loaded.<p>Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.</p>
+    Returns the <code>extras</code> property at the top-level of the tileset JSON, which contains application specific metadata.
+Returns <code>undefined</code> if <code>extras</code> does not exist.
+</div>
+
+
+
+
+
+<dl class="details">
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>See:</h5>
+    <ul class="see-list">
+        <li><a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#specifying-extensions-and-application-specific-extras">Extras in the 3D Tiles specification.</a></li>
+    </ul>
+    
+
+    
+</dl>
+
+
+        
+            
+<div class="nameContainer">
+<h4 class="name" id="immediatelyLoadDesiredLevelOfDetail">
+    <a href="#immediatelyLoadDesiredLevelOfDetail" class="doc-link"></a>
+    immediatelyLoadDesiredLevelOfDetail<span class="type-signature"> : Boolean</span>
+    
+
+<div class="source-link rightLinks">
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L560">Scene/Cesium3DTileset.js 560</a>
+</div>
+
+
+</h4>
+
+</div>
+
+
+
+<div class="description">
+    When true, only tiles that meet the maximum screen space error will ever be downloaded.
+Skipping factors are ignored and just the desired tiles are loaded.
+<p>
+Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.
+</p>
 </div>
 
 
@@ -2934,13 +3192,13 @@
         
             
 <div class="nameContainer">
-<h4 class="name" id="loadProgress">
-    <a href="#loadProgress" class="doc-link"></a>
-    loadProgress<span class="type-signature"> : <a href="Event.html">Event</a></span>
+<h4 class="name" id="initialTilesLoaded">
+    <a href="#initialTilesLoaded" class="doc-link"></a>
+    initialTilesLoaded<span class="type-signature"> : <a href="Event.html">Event</a></span>
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L350">Scene/Cesium3DTileset.js 350</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L391">Scene/Cesium3DTileset.js 391</a>
 </div>
 
 
@@ -2951,7 +3209,11 @@
 
 
 <div class="description">
-    The event fired to indicate progress of loading new tiles.  This event is fired when a new tileis requested, when a requested tile is finished downloading, and when a downloaded tile has beenprocessed and is ready to render.<p>The number of pending tile requests, <code>numberOfPendingRequests</code>, and number of tilesprocessing, <code>numberOfTilesProcessing</code> are passed to the event listener.</p><p>This event is fired at the end of the frame after the scene is rendered.</p>
+    The event fired to indicate that all tiles that meet the screen space error this frame are loaded. This event
+is fired once when all tiles in the initial view are loaded.
+<p>
+This event is fired at the end of the frame after the scene is rendered.
+</p>
 </div>
 
 
@@ -2983,7 +3245,165 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.loadProgress.addEventListener(function(numberOfPendingRequests, numberOfTilesProcessing) {    if ((numberOfPendingRequests === 0) &amp;&amp; (numberOfTilesProcessing === 0)) {        console.log('Stopped loading');        return;    }    console.log('Loading: requests: ' + numberOfPendingRequests + ', processing: ' + numberOfTilesProcessing);});</code></pre>
+    <pre><code class="language-javascript">tileset.initialTilesLoaded.addEventListener(function() {
+    console.log('Initial tiles are loaded');
+});</code></pre>
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>See:</h5>
+    <ul class="see-list">
+        <li><a href="Cesium3DTileset.html#allTilesLoaded">Cesium3DTileset#allTilesLoaded</a></li>
+    </ul>
+    
+
+    
+</dl>
+
+
+        
+            
+<div class="nameContainer">
+<h4 class="name" id="lightColor">
+    <a href="#lightColor" class="doc-link"></a>
+    lightColor<span class="type-signature"> : <a href="Cartesian3.html">Cartesian3</a></span>
+    
+
+<div class="source-link rightLinks">
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L590">Scene/Cesium3DTileset.js 590</a>
+</div>
+
+
+</h4>
+
+</div>
+
+
+
+<div class="description">
+    The color and intensity of the sunlight used to shade a model.
+<p>
+For example, disabling additional light sources by setting <code>model.imageBasedLightingFactor = new Cartesian2(0.0, 0.0)</code> will make the
+model much darker. Here, increasing the intensity of the light source will make the model brighter.
+</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <span class="details-header">Default Value:</span>
+    <code class="language-javascript">undefined</code>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+            
+<div class="nameContainer">
+<h4 class="name" id="loadProgress">
+    <a href="#loadProgress" class="doc-link"></a>
+    loadProgress<span class="type-signature"> : <a href="Event.html">Event</a></span>
+    
+
+<div class="source-link rightLinks">
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L353">Scene/Cesium3DTileset.js 353</a>
+</div>
+
+
+</h4>
+
+</div>
+
+
+
+<div class="description">
+    The event fired to indicate progress of loading new tiles.  This event is fired when a new tile
+is requested, when a requested tile is finished downloading, and when a downloaded tile has been
+processed and is ready to render.
+<p>
+The number of pending tile requests, <code>numberOfPendingRequests</code>, and number of tiles
+processing, <code>numberOfTilesProcessing</code> are passed to the event listener.
+</p>
+<p>
+This event is fired at the end of the frame after the scene is rendered.
+</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <span class="details-header">Default Value:</span>
+    <code class="language-javascript">new Event()</code>
+    
+
+    
+        <h5>Example:</h5>
+        
+    <pre><code class="language-javascript">tileset.loadProgress.addEventListener(function(numberOfPendingRequests, numberOfTilesProcessing) {
+    if ((numberOfPendingRequests === 0) &amp;&amp; (numberOfTilesProcessing === 0)) {
+        console.log('Stopped loading');
+        return;
+    }
+
+    console.log('Loading: requests: ' + numberOfPendingRequests + ', processing: ' + numberOfTilesProcessing);
+});</code></pre>
 
     
 
@@ -3008,7 +3428,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L550">Scene/Cesium3DTileset.js 550</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L572">Scene/Cesium3DTileset.js 572</a>
 </div>
 
 
@@ -3019,7 +3439,11 @@
 
 
 <div class="description">
-    Determines whether siblings of visible tiles are always downloaded during traversal.This may be useful for ensuring that tiles are already available when the viewer turns left/right.<p>Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.</p>
+    Determines whether siblings of visible tiles are always downloaded during traversal.
+This may be useful for ensuring that tiles are already available when the viewer turns left/right.
+<p>
+Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.
+</p>
 </div>
 
 
@@ -3071,7 +3495,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1057">Scene/Cesium3DTileset.js 1057</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1040">Scene/Cesium3DTileset.js 1040</a>
 </div>
 
 
@@ -3082,7 +3506,23 @@
 
 
 <div class="description">
-    The maximum amount of GPU memory (in MB) that may be used to cache tiles. This value is estimated fromgeometry, textures, and batch table textures of loaded tiles. For point clouds, this value alsoincludes per-point metadata.<p>Tiles not in view are unloaded to enforce this.</p><p>If decreasing this value results in unloading tiles, the tiles are unloaded the next frame.</p><p>If tiles sized more than <code>maximumMemoryUsage</code> are neededto meet the desired screen space error, determined by <a href="Cesium3DTileset.html#maximumScreenSpaceError"><code>Cesium3DTileset#maximumScreenSpaceError</code></a>,for the current view, then the memory usage of the tiles loaded will exceed<code>maximumMemoryUsage</code>.  For example, if the maximum is 256 MB, but300 MB of tiles are needed to meet the screen space error, then 300 MB of tiles may be loaded.  Whenthese tiles go out of view, they will be unloaded.</p>
+    The maximum amount of GPU memory (in MB) that may be used to cache tiles. This value is estimated from
+geometry, textures, and batch table textures of loaded tiles. For point clouds, this value also
+includes per-point metadata.
+<p>
+Tiles not in view are unloaded to enforce this.
+</p>
+<p>
+If decreasing this value results in unloading tiles, the tiles are unloaded the next frame.
+</p>
+<p>
+If tiles sized more than <code>maximumMemoryUsage</code> are needed
+to meet the desired screen space error, determined by <a href="Cesium3DTileset.html#maximumScreenSpaceError"><code>Cesium3DTileset#maximumScreenSpaceError</code></a>,
+for the current view, then the memory usage of the tiles loaded will exceed
+<code>maximumMemoryUsage</code>.  For example, if the maximum is 256 MB, but
+300 MB of tiles are needed to meet the screen space error, then 300 MB of tiles may be loaded.  When
+these tiles go out of view, they will be unloaded.
+</p>
 </div>
 
 
@@ -3139,7 +3579,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1017">Scene/Cesium3DTileset.js 1017</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1000">Scene/Cesium3DTileset.js 1000</a>
 </div>
 
 
@@ -3150,7 +3590,17 @@
 
 
 <div class="description">
-    The maximum screen space error used to drive level of detail refinement.  This value helps determine when a tilerefines to its descendants, and therefore plays a major role in balancing performance with visual quality.<p>A tile's screen space error is roughly equivalent to the number of pixels wide that would be drawn if a sphere with aradius equal to the tile's <b>geometric error</b> were rendered at the tile's position. If this value exceeds<code>maximumScreenSpaceError</code> the tile refines to its descendants.</p><p>Depending on the tileset, <code>maximumScreenSpaceError</code> may need to be tweaked to achieve the right balance.Higher values provide better performance but lower visual quality.</p>
+    The maximum screen space error used to drive level of detail refinement.  This value helps determine when a tile
+refines to its descendants, and therefore plays a major role in balancing performance with visual quality.
+<p>
+A tile's screen space error is roughly equivalent to the number of pixels wide that would be drawn if a sphere with a
+radius equal to the tile's <b>geometric error</b> were rendered at the tile's position. If this value exceeds
+<code>maximumScreenSpaceError</code> the tile refines to its descendants.
+</p>
+<p>
+Depending on the tileset, <code>maximumScreenSpaceError</code> may need to be tweaked to achieve the right balance.
+Higher values provide better performance but lower visual quality.
+</p>
 </div>
 
 
@@ -3202,7 +3652,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1120">Scene/Cesium3DTileset.js 1120</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1126">Scene/Cesium3DTileset.js 1126</a>
 </div>
 
 
@@ -3245,7 +3695,14 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">// Adjust a tileset's height from the globe's surface.var heightOffset = 20.0;var boundingSphere = tileset.boundingSphere;var cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);var surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);var offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, heightOffset);var translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);</code></pre>
+    <pre><code class="language-javascript">// Adjust a tileset's height from the globe's surface.
+var heightOffset = 20.0;
+var boundingSphere = tileset.boundingSphere;
+var cartographic = Cesium.Cartographic.fromCartesian(boundingSphere.center);
+var surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
+var offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, heightOffset);
+var translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);</code></pre>
 
     
 
@@ -3270,7 +3727,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L321">Scene/Cesium3DTileset.js 321</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L324">Scene/Cesium3DTileset.js 324</a>
 </div>
 
 
@@ -3330,7 +3787,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L844">Scene/Cesium3DTileset.js 844</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L827">Scene/Cesium3DTileset.js 827</a>
 </div>
 
 
@@ -3341,7 +3798,11 @@
 
 
 <div class="description">
-    Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.<p>See the <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/schema/properties.schema.json">properties schema</a>in the 3D Tiles spec for the full set of properties.</p>
+    Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
+<p>
+See the <a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#reference-properties">properties schema reference</a>
+in the 3D Tiles spec for the full set of properties.
+</p>
 </div>
 
 
@@ -3370,7 +3831,8 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">console.log('Maximum building height: ' + tileset.properties.height.maximum);console.log('Minimum building height: ' + tileset.properties.height.minimum);</code></pre>
+    <pre><code class="language-javascript">console.log('Maximum building height: ' + tileset.properties.height.maximum);
+console.log('Minimum building height: ' + tileset.properties.height.minimum);</code></pre>
 
     
 
@@ -3402,7 +3864,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L867">Scene/Cesium3DTileset.js 867</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L850">Scene/Cesium3DTileset.js 850</a>
 </div>
 
 
@@ -3413,7 +3875,8 @@
 
 
 <div class="description">
-    When <code>true</code>, the tileset's root tile is loaded and the tileset is ready to render.This is set to <code>true</code> right before <a href="Cesium3DTileset.html#readyPromise"><code>Cesium3DTileset#readyPromise</code></a> is resolved.
+    When <code>true</code>, the tileset's root tile is loaded and the tileset is ready to render.
+This is set to <code>true</code> right before <a href="Cesium3DTileset.html#readyPromise"><code>Cesium3DTileset#readyPromise</code></a> is resolved.
 </div>
 
 
@@ -3465,7 +3928,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L895">Scene/Cesium3DTileset.js 895</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L878">Scene/Cesium3DTileset.js 878</a>
 </div>
 
 
@@ -3476,7 +3939,10 @@
 
 
 <div class="description">
-    Gets the promise that will be resolved when the tileset's root tile is loaded and the tileset is ready to render.<p>This promise is resolved at the end of the frame before the first frame the tileset is rendered in.</p>
+    Gets the promise that will be resolved when the tileset's root tile is loaded and the tileset is ready to render.
+<p>
+This promise is resolved at the end of the frame before the first frame the tileset is rendered in.
+</p>
 </div>
 
 
@@ -3505,7 +3971,75 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.readyPromise.then(function(tileset) {    // tile.properties is not defined until readyPromise resolves.    var properties = tileset.properties;    if (Cesium.defined(properties)) {        for (var name in properties) {            console.log(properties[name]);        }    }});</code></pre>
+    <pre><code class="language-javascript">tileset.readyPromise.then(function(tileset) {
+    // tile.properties is not defined until readyPromise resolves.
+    var properties = tileset.properties;
+    if (Cesium.defined(properties)) {
+        for (var name in properties) {
+            console.log(properties[name]);
+        }
+    }
+});</code></pre>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+            
+<div class="nameContainer">
+<h4 class="name" id="root">
+    <a href="#root" class="doc-link"></a>
+    <span class="type-signature attribute-readonly">readonly</span>root<span class="type-signature"> : <a href="Cesium3DTile.html">Cesium3DTile</a></span>
+    
+
+<div class="source-link rightLinks">
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1063">Scene/Cesium3DTileset.js 1063</a>
+</div>
+
+
+</h4>
+
+</div>
+
+
+
+<div class="description">
+    The root tile.
+</div>
+
+
+
+
+
+<dl class="details">
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 
     
 
@@ -3530,7 +4064,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L288">Scene/Cesium3DTileset.js 288</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L291">Scene/Cesium3DTileset.js 291</a>
 </div>
 
 
@@ -3541,7 +4075,13 @@
 
 
 <div class="description">
-    Determines whether the tileset casts or receives shadows from each light source.<p>Enabling shadows has a performance impact. A tileset that casts shadows must be rendered twice, once from the camera and again from the light's point of view.</p><p>Shadows are rendered only when <a href="Viewer.html#shadows"><code>Viewer#shadows</code></a> is <code>true</code>.</p>
+    Determines whether the tileset casts or receives shadows from each light source.
+<p>
+Enabling shadows has a performance impact. A tileset that casts shadows must be rendered twice, once from the camera and again from the light's point of view.
+</p>
+<p>
+Shadows are rendered only when <a href="Viewer.html#shadows"><code>Viewer#shadows</code></a> is <code>true</code>.
+</p>
 </div>
 
 
@@ -3593,7 +4133,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L296">Scene/Cesium3DTileset.js 296</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L299">Scene/Cesium3DTileset.js 299</a>
 </div>
 
 
@@ -3656,7 +4196,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L488">Scene/Cesium3DTileset.js 488</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L510">Scene/Cesium3DTileset.js 510</a>
 </div>
 
 
@@ -3667,7 +4207,13 @@
 
 
 <div class="description">
-    Optimization option. Determines if level of detail skipping should be applied during the traversal.<p>The common strategy for replacement-refinement traversal is to store all levels of the tree in memory and requireall children to be loaded before the parent can refine. With this optimization levels of the tree can be skippedentirely and children can be rendered alongside their parents. The tileset requires significantly less memory whenusing this optimization.</p>
+    Optimization option. Determines if level of detail skipping should be applied during the traversal.
+<p>
+The common strategy for replacement-refinement traversal is to store all levels of the tree in memory and require
+all children to be loaded before the parent can refine. With this optimization levels of the tree can be skipped
+entirely and children can be rendered alongside their parents. The tileset requires significantly less memory when
+using this optimization.
+</p>
 </div>
 
 
@@ -3719,7 +4265,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L526">Scene/Cesium3DTileset.js 526</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L548">Scene/Cesium3DTileset.js 548</a>
 </div>
 
 
@@ -3730,7 +4276,11 @@
 
 
 <div class="description">
-    Constant defining the minimum number of levels to skip when loading tiles. When it is 0, no levels are skipped.For example, if a tile is level 1, no tiles will be loaded unless they are at level greater than 2.<p>Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.</p>
+    Constant defining the minimum number of levels to skip when loading tiles. When it is 0, no levels are skipped.
+For example, if a tile is level 1, no tiles will be loaded unless they are at level greater than 2.
+<p>
+Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.
+</p>
 </div>
 
 
@@ -3782,7 +4332,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L514">Scene/Cesium3DTileset.js 514</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L536">Scene/Cesium3DTileset.js 536</a>
 </div>
 
 
@@ -3793,7 +4343,12 @@
 
 
 <div class="description">
-    Multiplier defining the minimum screen space error to skip.For example, if a tile has screen space error of 100, no tiles will be loaded unless theyare leaves or have a screen space error <code><= 100 / skipScreenSpaceErrorFactor</code>.<p>Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.</p>
+    Multiplier defining the minimum screen space error to skip.
+For example, if a tile has screen space error of 100, no tiles will be loaded unless they
+are leaves or have a screen space error <code><= 100 / skipScreenSpaceErrorFactor</code>.
+<p>
+Only used when <a href="Cesium3DTileset.html#skipLevelOfDetail"><code>Cesium3DTileset#skipLevelOfDetail</code></a> is <code>true</code>.
+</p>
 </div>
 
 
@@ -3845,7 +4400,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L988">Scene/Cesium3DTileset.js 988</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L971">Scene/Cesium3DTileset.js 971</a>
 </div>
 
 
@@ -3856,7 +4411,19 @@
 
 
 <div class="description">
-    The style, defined using the<a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/Styling">3D Tiles Styling language</a>,applied to each feature in the tileset.<p>Assign <code>undefined</code> to remove the style, which will restore the visualappearance of the tileset to its default when no style was applied.</p><p>The style is applied to a tile before the <a href="Cesium3DTileset.html#tileVisible"><code>Cesium3DTileset#tileVisible</code></a>event is raised, so code in <code>tileVisible</code> can manually set a feature'sproperties (e.g. color and show) after the style is applied. Whena new style is assigned any manually set properties are overwritten.</p>
+    The style, defined using the
+<a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/Styling">3D Tiles Styling language</a>,
+applied to each feature in the tileset.
+<p>
+Assign <code>undefined</code> to remove the style, which will restore the visual
+appearance of the tileset to its default when no style was applied.
+</p>
+<p>
+The style is applied to a tile before the <a href="Cesium3DTileset.html#tileVisible"><code>Cesium3DTileset#tileVisible</code></a>
+event is raised, so code in <code>tileVisible</code> can manually set a feature's
+properties (e.g. color and show) after the style is applied. When
+a new style is assigned any manually set properties are overwritten.
+</p>
 </div>
 
 
@@ -3888,7 +4455,19 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.style = new Cesium.Cesium3DTileStyle({   color : {       conditions : [           ['${Height} >= 100', 'color("purple", 0.5)'],           ['${Height} >= 50', 'color("red")'],           ['true', 'color("blue")']       ]   },   show : '${Height} > 0',   meta : {       description : '"Building id ${id} has height ${Height}."'   }});</code></pre>
+    <pre><code class="language-javascript">tileset.style = new Cesium.Cesium3DTileStyle({
+   color : {
+       conditions : [
+           ['${Height} >= 100', 'color("purple", 0.5)'],
+           ['${Height} >= 50', 'color("red")'],
+           ['true', 'color("blue")']
+       ]
+   },
+   show : '${Height} > 0',
+   meta : {
+       description : '"Building id ${id} has height ${Height}."'
+   }
+});</code></pre>
 
     
 
@@ -3901,7 +4480,7 @@
     
     <h5>See:</h5>
     <ul class="see-list">
-        <li><a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/Styling">3D Tiles Styling language</a></li>
+        <li><a href="https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/Styling">3D Tiles Styling language</a></li>
     </ul>
     
 
@@ -3918,7 +4497,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L437">Scene/Cesium3DTileset.js 437</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L459">Scene/Cesium3DTileset.js 459</a>
 </div>
 
 
@@ -3929,7 +4508,16 @@
 
 
 <div class="description">
-    The event fired to indicate that a tile's content failed to load.<p>If there are no event listeners, error messages will be logged to the console.</p><p>The error object passed to the listener contains two properties:<ul><li><code>url</code>: the url of the failed tile.</li><li><code>message</code>: the error message.</li></ul>
+    The event fired to indicate that a tile's content failed to load.
+<p>
+If there are no event listeners, error messages will be logged to the console.
+</p>
+<p>
+The error object passed to the listener contains two properties:
+<ul>
+<li><code>url</code>: the url of the failed tile.</li>
+<li><code>message</code>: the error message.</li>
+</ul>
 </div>
 
 
@@ -3961,7 +4549,10 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.tileFailed.addEventListener(function(error) {    console.log('An error occurred loading tile: ' + error.url);    console.log('Error: ' + error.message);});</code></pre>
+    <pre><code class="language-javascript">tileset.tileFailed.addEventListener(function(error) {
+    console.log('An error occurred loading tile: ' + error.url);
+    console.log('Error: ' + error.message);
+});</code></pre>
 
     
 
@@ -3986,7 +4577,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L390">Scene/Cesium3DTileset.js 390</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L412">Scene/Cesium3DTileset.js 412</a>
 </div>
 
 
@@ -3997,7 +4588,15 @@
 
 
 <div class="description">
-    The event fired to indicate that a tile's content was loaded.<p>The loaded <a href="Cesium3DTile.html"><code>Cesium3DTile</code></a> is passed to the event listener.</p><p>This event is fired during the tileset traversal while the frame is being renderedso that updates to the tile take effect in the same frame.  Do not create or modifyCesium entities or primitives during the event listener.</p>
+    The event fired to indicate that a tile's content was loaded.
+<p>
+The loaded <a href="Cesium3DTile.html"><code>Cesium3DTile</code></a> is passed to the event listener.
+</p>
+<p>
+This event is fired during the tileset traversal while the frame is being rendered
+so that updates to the tile take effect in the same frame.  Do not create or modify
+Cesium entities or primitives during the event listener.
+</p>
 </div>
 
 
@@ -4029,7 +4628,9 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.tileLoad.addEventListener(function(tile) {    console.log('A tile was loaded.');});</code></pre>
+    <pre><code class="language-javascript">tileset.tileLoad.addEventListener(function(tile) {
+    console.log('A tile was loaded.');
+});</code></pre>
 
     
 
@@ -4054,7 +4655,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L914">Scene/Cesium3DTileset.js 914</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L897">Scene/Cesium3DTileset.js 897</a>
 </div>
 
 
@@ -4065,7 +4666,8 @@
 
 
 <div class="description">
-    When <code>true</code>, all tiles that meet the screen space error this frame are loaded. The tileset iscompletely loaded for this view.
+    When <code>true</code>, all tiles that meet the screen space error this frame are loaded. The tileset is
+completely loaded for this view.
 </div>
 
 
@@ -4122,7 +4724,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L414">Scene/Cesium3DTileset.js 414</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L436">Scene/Cesium3DTileset.js 436</a>
 </div>
 
 
@@ -4133,7 +4735,15 @@
 
 
 <div class="description">
-    The event fired to indicate that a tile's content was unloaded.<p>The unloaded <a href="Cesium3DTile.html"><code>Cesium3DTile</code></a> is passed to the event listener.</p><p>This event is fired immediately before the tile's content is unloaded while the frame is beingrendered so that the event listener has access to the tile's content.  Do not createor modify Cesium entities or primitives during the event listener.</p>
+    The event fired to indicate that a tile's content was unloaded.
+<p>
+The unloaded <a href="Cesium3DTile.html"><code>Cesium3DTile</code></a> is passed to the event listener.
+</p>
+<p>
+This event is fired immediately before the tile's content is unloaded while the frame is being
+rendered so that the event listener has access to the tile's content.  Do not create
+or modify Cesium entities or primitives during the event listener.
+</p>
 </div>
 
 
@@ -4165,7 +4775,9 @@
     
         <h5>Example:</h5>
         
-    <pre><code class="language-javascript">tileset.tileUnload.addEventListener(function(tile) {    console.log('A tile was unloaded from the cache.');});</code></pre>
+    <pre><code class="language-javascript">tileset.tileUnload.addEventListener(function(tile) {
+    console.log('A tile was unloaded from the cache.');
+});</code></pre>
 
     
 
@@ -4197,7 +4809,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L474">Scene/Cesium3DTileset.js 474</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L496">Scene/Cesium3DTileset.js 496</a>
 </div>
 
 
@@ -4208,7 +4820,16 @@
 
 
 <div class="description">
-    This event fires once for each visible tile in a frame.  This can be used to manuallystyle a tileset.<p>The visible <a href="Cesium3DTile.html"><code>Cesium3DTile</code></a> is passed to the event listener.</p><p>This event is fired during the tileset traversal while the frame is being renderedso that updates to the tile take effect in the same frame.  Do not create or modifyCesium entities or primitives during the event listener.</p>
+    This event fires once for each visible tile in a frame.  This can be used to manually
+style a tileset.
+<p>
+The visible <a href="Cesium3DTile.html"><code>Cesium3DTile</code></a> is passed to the event listener.
+</p>
+<p>
+This event is fired during the tileset traversal while the frame is being rendered
+so that updates to the tile take effect in the same frame.  Do not create or modify
+Cesium entities or primitives during the event listener.
+</p>
 </div>
 
 
@@ -4240,9 +4861,23 @@
     
         <h5>Examples:</h5>
         
-    <pre><code class="language-javascript">tileset.tileVisible.addEventListener(function(tile) {    if (tile.content instanceof Cesium.Batched3DModel3DTileContent) {        console.log('A Batched 3D Model tile is visible.');    }});</code></pre>
+    <pre><code class="language-javascript">tileset.tileVisible.addEventListener(function(tile) {
+    if (tile.content instanceof Cesium.Batched3DModel3DTileContent) {
+        console.log('A Batched 3D Model tile is visible.');
+    }
+});</code></pre>
 
-    <pre><code class="language-javascript">// Apply a red style and then manually set random colors for every other feature when the tile becomes visible.tileset.style = new Cesium.Cesium3DTileStyle({    color : 'color("red")'});tileset.tileVisible.addEventListener(function(tile) {    var content = tile.content;    var featuresLength = content.featuresLength;    for (var i = 0; i &lt; featuresLength; i+=2) {        content.getFeature(i).color = Cesium.Color.fromRandom();    }});</code></pre>
+    <pre><code class="language-javascript">// Apply a red style and then manually set random colors for every other feature when the tile becomes visible.
+tileset.style = new Cesium.Cesium3DTileStyle({
+    color : 'color("red")'
+});
+tileset.tileVisible.addEventListener(function(tile) {
+    var content = tile.content;
+    var featuresLength = content.featuresLength;
+    for (var i = 0; i &lt; featuresLength; i+=2) {
+        content.getFeature(i).color = Cesium.Color.fromRandom();
+    }
+});</code></pre>
 
     
 
@@ -4267,7 +4902,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1142">Scene/Cesium3DTileset.js 1142</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1143">Scene/Cesium3DTileset.js 1143</a>
 </div>
 
 
@@ -4327,7 +4962,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1160">Scene/Cesium3DTileset.js 1160</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1161">Scene/Cesium3DTileset.js 1161</a>
 </div>
 
 
@@ -4338,7 +4973,9 @@
 
 
 <div class="description">
-    The total amount of GPU memory in bytes used by the tileset. This value is estimated fromgeometry, texture, and batch table textures of loaded tiles. For point clouds, this value alsoincludes per-point metadata.
+    The total amount of GPU memory in bytes used by the tileset. This value is estimated from
+geometry, texture, and batch table textures of loaded tiles. For point clouds, this value also
+includes per-point metadata.
 </div>
 
 
@@ -4392,7 +5029,7 @@
     
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L928">Scene/Cesium3DTileset.js 928</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L911">Scene/Cesium3DTileset.js 911</a>
 </div>
 
 
@@ -4458,7 +5095,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1239">Scene/Cesium3DTileset.js 1239</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1306">Scene/Cesium3DTileset.js 1306</a>
 </div>
 
 
@@ -4470,7 +5107,8 @@
 
 
 <div class="description">
-    Provides a hook to override the method used to request the tileset jsonuseful when fetching tilesets from remote servers
+    Provides a hook to override the method used to request the tileset json
+useful when fetching tilesets from remote servers
 </div>
 
 
@@ -4596,7 +5234,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1964">Scene/Cesium3DTileset.js 1964</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L2022">Scene/Cesium3DTileset.js 2022</a>
 </div>
 
 
@@ -4608,7 +5246,12 @@
 
 
 <div class="description">
-    Destroys the WebGL resources held by this object.  Destroying an object allows for deterministicrelease of WebGL resources, instead of relying on the garbage collector to destroy this object.<br /><br />Once an object is destroyed, it should not be used; calling any function other than<code>isDestroyed</code> will result in a <a href="DeveloperError.html"><code>DeveloperError</code></a> exception.  Therefore,assign the return value (<code>undefined</code>) to the object as done in the example.
+    Destroys the WebGL resources held by this object.  Destroying an object allows for deterministic
+release of WebGL resources, instead of relying on the garbage collector to destroy this object.
+<br /><br />
+Once an object is destroyed, it should not be used; calling any function other than
+<code>isDestroyed</code> will result in a <a href="DeveloperError.html"><code>DeveloperError</code></a> exception.  Therefore,
+assign the return value (<code>undefined</code>) to the object as done in the example.
 </div>
 
 
@@ -4701,7 +5344,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1927">Scene/Cesium3DTileset.js 1927</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1985">Scene/Cesium3DTileset.js 1985</a>
 </div>
 
 
@@ -4836,7 +5479,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1945">Scene/Cesium3DTileset.js 1945</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L2003">Scene/Cesium3DTileset.js 2003</a>
 </div>
 
 
@@ -4848,7 +5491,10 @@
 
 
 <div class="description">
-    Returns true if this object was destroyed; otherwise, false.<br /><br />If this object was destroyed, it should not be used; calling any function other than<code>isDestroyed</code> will result in a <a href="DeveloperError.html"><code>DeveloperError</code></a> exception.
+    Returns true if this object was destroyed; otherwise, false.
+<br /><br />
+If this object was destroyed, it should not be used; calling any function other than
+<code>isDestroyed</code> will result in a <a href="DeveloperError.html"><code>DeveloperError</code></a> exception.
 </div>
 
 
@@ -4931,7 +5577,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1248">Scene/Cesium3DTileset.js 1248</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1315">Scene/Cesium3DTileset.js 1315</a>
 </div>
 
 
@@ -4943,7 +5589,8 @@
 
 
 <div class="description">
-    Marks the tileset's <a href="Cesium3DTileset.html#style"><code>Cesium3DTileset#style</code></a> as dirty, which forces allfeatures to re-evaluate the style in the next frame each is visible.
+    Marks the tileset's <a href="Cesium3DTileset.html#style"><code>Cesium3DTileset#style</code></a> as dirty, which forces all
+features to re-evaluate the style in the next frame each is visible.
 </div>
 
 
@@ -5012,7 +5659,7 @@
         
 
 <div class="source-link rightLinks">
-    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.48/Source/Scene/Cesium3DTileset.js#L1816">Scene/Cesium3DTileset.js 1816</a>
+    <a href="https://github.com/AnalyticalGraphicsInc/cesium/blob/1.51/Source/Scene/Cesium3DTileset.js#L1863">Scene/Cesium3DTileset.js 1863</a>
 </div>
 
 
@@ -5024,7 +5671,13 @@
 
 
 <div class="description">
-    Unloads all tiles that weren't selected the previous frame.  This can be used toexplicitly manage the tile cache and reduce the total number of tiles loaded below<a href="Cesium3DTileset.html#maximumMemoryUsage"><code>Cesium3DTileset#maximumMemoryUsage</code></a>.<p>Tile unloads occur at the next frame to keep all the WebGL delete callswithin the render loop.</p>
+    Unloads all tiles that weren't selected the previous frame.  This can be used to
+explicitly manage the tile cache and reduce the total number of tiles loaded below
+<a href="Cesium3DTileset.html#maximumMemoryUsage"><code>Cesium3DTileset#maximumMemoryUsage</code></a>.
+<p>
+Tile unloads occur at the next frame to keep all the WebGL delete calls
+within the render loop.
+</p>
 </div>
 
 
@@ -5106,7 +5759,7 @@
 <div class="nav">
     <div class="menu">
         <input type="text" class="classFilter" id="ClassFilter" placeholder="Search">
-        <ul id="ClassList"><li data-name="Animation"><a href="Animation.html">Animation</a></li><li data-name="AnimationViewModel"><a href="AnimationViewModel.html">AnimationViewModel</a></li><li data-name="Appearance"><a href="Appearance.html">Appearance</a></li><li data-name="ArcGisMapServerImageryProvider"><a href="ArcGisMapServerImageryProvider.html">ArcGisMapServerImageryProvider</a></li><li data-name="AssociativeArray"><a href="AssociativeArray.html">AssociativeArray</a></li><li data-name="AxisAlignedBoundingBox"><a href="AxisAlignedBoundingBox.html">AxisAlignedBoundingBox</a></li><li data-name="barycentricCoordinates"><a href="barycentricCoordinates.html">barycentricCoordinates</a></li><li data-name="BaseLayerPicker"><a href="BaseLayerPicker.html">BaseLayerPicker</a></li><li data-name="BaseLayerPickerViewModel"><a href="BaseLayerPickerViewModel.html">BaseLayerPickerViewModel</a></li><li data-name="Billboard"><a href="Billboard.html">Billboard</a></li><li data-name="BillboardCollection"><a href="BillboardCollection.html">BillboardCollection</a></li><li data-name="BillboardGraphics"><a href="BillboardGraphics.html">BillboardGraphics</a></li><li data-name="BillboardVisualizer"><a href="BillboardVisualizer.html">BillboardVisualizer</a></li><li data-name="binarySearch"><a href="binarySearch.html">binarySearch</a></li><li data-name="BingMapsApi"><a href="BingMapsApi.html">BingMapsApi</a></li><li data-name="BingMapsGeocoderService"><a href="BingMapsGeocoderService.html">BingMapsGeocoderService</a></li><li data-name="BingMapsImageryProvider"><a href="BingMapsImageryProvider.html">BingMapsImageryProvider</a></li><li data-name="BingMapsStyle"><a href="BingMapsStyle.html">BingMapsStyle</a></li><li data-name="BlendEquation"><a href="BlendEquation.html">BlendEquation</a></li><li data-name="BlendFunction"><a href="BlendFunction.html">BlendFunction</a></li><li data-name="BlendingState"><a href="BlendingState.html">BlendingState</a></li><li data-name="BlendOption"><a href="BlendOption.html">BlendOption</a></li><li data-name="BoundingRectangle"><a href="BoundingRectangle.html">BoundingRectangle</a></li><li data-name="BoundingSphere"><a href="BoundingSphere.html">BoundingSphere</a></li><li data-name="BoxEmitter"><a href="BoxEmitter.html">BoxEmitter</a></li><li data-name="BoxGeometry"><a href="BoxGeometry.html">BoxGeometry</a></li><li data-name="BoxGeometryUpdater"><a href="BoxGeometryUpdater.html">BoxGeometryUpdater</a></li><li data-name="BoxGraphics"><a href="BoxGraphics.html">BoxGraphics</a></li><li data-name="BoxOutlineGeometry"><a href="BoxOutlineGeometry.html">BoxOutlineGeometry</a></li><li data-name="CallbackProperty"><a href="CallbackProperty.html">CallbackProperty</a></li><li data-name="Camera"><a href="Camera.html">Camera</a></li><li data-name="CameraEventAggregator"><a href="CameraEventAggregator.html">CameraEventAggregator</a></li><li data-name="CameraEventType"><a href="CameraEventType.html">CameraEventType</a></li><li data-name="cancelAnimationFrame"><a href="cancelAnimationFrame.html">cancelAnimationFrame</a></li><li data-name="Cartesian2"><a href="Cartesian2.html">Cartesian2</a></li><li data-name="Cartesian3"><a href="Cartesian3.html">Cartesian3</a></li><li data-name="Cartesian4"><a href="Cartesian4.html">Cartesian4</a></li><li data-name="Cartographic"><a href="Cartographic.html">Cartographic</a></li><li data-name="CartographicGeocoderService"><a href="CartographicGeocoderService.html">CartographicGeocoderService</a></li><li data-name="CatmullRomSpline"><a href="CatmullRomSpline.html">CatmullRomSpline</a></li><li data-name="Cesium3DTile"><a href="Cesium3DTile.html">Cesium3DTile</a></li><li data-name="Cesium3DTileColorBlendMode"><a href="Cesium3DTileColorBlendMode.html">Cesium3DTileColorBlendMode</a></li><li data-name="Cesium3DTileContent"><a href="Cesium3DTileContent.html">Cesium3DTileContent</a></li><li data-name="Cesium3DTileFeature"><a href="Cesium3DTileFeature.html">Cesium3DTileFeature</a></li><li data-name="Cesium3DTilePointFeature"><a href="Cesium3DTilePointFeature.html">Cesium3DTilePointFeature</a></li><li data-name="Cesium3DTileset"><a href="Cesium3DTileset.html">Cesium3DTileset</a></li><li data-name="Cesium3DTilesInspector"><a href="Cesium3DTilesInspector.html">Cesium3DTilesInspector</a></li><li data-name="Cesium3DTilesInspectorViewModel"><a href="Cesium3DTilesInspectorViewModel.html">Cesium3DTilesInspectorViewModel</a></li><li data-name="Cesium3DTileStyle"><a href="Cesium3DTileStyle.html">Cesium3DTileStyle</a></li><li data-name="CesiumInspector"><a href="CesiumInspector.html">CesiumInspector</a></li><li data-name="CesiumInspectorViewModel"><a href="CesiumInspectorViewModel.html">CesiumInspectorViewModel</a></li><li data-name="CesiumTerrainProvider"><a href="CesiumTerrainProvider.html">CesiumTerrainProvider</a></li><li data-name="CesiumWidget"><a href="CesiumWidget.html">CesiumWidget</a></li><li data-name="CheckerboardMaterialProperty"><a href="CheckerboardMaterialProperty.html">CheckerboardMaterialProperty</a></li><li data-name="CircleEmitter"><a href="CircleEmitter.html">CircleEmitter</a></li><li data-name="CircleGeometry"><a href="CircleGeometry.html">CircleGeometry</a></li><li data-name="CircleOutlineGeometry"><a href="CircleOutlineGeometry.html">CircleOutlineGeometry</a></li><li data-name="ClassificationPrimitive"><a href="ClassificationPrimitive.html">ClassificationPrimitive</a></li><li data-name="ClassificationType"><a href="ClassificationType.html">ClassificationType</a></li><li data-name="ClippingPlane"><a href="ClippingPlane.html">ClippingPlane</a></li><li data-name="ClippingPlaneCollection"><a href="ClippingPlaneCollection.html">ClippingPlaneCollection</a></li><li data-name="Clock"><a href="Clock.html">Clock</a></li><li data-name="ClockRange"><a href="ClockRange.html">ClockRange</a></li><li data-name="ClockStep"><a href="ClockStep.html">ClockStep</a></li><li data-name="ClockViewModel"><a href="ClockViewModel.html">ClockViewModel</a></li><li data-name="clone"><a href="clone.html">clone</a></li><li data-name="Color"><a href="Color.html">Color</a></li><li data-name="ColorBlendMode"><a href="ColorBlendMode.html">ColorBlendMode</a></li><li data-name="ColorGeometryInstanceAttribute"><a href="ColorGeometryInstanceAttribute.html">ColorGeometryInstanceAttribute</a></li><li data-name="ColorMaterialProperty"><a href="ColorMaterialProperty.html">ColorMaterialProperty</a></li><li data-name="combine"><a href="combine.html">combine</a></li><li data-name="Command"><a href="Command.html">Command</a></li><li data-name="ComponentDatatype"><a href="ComponentDatatype.html">ComponentDatatype</a></li><li data-name="CompositeEntityCollection"><a href="CompositeEntityCollection.html">CompositeEntityCollection</a></li><li data-name="CompositeMaterialProperty"><a href="CompositeMaterialProperty.html">CompositeMaterialProperty</a></li><li data-name="CompositePositionProperty"><a href="CompositePositionProperty.html">CompositePositionProperty</a></li><li data-name="CompositeProperty"><a href="CompositeProperty.html">CompositeProperty</a></li><li data-name="CompressedTextureBuffer"><a href="CompressedTextureBuffer.html">CompressedTextureBuffer</a></li><li data-name="ConditionsExpression"><a href="ConditionsExpression.html">ConditionsExpression</a></li><li data-name="ConeEmitter"><a href="ConeEmitter.html">ConeEmitter</a></li><li data-name="ConstantPositionProperty"><a href="ConstantPositionProperty.html">ConstantPositionProperty</a></li><li data-name="ConstantProperty"><a href="ConstantProperty.html">ConstantProperty</a></li><li data-name="CoplanarPolygonGeometry"><a href="CoplanarPolygonGeometry.html">CoplanarPolygonGeometry</a></li><li data-name="CoplanarPolygonOutlineGeometry"><a href="CoplanarPolygonOutlineGeometry.html">CoplanarPolygonOutlineGeometry</a></li><li data-name="CornerType"><a href="CornerType.html">CornerType</a></li><li data-name="CorridorGeometry"><a href="CorridorGeometry.html">CorridorGeometry</a></li><li data-name="CorridorGeometryUpdater"><a href="CorridorGeometryUpdater.html">CorridorGeometryUpdater</a></li><li data-name="CorridorGraphics"><a href="CorridorGraphics.html">CorridorGraphics</a></li><li data-name="CorridorOutlineGeometry"><a href="CorridorOutlineGeometry.html">CorridorOutlineGeometry</a></li><li data-name="createCommand"><a href="createCommand.html">createCommand</a></li><li data-name="createGuid"><a href="createGuid.html">createGuid</a></li><li data-name="createOpenStreetMapImageryProvider"><a href="createOpenStreetMapImageryProvider.html">createOpenStreetMapImageryProvider</a></li><li data-name="createTangentSpaceDebugPrimitive"><a href="createTangentSpaceDebugPrimitive.html">createTangentSpaceDebugPrimitive</a></li><li data-name="createTaskProcessorWorker"><a href="createTaskProcessorWorker.html">createTaskProcessorWorker</a></li><li data-name="createTileMapServiceImageryProvider"><a href="createTileMapServiceImageryProvider.html">createTileMapServiceImageryProvider</a></li><li data-name="createWorldImagery"><a href="createWorldImagery.html">createWorldImagery</a></li><li data-name="createWorldTerrain"><a href="createWorldTerrain.html">createWorldTerrain</a></li><li data-name="Credit"><a href="Credit.html">Credit</a></li><li data-name="CreditDisplay"><a href="CreditDisplay.html">CreditDisplay</a></li><li data-name="CubicRealPolynomial"><a href="CubicRealPolynomial.html">CubicRealPolynomial</a></li><li data-name="CullFace"><a href="CullFace.html">CullFace</a></li><li data-name="CullingVolume"><a href="CullingVolume.html">CullingVolume</a></li><li data-name="CustomDataSource"><a href="CustomDataSource.html">CustomDataSource</a></li><li data-name="CylinderGeometry"><a href="CylinderGeometry.html">CylinderGeometry</a></li><li data-name="CylinderGeometryUpdater"><a href="CylinderGeometryUpdater.html">CylinderGeometryUpdater</a></li><li data-name="CylinderGraphics"><a href="CylinderGraphics.html">CylinderGraphics</a></li><li data-name="CylinderOutlineGeometry"><a href="CylinderOutlineGeometry.html">CylinderOutlineGeometry</a></li><li data-name="CzmlDataSource"><a href="CzmlDataSource.html">CzmlDataSource</a></li><li data-name="DataSource"><a href="DataSource.html">DataSource</a></li><li data-name="DataSourceClock"><a href="DataSourceClock.html">DataSourceClock</a></li><li data-name="DataSourceCollection"><a href="DataSourceCollection.html">DataSourceCollection</a></li><li data-name="DataSourceDisplay"><a href="DataSourceDisplay.html">DataSourceDisplay</a></li><li data-name="DebugAppearance"><a href="DebugAppearance.html">DebugAppearance</a></li><li data-name="DebugCameraPrimitive"><a href="DebugCameraPrimitive.html">DebugCameraPrimitive</a></li><li data-name="DebugModelMatrixPrimitive"><a href="DebugModelMatrixPrimitive.html">DebugModelMatrixPrimitive</a></li><li data-name="DefaultProxy"><a href="DefaultProxy.html">DefaultProxy</a></li><li data-name="defaultValue"><a href="defaultValue.html">defaultValue</a></li><li data-name="defined"><a href="defined.html">defined</a></li><li data-name="DepthFunction"><a href="DepthFunction.html">DepthFunction</a></li><li data-name="destroyObject"><a href="destroyObject.html">destroyObject</a></li><li data-name="DeveloperError"><a href="DeveloperError.html">DeveloperError</a></li><li data-name="DiscardMissingTileImagePolicy"><a href="DiscardMissingTileImagePolicy.html">DiscardMissingTileImagePolicy</a></li><li data-name="DistanceDisplayCondition"><a href="DistanceDisplayCondition.html">DistanceDisplayCondition</a></li><li data-name="DistanceDisplayConditionGeometryInstanceAttribute"><a href="DistanceDisplayConditionGeometryInstanceAttribute.html">DistanceDisplayConditionGeometryInstanceAttribute</a></li><li data-name="EasingFunction"><a href="EasingFunction.html">EasingFunction</a></li><li data-name="EllipseGeometry"><a href="EllipseGeometry.html">EllipseGeometry</a></li><li data-name="EllipseGeometryUpdater"><a href="EllipseGeometryUpdater.html">EllipseGeometryUpdater</a></li><li data-name="EllipseGraphics"><a href="EllipseGraphics.html">EllipseGraphics</a></li><li data-name="EllipseOutlineGeometry"><a href="EllipseOutlineGeometry.html">EllipseOutlineGeometry</a></li><li data-name="Ellipsoid"><a href="Ellipsoid.html">Ellipsoid</a></li><li data-name="EllipsoidGeodesic"><a href="EllipsoidGeodesic.html">EllipsoidGeodesic</a></li><li data-name="EllipsoidGeometry"><a href="EllipsoidGeometry.html">EllipsoidGeometry</a></li><li data-name="EllipsoidGeometryUpdater"><a href="EllipsoidGeometryUpdater.html">EllipsoidGeometryUpdater</a></li><li data-name="EllipsoidGraphics"><a href="EllipsoidGraphics.html">EllipsoidGraphics</a></li><li data-name="EllipsoidOutlineGeometry"><a href="EllipsoidOutlineGeometry.html">EllipsoidOutlineGeometry</a></li><li data-name="EllipsoidSurfaceAppearance"><a href="EllipsoidSurfaceAppearance.html">EllipsoidSurfaceAppearance</a></li><li data-name="EllipsoidTangentPlane"><a href="EllipsoidTangentPlane.html">EllipsoidTangentPlane</a></li><li data-name="EllipsoidTerrainProvider"><a href="EllipsoidTerrainProvider.html">EllipsoidTerrainProvider</a></li><li data-name="Entity"><a href="Entity.html">Entity</a></li><li data-name="EntityCluster"><a href="EntityCluster.html">EntityCluster</a></li><li data-name="EntityCollection"><a href="EntityCollection.html">EntityCollection</a></li><li data-name="EntityView"><a href="EntityView.html">EntityView</a></li><li data-name="Event"><a href="Event.html">Event</a></li><li data-name="EventHelper"><a href="EventHelper.html">EventHelper</a></li><li data-name="Expression"><a href="Expression.html">Expression</a></li><li data-name="ExtrapolationType"><a href="ExtrapolationType.html">ExtrapolationType</a></li><li data-name="FeatureDetection"><a href="FeatureDetection.html">FeatureDetection</a></li><li data-name="Fog"><a href="Fog.html">Fog</a></li><li data-name="formatError"><a href="formatError.html">formatError</a></li><li data-name="FrameRateMonitor"><a href="FrameRateMonitor.html">FrameRateMonitor</a></li><li data-name="FrustumGeometry"><a href="FrustumGeometry.html">FrustumGeometry</a></li><li data-name="FrustumOutlineGeometry"><a href="FrustumOutlineGeometry.html">FrustumOutlineGeometry</a></li><li data-name="Fullscreen"><a href="Fullscreen.html">Fullscreen</a></li><li data-name="FullscreenButton"><a href="FullscreenButton.html">FullscreenButton</a></li><li data-name="FullscreenButtonViewModel"><a href="FullscreenButtonViewModel.html">FullscreenButtonViewModel</a></li><li data-name="Geocoder"><a href="Geocoder.html">Geocoder</a></li><li data-name="GeocoderService"><a href="GeocoderService.html">GeocoderService</a></li><li data-name="GeocoderViewModel"><a href="GeocoderViewModel.html">GeocoderViewModel</a></li><li data-name="GeocodeType"><a href="GeocodeType.html">GeocodeType</a></li><li data-name="GeographicProjection"><a href="GeographicProjection.html">GeographicProjection</a></li><li data-name="GeographicTilingScheme"><a href="GeographicTilingScheme.html">GeographicTilingScheme</a></li><li data-name="GeoJsonDataSource"><a href="GeoJsonDataSource.html">GeoJsonDataSource</a></li><li data-name="Geometry"><a href="Geometry.html">Geometry</a></li><li data-name="GeometryAttribute"><a href="GeometryAttribute.html">GeometryAttribute</a></li><li data-name="GeometryAttributes"><a href="GeometryAttributes.html">GeometryAttributes</a></li><li data-name="GeometryInstance"><a href="GeometryInstance.html">GeometryInstance</a></li><li data-name="GeometryInstanceAttribute"><a href="GeometryInstanceAttribute.html">GeometryInstanceAttribute</a></li><li data-name="GeometryPipeline"><a href="GeometryPipeline.html">GeometryPipeline</a></li><li data-name="GeometryUpdater"><a href="GeometryUpdater.html">GeometryUpdater</a></li><li data-name="GeometryVisualizer"><a href="GeometryVisualizer.html">GeometryVisualizer</a></li><li data-name="getAbsoluteUri"><a href="getAbsoluteUri.html">getAbsoluteUri</a></li><li data-name="getBaseUri"><a href="getBaseUri.html">getBaseUri</a></li><li data-name="getExtensionFromUri"><a href="getExtensionFromUri.html">getExtensionFromUri</a></li><li data-name="GetFeatureInfoFormat"><a href="GetFeatureInfoFormat.html">GetFeatureInfoFormat</a></li><li data-name="getFilenameFromUri"><a href="getFilenameFromUri.html">getFilenameFromUri</a></li><li data-name="getImagePixels"><a href="getImagePixels.html">getImagePixels</a></li><li data-name="getTimestamp"><a href="getTimestamp.html">getTimestamp</a></li><li data-name="Globe"><a href="Globe.html">Globe</a></li><li data-name="GoogleEarthEnterpriseImageryProvider"><a href="GoogleEarthEnterpriseImageryProvider.html">GoogleEarthEnterpriseImageryProvider</a></li><li data-name="GoogleEarthEnterpriseMapsProvider"><a href="GoogleEarthEnterpriseMapsProvider.html">GoogleEarthEnterpriseMapsProvider</a></li><li data-name="GoogleEarthEnterpriseMetadata"><a href="GoogleEarthEnterpriseMetadata.html">GoogleEarthEnterpriseMetadata</a></li><li data-name="GoogleEarthEnterpriseTerrainData"><a href="GoogleEarthEnterpriseTerrainData.html">GoogleEarthEnterpriseTerrainData</a></li><li data-name="GoogleEarthEnterpriseTerrainProvider"><a href="GoogleEarthEnterpriseTerrainProvider.html">GoogleEarthEnterpriseTerrainProvider</a></li><li data-name="GregorianDate"><a href="GregorianDate.html">GregorianDate</a></li><li data-name="GridImageryProvider"><a href="GridImageryProvider.html">GridImageryProvider</a></li><li data-name="GridMaterialProperty"><a href="GridMaterialProperty.html">GridMaterialProperty</a></li><li data-name="GroundPolylineGeometry"><a href="GroundPolylineGeometry.html">GroundPolylineGeometry</a></li><li data-name="GroundPolylinePrimitive"><a href="GroundPolylinePrimitive.html">GroundPolylinePrimitive</a></li><li data-name="GroundPrimitive"><a href="GroundPrimitive.html">GroundPrimitive</a></li><li data-name="HeadingPitchRange"><a href="HeadingPitchRange.html">HeadingPitchRange</a></li><li data-name="HeadingPitchRoll"><a href="HeadingPitchRoll.html">HeadingPitchRoll</a></li><li data-name="HeightmapTerrainData"><a href="HeightmapTerrainData.html">HeightmapTerrainData</a></li><li data-name="HeightReference"><a href="HeightReference.html">HeightReference</a></li><li data-name="HermitePolynomialApproximation"><a href="HermitePolynomialApproximation.html">HermitePolynomialApproximation</a></li><li data-name="HermiteSpline"><a href="HermiteSpline.html">HermiteSpline</a></li><li data-name="HomeButton"><a href="HomeButton.html">HomeButton</a></li><li data-name="HomeButtonViewModel"><a href="HomeButtonViewModel.html">HomeButtonViewModel</a></li><li data-name="HorizontalOrigin"><a href="HorizontalOrigin.html">HorizontalOrigin</a></li><li data-name="ImageMaterialProperty"><a href="ImageMaterialProperty.html">ImageMaterialProperty</a></li><li data-name="ImageryLayer"><a href="ImageryLayer.html">ImageryLayer</a></li><li data-name="ImageryLayerCollection"><a href="ImageryLayerCollection.html">ImageryLayerCollection</a></li><li data-name="ImageryLayerFeatureInfo"><a href="ImageryLayerFeatureInfo.html">ImageryLayerFeatureInfo</a></li><li data-name="ImageryProvider"><a href="ImageryProvider.html">ImageryProvider</a></li><li data-name="ImagerySplitDirection"><a href="ImagerySplitDirection.html">ImagerySplitDirection</a></li><li data-name="IndexDatatype"><a href="IndexDatatype.html">IndexDatatype</a></li><li data-name="InfoBox"><a href="InfoBox.html">InfoBox</a></li><li data-name="InfoBoxViewModel"><a href="InfoBoxViewModel.html">InfoBoxViewModel</a></li><li data-name="InterpolationAlgorithm"><a href="InterpolationAlgorithm.html">InterpolationAlgorithm</a></li><li data-name="Intersect"><a href="Intersect.html">Intersect</a></li><li data-name="Intersections2D"><a href="Intersections2D.html">Intersections2D</a></li><li data-name="IntersectionTests"><a href="IntersectionTests.html">IntersectionTests</a></li><li data-name="Interval"><a href="Interval.html">Interval</a></li><li data-name="Ion"><a href="Ion.html">Ion</a></li><li data-name="IonGeocoderService"><a href="IonGeocoderService.html">IonGeocoderService</a></li><li data-name="IonImageryProvider"><a href="IonImageryProvider.html">IonImageryProvider</a></li><li data-name="IonResource"><a href="IonResource.html">IonResource</a></li><li data-name="IonWorldImageryStyle"><a href="IonWorldImageryStyle.html">IonWorldImageryStyle</a></li><li data-name="isArray"><a href="isArray.html">isArray</a></li><li data-name="isLeapYear"><a href="isLeapYear.html">isLeapYear</a></li><li data-name="Iso8601"><a href="Iso8601.html">Iso8601</a></li><li data-name="JulianDate"><a href="JulianDate.html">JulianDate</a></li><li data-name="KeyboardEventModifier"><a href="KeyboardEventModifier.html">KeyboardEventModifier</a></li><li data-name="KmlCamera"><a href="KmlCamera.html">KmlCamera</a></li><li data-name="KmlDataSource"><a href="KmlDataSource.html">KmlDataSource</a></li><li data-name="KmlFeatureData"><a href="KmlFeatureData.html">KmlFeatureData</a></li><li data-name="KmlLookAt"><a href="KmlLookAt.html">KmlLookAt</a></li><li data-name="KmlTour"><a href="KmlTour.html">KmlTour</a></li><li data-name="KmlTourFlyTo"><a href="KmlTourFlyTo.html">KmlTourFlyTo</a></li><li data-name="KmlTourWait"><a href="KmlTourWait.html">KmlTourWait</a></li><li data-name="Label"><a href="Label.html">Label</a></li><li data-name="LabelCollection"><a href="LabelCollection.html">LabelCollection</a></li><li data-name="LabelGraphics"><a href="LabelGraphics.html">LabelGraphics</a></li><li data-name="LabelStyle"><a href="LabelStyle.html">LabelStyle</a></li><li data-name="LabelVisualizer"><a href="LabelVisualizer.html">LabelVisualizer</a></li><li data-name="LagrangePolynomialApproximation"><a href="LagrangePolynomialApproximation.html">LagrangePolynomialApproximation</a></li><li data-name="LeapSecond"><a href="LeapSecond.html">LeapSecond</a></li><li data-name="LinearApproximation"><a href="LinearApproximation.html">LinearApproximation</a></li><li data-name="LinearSpline"><a href="LinearSpline.html">LinearSpline</a></li><li data-name="loadCRN"><a href="loadCRN.html">loadCRN</a></li><li data-name="loadKTX"><a href="loadKTX.html">loadKTX</a></li><li data-name="MapboxImageryProvider"><a href="MapboxImageryProvider.html">MapboxImageryProvider</a></li><li data-name="MapMode2D"><a href="MapMode2D.html">MapMode2D</a></li><li data-name="MapProjection"><a href="MapProjection.html">MapProjection</a></li><li data-name="Material"><a href="Material.html">Material</a></li><li data-name="MaterialAppearance"><a href="MaterialAppearance.html">MaterialAppearance</a></li><li data-name="MaterialSupport"><a href="MaterialAppearance.module_MaterialSupport.html">MaterialSupport</a></li><li data-name="MaterialProperty"><a href="MaterialProperty.html">MaterialProperty</a></li><li data-name="Math"><a href="Math.html">Math</a></li><li data-name="Matrix2"><a href="Matrix2.html">Matrix2</a></li><li data-name="Matrix3"><a href="Matrix3.html">Matrix3</a></li><li data-name="Matrix4"><a href="Matrix4.html">Matrix4</a></li><li data-name="mergeSort"><a href="mergeSort.html">mergeSort</a></li><li data-name="Model"><a href="Model.html">Model</a></li><li data-name="ModelAnimation"><a href="ModelAnimation.html">ModelAnimation</a></li><li data-name="ModelAnimationCollection"><a href="ModelAnimationCollection.html">ModelAnimationCollection</a></li><li data-name="ModelAnimationLoop"><a href="ModelAnimationLoop.html">ModelAnimationLoop</a></li><li data-name="ModelGraphics"><a href="ModelGraphics.html">ModelGraphics</a></li><li data-name="ModelMaterial"><a href="ModelMaterial.html">ModelMaterial</a></li><li data-name="ModelMesh"><a href="ModelMesh.html">ModelMesh</a></li><li data-name="ModelNode"><a href="ModelNode.html">ModelNode</a></li><li data-name="ModelVisualizer"><a href="ModelVisualizer.html">ModelVisualizer</a></li><li data-name="Moon"><a href="Moon.html">Moon</a></li><li data-name="NavigationHelpButton"><a href="NavigationHelpButton.html">NavigationHelpButton</a></li><li data-name="NavigationHelpButtonViewModel"><a href="NavigationHelpButtonViewModel.html">NavigationHelpButtonViewModel</a></li><li data-name="NearFarScalar"><a href="NearFarScalar.html">NearFarScalar</a></li><li data-name="NeverTileDiscardPolicy"><a href="NeverTileDiscardPolicy.html">NeverTileDiscardPolicy</a></li><li data-name="NodeTransformationProperty"><a href="NodeTransformationProperty.html">NodeTransformationProperty</a></li><li data-name="objectToQuery"><a href="objectToQuery.html">objectToQuery</a></li><li data-name="Occluder"><a href="Occluder.html">Occluder</a></li><li data-name="OrientedBoundingBox"><a href="OrientedBoundingBox.html">OrientedBoundingBox</a></li><li data-name="OrthographicFrustum"><a href="OrthographicFrustum.html">OrthographicFrustum</a></li><li data-name="OrthographicOffCenterFrustum"><a href="OrthographicOffCenterFrustum.html">OrthographicOffCenterFrustum</a></li><li data-name="Packable"><a href="Packable.html">Packable</a></li><li data-name="PackableForInterpolation"><a href="PackableForInterpolation.html">PackableForInterpolation</a></li><li data-name="Particle"><a href="Particle.html">Particle</a></li><li data-name="ParticleBurst"><a href="ParticleBurst.html">ParticleBurst</a></li><li data-name="ParticleEmitter"><a href="ParticleEmitter.html">ParticleEmitter</a></li><li data-name="ParticleSystem"><a href="ParticleSystem.html">ParticleSystem</a></li><li data-name="PathGraphics"><a href="PathGraphics.html">PathGraphics</a></li><li data-name="PathVisualizer"><a href="PathVisualizer.html">PathVisualizer</a></li><li data-name="PeliasGeocoderService"><a href="PeliasGeocoderService.html">PeliasGeocoderService</a></li><li data-name="PerformanceWatchdog"><a href="PerformanceWatchdog.html">PerformanceWatchdog</a></li><li data-name="PerformanceWatchdogViewModel"><a href="PerformanceWatchdogViewModel.html">PerformanceWatchdogViewModel</a></li><li data-name="PerInstanceColorAppearance"><a href="PerInstanceColorAppearance.html">PerInstanceColorAppearance</a></li><li data-name="PerspectiveFrustum"><a href="PerspectiveFrustum.html">PerspectiveFrustum</a></li><li data-name="PerspectiveOffCenterFrustum"><a href="PerspectiveOffCenterFrustum.html">PerspectiveOffCenterFrustum</a></li><li data-name="PinBuilder"><a href="PinBuilder.html">PinBuilder</a></li><li data-name="PixelFormat"><a href="PixelFormat.html">PixelFormat</a></li><li data-name="Plane"><a href="Plane.html">Plane</a></li><li data-name="PlaneGeometry"><a href="PlaneGeometry.html">PlaneGeometry</a></li><li data-name="PlaneGeometryUpdater"><a href="PlaneGeometryUpdater.html">PlaneGeometryUpdater</a></li><li data-name="PlaneGraphics"><a href="PlaneGraphics.html">PlaneGraphics</a></li><li data-name="PlaneOutlineGeometry"><a href="PlaneOutlineGeometry.html">PlaneOutlineGeometry</a></li><li data-name="PointCloudShading"><a href="PointCloudShading.html">PointCloudShading</a></li><li data-name="PointGraphics"><a href="PointGraphics.html">PointGraphics</a></li><li data-name="pointInsideTriangle"><a href="pointInsideTriangle.html">pointInsideTriangle</a></li><li data-name="PointPrimitive"><a href="PointPrimitive.html">PointPrimitive</a></li><li data-name="PointPrimitiveCollection"><a href="PointPrimitiveCollection.html">PointPrimitiveCollection</a></li><li data-name="PointVisualizer"><a href="PointVisualizer.html">PointVisualizer</a></li><li data-name="PolygonGeometry"><a href="PolygonGeometry.html">PolygonGeometry</a></li><li data-name="PolygonGeometryUpdater"><a href="PolygonGeometryUpdater.html">PolygonGeometryUpdater</a></li><li data-name="PolygonGraphics"><a href="PolygonGraphics.html">PolygonGraphics</a></li><li data-name="PolygonHierarchy"><a href="PolygonHierarchy.html">PolygonHierarchy</a></li><li data-name="PolygonOutlineGeometry"><a href="PolygonOutlineGeometry.html">PolygonOutlineGeometry</a></li><li data-name="Polyline"><a href="Polyline.html">Polyline</a></li><li data-name="PolylineArrowMaterialProperty"><a href="PolylineArrowMaterialProperty.html">PolylineArrowMaterialProperty</a></li><li data-name="PolylineCollection"><a href="PolylineCollection.html">PolylineCollection</a></li><li data-name="PolylineColorAppearance"><a href="PolylineColorAppearance.html">PolylineColorAppearance</a></li><li data-name="PolylineDashMaterialProperty"><a href="PolylineDashMaterialProperty.html">PolylineDashMaterialProperty</a></li><li data-name="PolylineGeometry"><a href="PolylineGeometry.html">PolylineGeometry</a></li><li data-name="PolylineGeometryUpdater"><a href="PolylineGeometryUpdater.html">PolylineGeometryUpdater</a></li><li data-name="PolylineGlowMaterialProperty"><a href="PolylineGlowMaterialProperty.html">PolylineGlowMaterialProperty</a></li><li data-name="PolylineGraphics"><a href="PolylineGraphics.html">PolylineGraphics</a></li><li data-name="PolylineMaterialAppearance"><a href="PolylineMaterialAppearance.html">PolylineMaterialAppearance</a></li><li data-name="PolylineOutlineMaterialProperty"><a href="PolylineOutlineMaterialProperty.html">PolylineOutlineMaterialProperty</a></li><li data-name="PolylineVisualizer"><a href="PolylineVisualizer.html">PolylineVisualizer</a></li><li data-name="PolylineVolumeGeometry"><a href="PolylineVolumeGeometry.html">PolylineVolumeGeometry</a></li><li data-name="PolylineVolumeGeometryUpdater"><a href="PolylineVolumeGeometryUpdater.html">PolylineVolumeGeometryUpdater</a></li><li data-name="PolylineVolumeGraphics"><a href="PolylineVolumeGraphics.html">PolylineVolumeGraphics</a></li><li data-name="PolylineVolumeOutlineGeometry"><a href="PolylineVolumeOutlineGeometry.html">PolylineVolumeOutlineGeometry</a></li><li data-name="PositionProperty"><a href="PositionProperty.html">PositionProperty</a></li><li data-name="PositionPropertyArray"><a href="PositionPropertyArray.html">PositionPropertyArray</a></li><li data-name="PostProcessStage"><a href="PostProcessStage.html">PostProcessStage</a></li><li data-name="PostProcessStageCollection"><a href="PostProcessStageCollection.html">PostProcessStageCollection</a></li><li data-name="PostProcessStageComposite"><a href="PostProcessStageComposite.html">PostProcessStageComposite</a></li><li data-name="PostProcessStageLibrary"><a href="PostProcessStageLibrary.html">PostProcessStageLibrary</a></li><li data-name="PostProcessStageSampleMode"><a href="PostProcessStageSampleMode.html">PostProcessStageSampleMode</a></li><li data-name="Primitive"><a href="Primitive.html">Primitive</a></li><li data-name="PrimitiveCollection"><a href="PrimitiveCollection.html">PrimitiveCollection</a></li><li data-name="PrimitiveType"><a href="PrimitiveType.html">PrimitiveType</a></li><li data-name="ProjectionPicker"><a href="ProjectionPicker.html">ProjectionPicker</a></li><li data-name="ProjectionPickerViewModel"><a href="ProjectionPickerViewModel.html">ProjectionPickerViewModel</a></li><li data-name="Property"><a href="Property.html">Property</a></li><li data-name="PropertyArray"><a href="PropertyArray.html">PropertyArray</a></li><li data-name="PropertyBag"><a href="PropertyBag.html">PropertyBag</a></li><li data-name="ProviderViewModel"><a href="ProviderViewModel.html">ProviderViewModel</a></li><li data-name="QuadraticRealPolynomial"><a href="QuadraticRealPolynomial.html">QuadraticRealPolynomial</a></li><li data-name="QuantizedMeshTerrainData"><a href="QuantizedMeshTerrainData.html">QuantizedMeshTerrainData</a></li><li data-name="QuarticRealPolynomial"><a href="QuarticRealPolynomial.html">QuarticRealPolynomial</a></li><li data-name="Quaternion"><a href="Quaternion.html">Quaternion</a></li><li data-name="QuaternionSpline"><a href="QuaternionSpline.html">QuaternionSpline</a></li><li data-name="queryToObject"><a href="queryToObject.html">queryToObject</a></li><li data-name="Queue"><a href="Queue.html">Queue</a></li><li data-name="Ray"><a href="Ray.html">Ray</a></li><li data-name="Rectangle"><a href="Rectangle.html">Rectangle</a></li><li data-name="RectangleGeometry"><a href="RectangleGeometry.html">RectangleGeometry</a></li><li data-name="RectangleGeometryUpdater"><a href="RectangleGeometryUpdater.html">RectangleGeometryUpdater</a></li><li data-name="RectangleGraphics"><a href="RectangleGraphics.html">RectangleGraphics</a></li><li data-name="RectangleOutlineGeometry"><a href="RectangleOutlineGeometry.html">RectangleOutlineGeometry</a></li><li data-name="ReferenceFrame"><a href="ReferenceFrame.html">ReferenceFrame</a></li><li data-name="ReferenceProperty"><a href="ReferenceProperty.html">ReferenceProperty</a></li><li data-name="Request"><a href="Request.html">Request</a></li><li data-name="requestAnimationFrame"><a href="requestAnimationFrame.html">requestAnimationFrame</a></li><li data-name="RequestErrorEvent"><a href="RequestErrorEvent.html">RequestErrorEvent</a></li><li data-name="RequestState"><a href="RequestState.html">RequestState</a></li><li data-name="RequestType"><a href="RequestType.html">RequestType</a></li><li data-name="Resource"><a href="Resource.html">Resource</a></li><li data-name="Rotation"><a href="Rotation.html">Rotation</a></li><li data-name="RuntimeError"><a href="RuntimeError.html">RuntimeError</a></li><li data-name="SampledPositionProperty"><a href="SampledPositionProperty.html">SampledPositionProperty</a></li><li data-name="SampledProperty"><a href="SampledProperty.html">SampledProperty</a></li><li data-name="sampleTerrain"><a href="sampleTerrain.html">sampleTerrain</a></li><li data-name="sampleTerrainMostDetailed"><a href="sampleTerrainMostDetailed.html">sampleTerrainMostDetailed</a></li><li data-name="Scene"><a href="Scene.html">Scene</a></li><li data-name="SceneMode"><a href="SceneMode.html">SceneMode</a></li><li data-name="SceneModePicker"><a href="SceneModePicker.html">SceneModePicker</a></li><li data-name="SceneModePickerViewModel"><a href="SceneModePickerViewModel.html">SceneModePickerViewModel</a></li><li data-name="SceneTransforms"><a href="SceneTransforms.html">SceneTransforms</a></li><li data-name="ScreenSpaceCameraController"><a href="ScreenSpaceCameraController.html">ScreenSpaceCameraController</a></li><li data-name="ScreenSpaceEventHandler"><a href="ScreenSpaceEventHandler.html">ScreenSpaceEventHandler</a></li><li data-name="ScreenSpaceEventType"><a href="ScreenSpaceEventType.html">ScreenSpaceEventType</a></li><li data-name="SelectionIndicator"><a href="SelectionIndicator.html">SelectionIndicator</a></li><li data-name="SelectionIndicatorViewModel"><a href="SelectionIndicatorViewModel.html">SelectionIndicatorViewModel</a></li><li data-name="ShadowMap"><a href="ShadowMap.html">ShadowMap</a></li><li data-name="ShadowMode"><a href="ShadowMode.html">ShadowMode</a></li><li data-name="ShowGeometryInstanceAttribute"><a href="ShowGeometryInstanceAttribute.html">ShowGeometryInstanceAttribute</a></li><li data-name="Simon1994PlanetaryPositions"><a href="Simon1994PlanetaryPositions.html">Simon1994PlanetaryPositions</a></li><li data-name="SimplePolylineGeometry"><a href="SimplePolylineGeometry.html">SimplePolylineGeometry</a></li><li data-name="SingleTileImageryProvider"><a href="SingleTileImageryProvider.html">SingleTileImageryProvider</a></li><li data-name="SkyAtmosphere"><a href="SkyAtmosphere.html">SkyAtmosphere</a></li><li data-name="SkyBox"><a href="SkyBox.html">SkyBox</a></li><li data-name="SphereEmitter"><a href="SphereEmitter.html">SphereEmitter</a></li><li data-name="SphereGeometry"><a href="SphereGeometry.html">SphereGeometry</a></li><li data-name="SphereOutlineGeometry"><a href="SphereOutlineGeometry.html">SphereOutlineGeometry</a></li><li data-name="Spherical"><a href="Spherical.html">Spherical</a></li><li data-name="Spline"><a href="Spline.html">Spline</a></li><li data-name="StencilFunction"><a href="StencilFunction.html">StencilFunction</a></li><li data-name="StencilOperation"><a href="StencilOperation.html">StencilOperation</a></li><li data-name="StripeMaterialProperty"><a href="StripeMaterialProperty.html">StripeMaterialProperty</a></li><li data-name="StripeOrientation"><a href="StripeOrientation.html">StripeOrientation</a></li><li data-name="StyleExpression"><a href="StyleExpression.html">StyleExpression</a></li><li data-name="subdivideArray"><a href="subdivideArray.html">subdivideArray</a></li><li data-name="Sun"><a href="Sun.html">Sun</a></li><li data-name="SvgPathBindingHandler"><a href="SvgPathBindingHandler.html">SvgPathBindingHandler</a></li><li data-name="TaskProcessor"><a href="TaskProcessor.html">TaskProcessor</a></li><li data-name="TerrainData"><a href="TerrainData.html">TerrainData</a></li><li data-name="TerrainProvider"><a href="TerrainProvider.html">TerrainProvider</a></li><li data-name="TextureMagnificationFilter"><a href="TextureMagnificationFilter.html">TextureMagnificationFilter</a></li><li data-name="TextureMinificationFilter"><a href="TextureMinificationFilter.html">TextureMinificationFilter</a></li><li data-name="TileAvailability"><a href="TileAvailability.html">TileAvailability</a></li><li data-name="TileCoordinatesImageryProvider"><a href="TileCoordinatesImageryProvider.html">TileCoordinatesImageryProvider</a></li><li data-name="TileDiscardPolicy"><a href="TileDiscardPolicy.html">TileDiscardPolicy</a></li><li data-name="TileProviderError"><a href="TileProviderError.html">TileProviderError</a></li><li data-name="TilingScheme"><a href="TilingScheme.html">TilingScheme</a></li><li data-name="TimeDynamicImagery"><a href="TimeDynamicImagery.html">TimeDynamicImagery</a></li><li data-name="TimeDynamicPointCloud"><a href="TimeDynamicPointCloud.html">TimeDynamicPointCloud</a></li><li data-name="TimeInterval"><a href="TimeInterval.html">TimeInterval</a></li><li data-name="TimeIntervalCollection"><a href="TimeIntervalCollection.html">TimeIntervalCollection</a></li><li data-name="TimeIntervalCollectionPositionProperty"><a href="TimeIntervalCollectionPositionProperty.html">TimeIntervalCollectionPositionProperty</a></li><li data-name="TimeIntervalCollectionProperty"><a href="TimeIntervalCollectionProperty.html">TimeIntervalCollectionProperty</a></li><li data-name="Timeline"><a href="Timeline.html">Timeline</a></li><li data-name="TimeStandard"><a href="TimeStandard.html">TimeStandard</a></li><li data-name="ToggleButtonViewModel"><a href="ToggleButtonViewModel.html">ToggleButtonViewModel</a></li><li data-name="Transforms"><a href="Transforms.html">Transforms</a></li><li data-name="TranslationRotationScale"><a href="TranslationRotationScale.html">TranslationRotationScale</a></li><li data-name="TridiagonalSystemSolver"><a href="TridiagonalSystemSolver.html">TridiagonalSystemSolver</a></li><li data-name="TrustedServers"><a href="TrustedServers.html">TrustedServers</a></li><li data-name="UrlTemplateImageryProvider"><a href="UrlTemplateImageryProvider.html">UrlTemplateImageryProvider</a></li><li data-name="VelocityOrientationProperty"><a href="VelocityOrientationProperty.html">VelocityOrientationProperty</a></li><li data-name="VelocityVectorProperty"><a href="VelocityVectorProperty.html">VelocityVectorProperty</a></li><li data-name="VertexFormat"><a href="VertexFormat.html">VertexFormat</a></li><li data-name="VerticalOrigin"><a href="VerticalOrigin.html">VerticalOrigin</a></li><li data-name="VideoSynchronizer"><a href="VideoSynchronizer.html">VideoSynchronizer</a></li><li data-name="Viewer"><a href="Viewer.html">Viewer</a></li><li data-name="viewerCesium3DTilesInspectorMixin"><a href="viewerCesium3DTilesInspectorMixin.html">viewerCesium3DTilesInspectorMixin</a></li><li data-name="viewerCesiumInspectorMixin"><a href="viewerCesiumInspectorMixin.html">viewerCesiumInspectorMixin</a></li><li data-name="viewerDragDropMixin"><a href="viewerDragDropMixin.html">viewerDragDropMixin</a></li><li data-name="viewerPerformanceWatchdogMixin"><a href="viewerPerformanceWatchdogMixin.html">viewerPerformanceWatchdogMixin</a></li><li data-name="ViewportQuad"><a href="ViewportQuad.html">ViewportQuad</a></li><li data-name="Visibility"><a href="Visibility.html">Visibility</a></li><li data-name="Visualizer"><a href="Visualizer.html">Visualizer</a></li><li data-name="VRButton"><a href="VRButton.html">VRButton</a></li><li data-name="VRButtonViewModel"><a href="VRButtonViewModel.html">VRButtonViewModel</a></li><li data-name="VRTheWorldTerrainProvider"><a href="VRTheWorldTerrainProvider.html">VRTheWorldTerrainProvider</a></li><li data-name="WallGeometry"><a href="WallGeometry.html">WallGeometry</a></li><li data-name="WallGeometryUpdater"><a href="WallGeometryUpdater.html">WallGeometryUpdater</a></li><li data-name="WallGraphics"><a href="WallGraphics.html">WallGraphics</a></li><li data-name="WallOutlineGeometry"><a href="WallOutlineGeometry.html">WallOutlineGeometry</a></li><li data-name="WebGLConstants"><a href="WebGLConstants.html">WebGLConstants</a></li><li data-name="WebMapServiceImageryProvider"><a href="WebMapServiceImageryProvider.html">WebMapServiceImageryProvider</a></li><li data-name="WebMapTileServiceImageryProvider"><a href="WebMapTileServiceImageryProvider.html">WebMapTileServiceImageryProvider</a></li><li data-name="WebMercatorProjection"><a href="WebMercatorProjection.html">WebMercatorProjection</a></li><li data-name="WebMercatorTilingScheme"><a href="WebMercatorTilingScheme.html">WebMercatorTilingScheme</a></li><li data-name="WeightSpline"><a href="WeightSpline.html">WeightSpline</a></li><li data-name="WindingOrder"><a href="WindingOrder.html">WindingOrder</a></li></ul>
+        <ul id="ClassList"><li data-name="Animation"><a href="Animation.html">Animation</a></li><li data-name="AnimationViewModel"><a href="AnimationViewModel.html">AnimationViewModel</a></li><li data-name="Appearance"><a href="Appearance.html">Appearance</a></li><li data-name="ArcGisMapServerImageryProvider"><a href="ArcGisMapServerImageryProvider.html">ArcGisMapServerImageryProvider</a></li><li data-name="AssociativeArray"><a href="AssociativeArray.html">AssociativeArray</a></li><li data-name="AxisAlignedBoundingBox"><a href="AxisAlignedBoundingBox.html">AxisAlignedBoundingBox</a></li><li data-name="barycentricCoordinates"><a href="barycentricCoordinates.html">barycentricCoordinates</a></li><li data-name="BaseLayerPicker"><a href="BaseLayerPicker.html">BaseLayerPicker</a></li><li data-name="BaseLayerPickerViewModel"><a href="BaseLayerPickerViewModel.html">BaseLayerPickerViewModel</a></li><li data-name="Billboard"><a href="Billboard.html">Billboard</a></li><li data-name="BillboardCollection"><a href="BillboardCollection.html">BillboardCollection</a></li><li data-name="BillboardGraphics"><a href="BillboardGraphics.html">BillboardGraphics</a></li><li data-name="BillboardVisualizer"><a href="BillboardVisualizer.html">BillboardVisualizer</a></li><li data-name="binarySearch"><a href="binarySearch.html">binarySearch</a></li><li data-name="BingMapsApi"><a href="BingMapsApi.html">BingMapsApi</a></li><li data-name="BingMapsGeocoderService"><a href="BingMapsGeocoderService.html">BingMapsGeocoderService</a></li><li data-name="BingMapsImageryProvider"><a href="BingMapsImageryProvider.html">BingMapsImageryProvider</a></li><li data-name="BingMapsStyle"><a href="BingMapsStyle.html">BingMapsStyle</a></li><li data-name="BlendEquation"><a href="BlendEquation.html">BlendEquation</a></li><li data-name="BlendFunction"><a href="BlendFunction.html">BlendFunction</a></li><li data-name="BlendingState"><a href="BlendingState.html">BlendingState</a></li><li data-name="BlendOption"><a href="BlendOption.html">BlendOption</a></li><li data-name="BoundingRectangle"><a href="BoundingRectangle.html">BoundingRectangle</a></li><li data-name="BoundingSphere"><a href="BoundingSphere.html">BoundingSphere</a></li><li data-name="BoxEmitter"><a href="BoxEmitter.html">BoxEmitter</a></li><li data-name="BoxGeometry"><a href="BoxGeometry.html">BoxGeometry</a></li><li data-name="BoxGeometryUpdater"><a href="BoxGeometryUpdater.html">BoxGeometryUpdater</a></li><li data-name="BoxGraphics"><a href="BoxGraphics.html">BoxGraphics</a></li><li data-name="BoxOutlineGeometry"><a href="BoxOutlineGeometry.html">BoxOutlineGeometry</a></li><li data-name="CallbackProperty"><a href="CallbackProperty.html">CallbackProperty</a></li><li data-name="Camera"><a href="Camera.html">Camera</a></li><li data-name="CameraEventAggregator"><a href="CameraEventAggregator.html">CameraEventAggregator</a></li><li data-name="CameraEventType"><a href="CameraEventType.html">CameraEventType</a></li><li data-name="cancelAnimationFrame"><a href="cancelAnimationFrame.html">cancelAnimationFrame</a></li><li data-name="Cartesian2"><a href="Cartesian2.html">Cartesian2</a></li><li data-name="Cartesian3"><a href="Cartesian3.html">Cartesian3</a></li><li data-name="Cartesian4"><a href="Cartesian4.html">Cartesian4</a></li><li data-name="Cartographic"><a href="Cartographic.html">Cartographic</a></li><li data-name="CartographicGeocoderService"><a href="CartographicGeocoderService.html">CartographicGeocoderService</a></li><li data-name="CatmullRomSpline"><a href="CatmullRomSpline.html">CatmullRomSpline</a></li><li data-name="Cesium3DTile"><a href="Cesium3DTile.html">Cesium3DTile</a></li><li data-name="Cesium3DTileColorBlendMode"><a href="Cesium3DTileColorBlendMode.html">Cesium3DTileColorBlendMode</a></li><li data-name="Cesium3DTileContent"><a href="Cesium3DTileContent.html">Cesium3DTileContent</a></li><li data-name="Cesium3DTileFeature"><a href="Cesium3DTileFeature.html">Cesium3DTileFeature</a></li><li data-name="Cesium3DTilePointFeature"><a href="Cesium3DTilePointFeature.html">Cesium3DTilePointFeature</a></li><li data-name="Cesium3DTileset"><a href="Cesium3DTileset.html">Cesium3DTileset</a></li><li data-name="Cesium3DTilesInspector"><a href="Cesium3DTilesInspector.html">Cesium3DTilesInspector</a></li><li data-name="Cesium3DTilesInspectorViewModel"><a href="Cesium3DTilesInspectorViewModel.html">Cesium3DTilesInspectorViewModel</a></li><li data-name="Cesium3DTileStyle"><a href="Cesium3DTileStyle.html">Cesium3DTileStyle</a></li><li data-name="CesiumInspector"><a href="CesiumInspector.html">CesiumInspector</a></li><li data-name="CesiumInspectorViewModel"><a href="CesiumInspectorViewModel.html">CesiumInspectorViewModel</a></li><li data-name="CesiumTerrainProvider"><a href="CesiumTerrainProvider.html">CesiumTerrainProvider</a></li><li data-name="CesiumWidget"><a href="CesiumWidget.html">CesiumWidget</a></li><li data-name="CheckerboardMaterialProperty"><a href="CheckerboardMaterialProperty.html">CheckerboardMaterialProperty</a></li><li data-name="CircleEmitter"><a href="CircleEmitter.html">CircleEmitter</a></li><li data-name="CircleGeometry"><a href="CircleGeometry.html">CircleGeometry</a></li><li data-name="CircleOutlineGeometry"><a href="CircleOutlineGeometry.html">CircleOutlineGeometry</a></li><li data-name="ClassificationPrimitive"><a href="ClassificationPrimitive.html">ClassificationPrimitive</a></li><li data-name="ClassificationType"><a href="ClassificationType.html">ClassificationType</a></li><li data-name="ClippingPlane"><a href="ClippingPlane.html">ClippingPlane</a></li><li data-name="ClippingPlaneCollection"><a href="ClippingPlaneCollection.html">ClippingPlaneCollection</a></li><li data-name="Clock"><a href="Clock.html">Clock</a></li><li data-name="ClockRange"><a href="ClockRange.html">ClockRange</a></li><li data-name="ClockStep"><a href="ClockStep.html">ClockStep</a></li><li data-name="ClockViewModel"><a href="ClockViewModel.html">ClockViewModel</a></li><li data-name="clone"><a href="clone.html">clone</a></li><li data-name="Color"><a href="Color.html">Color</a></li><li data-name="ColorBlendMode"><a href="ColorBlendMode.html">ColorBlendMode</a></li><li data-name="ColorGeometryInstanceAttribute"><a href="ColorGeometryInstanceAttribute.html">ColorGeometryInstanceAttribute</a></li><li data-name="ColorMaterialProperty"><a href="ColorMaterialProperty.html">ColorMaterialProperty</a></li><li data-name="combine"><a href="combine.html">combine</a></li><li data-name="Command"><a href="Command.html">Command</a></li><li data-name="ComponentDatatype"><a href="ComponentDatatype.html">ComponentDatatype</a></li><li data-name="CompositeEntityCollection"><a href="CompositeEntityCollection.html">CompositeEntityCollection</a></li><li data-name="CompositeMaterialProperty"><a href="CompositeMaterialProperty.html">CompositeMaterialProperty</a></li><li data-name="CompositePositionProperty"><a href="CompositePositionProperty.html">CompositePositionProperty</a></li><li data-name="CompositeProperty"><a href="CompositeProperty.html">CompositeProperty</a></li><li data-name="CompressedTextureBuffer"><a href="CompressedTextureBuffer.html">CompressedTextureBuffer</a></li><li data-name="ConditionsExpression"><a href="ConditionsExpression.html">ConditionsExpression</a></li><li data-name="ConeEmitter"><a href="ConeEmitter.html">ConeEmitter</a></li><li data-name="ConstantPositionProperty"><a href="ConstantPositionProperty.html">ConstantPositionProperty</a></li><li data-name="ConstantProperty"><a href="ConstantProperty.html">ConstantProperty</a></li><li data-name="CoplanarPolygonGeometry"><a href="CoplanarPolygonGeometry.html">CoplanarPolygonGeometry</a></li><li data-name="CoplanarPolygonOutlineGeometry"><a href="CoplanarPolygonOutlineGeometry.html">CoplanarPolygonOutlineGeometry</a></li><li data-name="CornerType"><a href="CornerType.html">CornerType</a></li><li data-name="CorridorGeometry"><a href="CorridorGeometry.html">CorridorGeometry</a></li><li data-name="CorridorGeometryUpdater"><a href="CorridorGeometryUpdater.html">CorridorGeometryUpdater</a></li><li data-name="CorridorGraphics"><a href="CorridorGraphics.html">CorridorGraphics</a></li><li data-name="CorridorOutlineGeometry"><a href="CorridorOutlineGeometry.html">CorridorOutlineGeometry</a></li><li data-name="createCommand"><a href="createCommand.html">createCommand</a></li><li data-name="createGuid"><a href="createGuid.html">createGuid</a></li><li data-name="createOpenStreetMapImageryProvider"><a href="createOpenStreetMapImageryProvider.html">createOpenStreetMapImageryProvider</a></li><li data-name="createTangentSpaceDebugPrimitive"><a href="createTangentSpaceDebugPrimitive.html">createTangentSpaceDebugPrimitive</a></li><li data-name="createTaskProcessorWorker"><a href="createTaskProcessorWorker.html">createTaskProcessorWorker</a></li><li data-name="createTileMapServiceImageryProvider"><a href="createTileMapServiceImageryProvider.html">createTileMapServiceImageryProvider</a></li><li data-name="createWorldImagery"><a href="createWorldImagery.html">createWorldImagery</a></li><li data-name="createWorldTerrain"><a href="createWorldTerrain.html">createWorldTerrain</a></li><li data-name="Credit"><a href="Credit.html">Credit</a></li><li data-name="CreditDisplay"><a href="CreditDisplay.html">CreditDisplay</a></li><li data-name="CubicRealPolynomial"><a href="CubicRealPolynomial.html">CubicRealPolynomial</a></li><li data-name="CullFace"><a href="CullFace.html">CullFace</a></li><li data-name="CullingVolume"><a href="CullingVolume.html">CullingVolume</a></li><li data-name="CustomDataSource"><a href="CustomDataSource.html">CustomDataSource</a></li><li data-name="CylinderGeometry"><a href="CylinderGeometry.html">CylinderGeometry</a></li><li data-name="CylinderGeometryUpdater"><a href="CylinderGeometryUpdater.html">CylinderGeometryUpdater</a></li><li data-name="CylinderGraphics"><a href="CylinderGraphics.html">CylinderGraphics</a></li><li data-name="CylinderOutlineGeometry"><a href="CylinderOutlineGeometry.html">CylinderOutlineGeometry</a></li><li data-name="CzmlDataSource"><a href="CzmlDataSource.html">CzmlDataSource</a></li><li data-name="DataSource"><a href="DataSource.html">DataSource</a></li><li data-name="DataSourceClock"><a href="DataSourceClock.html">DataSourceClock</a></li><li data-name="DataSourceCollection"><a href="DataSourceCollection.html">DataSourceCollection</a></li><li data-name="DataSourceDisplay"><a href="DataSourceDisplay.html">DataSourceDisplay</a></li><li data-name="DebugAppearance"><a href="DebugAppearance.html">DebugAppearance</a></li><li data-name="DebugCameraPrimitive"><a href="DebugCameraPrimitive.html">DebugCameraPrimitive</a></li><li data-name="DebugModelMatrixPrimitive"><a href="DebugModelMatrixPrimitive.html">DebugModelMatrixPrimitive</a></li><li data-name="DefaultProxy"><a href="DefaultProxy.html">DefaultProxy</a></li><li data-name="defaultValue"><a href="defaultValue.html">defaultValue</a></li><li data-name="defined"><a href="defined.html">defined</a></li><li data-name="DepthFunction"><a href="DepthFunction.html">DepthFunction</a></li><li data-name="destroyObject"><a href="destroyObject.html">destroyObject</a></li><li data-name="DeveloperError"><a href="DeveloperError.html">DeveloperError</a></li><li data-name="DiscardMissingTileImagePolicy"><a href="DiscardMissingTileImagePolicy.html">DiscardMissingTileImagePolicy</a></li><li data-name="DistanceDisplayCondition"><a href="DistanceDisplayCondition.html">DistanceDisplayCondition</a></li><li data-name="DistanceDisplayConditionGeometryInstanceAttribute"><a href="DistanceDisplayConditionGeometryInstanceAttribute.html">DistanceDisplayConditionGeometryInstanceAttribute</a></li><li data-name="EasingFunction"><a href="EasingFunction.html">EasingFunction</a></li><li data-name="EllipseGeometry"><a href="EllipseGeometry.html">EllipseGeometry</a></li><li data-name="EllipseGeometryUpdater"><a href="EllipseGeometryUpdater.html">EllipseGeometryUpdater</a></li><li data-name="EllipseGraphics"><a href="EllipseGraphics.html">EllipseGraphics</a></li><li data-name="EllipseOutlineGeometry"><a href="EllipseOutlineGeometry.html">EllipseOutlineGeometry</a></li><li data-name="Ellipsoid"><a href="Ellipsoid.html">Ellipsoid</a></li><li data-name="EllipsoidGeodesic"><a href="EllipsoidGeodesic.html">EllipsoidGeodesic</a></li><li data-name="EllipsoidGeometry"><a href="EllipsoidGeometry.html">EllipsoidGeometry</a></li><li data-name="EllipsoidGeometryUpdater"><a href="EllipsoidGeometryUpdater.html">EllipsoidGeometryUpdater</a></li><li data-name="EllipsoidGraphics"><a href="EllipsoidGraphics.html">EllipsoidGraphics</a></li><li data-name="EllipsoidOutlineGeometry"><a href="EllipsoidOutlineGeometry.html">EllipsoidOutlineGeometry</a></li><li data-name="EllipsoidSurfaceAppearance"><a href="EllipsoidSurfaceAppearance.html">EllipsoidSurfaceAppearance</a></li><li data-name="EllipsoidTangentPlane"><a href="EllipsoidTangentPlane.html">EllipsoidTangentPlane</a></li><li data-name="EllipsoidTerrainProvider"><a href="EllipsoidTerrainProvider.html">EllipsoidTerrainProvider</a></li><li data-name="Entity"><a href="Entity.html">Entity</a></li><li data-name="EntityCluster"><a href="EntityCluster.html">EntityCluster</a></li><li data-name="EntityCollection"><a href="EntityCollection.html">EntityCollection</a></li><li data-name="EntityView"><a href="EntityView.html">EntityView</a></li><li data-name="Event"><a href="Event.html">Event</a></li><li data-name="EventHelper"><a href="EventHelper.html">EventHelper</a></li><li data-name="Expression"><a href="Expression.html">Expression</a></li><li data-name="ExtrapolationType"><a href="ExtrapolationType.html">ExtrapolationType</a></li><li data-name="FeatureDetection"><a href="FeatureDetection.html">FeatureDetection</a></li><li data-name="Fog"><a href="Fog.html">Fog</a></li><li data-name="formatError"><a href="formatError.html">formatError</a></li><li data-name="FrameRateMonitor"><a href="FrameRateMonitor.html">FrameRateMonitor</a></li><li data-name="FrustumGeometry"><a href="FrustumGeometry.html">FrustumGeometry</a></li><li data-name="FrustumOutlineGeometry"><a href="FrustumOutlineGeometry.html">FrustumOutlineGeometry</a></li><li data-name="Fullscreen"><a href="Fullscreen.html">Fullscreen</a></li><li data-name="FullscreenButton"><a href="FullscreenButton.html">FullscreenButton</a></li><li data-name="FullscreenButtonViewModel"><a href="FullscreenButtonViewModel.html">FullscreenButtonViewModel</a></li><li data-name="Geocoder"><a href="Geocoder.html">Geocoder</a></li><li data-name="GeocoderService"><a href="GeocoderService.html">GeocoderService</a></li><li data-name="GeocoderViewModel"><a href="GeocoderViewModel.html">GeocoderViewModel</a></li><li data-name="GeocodeType"><a href="GeocodeType.html">GeocodeType</a></li><li data-name="GeographicProjection"><a href="GeographicProjection.html">GeographicProjection</a></li><li data-name="GeographicTilingScheme"><a href="GeographicTilingScheme.html">GeographicTilingScheme</a></li><li data-name="GeoJsonDataSource"><a href="GeoJsonDataSource.html">GeoJsonDataSource</a></li><li data-name="Geometry"><a href="Geometry.html">Geometry</a></li><li data-name="GeometryAttribute"><a href="GeometryAttribute.html">GeometryAttribute</a></li><li data-name="GeometryAttributes"><a href="GeometryAttributes.html">GeometryAttributes</a></li><li data-name="GeometryInstance"><a href="GeometryInstance.html">GeometryInstance</a></li><li data-name="GeometryInstanceAttribute"><a href="GeometryInstanceAttribute.html">GeometryInstanceAttribute</a></li><li data-name="GeometryPipeline"><a href="GeometryPipeline.html">GeometryPipeline</a></li><li data-name="GeometryUpdater"><a href="GeometryUpdater.html">GeometryUpdater</a></li><li data-name="GeometryVisualizer"><a href="GeometryVisualizer.html">GeometryVisualizer</a></li><li data-name="getAbsoluteUri"><a href="getAbsoluteUri.html">getAbsoluteUri</a></li><li data-name="getBaseUri"><a href="getBaseUri.html">getBaseUri</a></li><li data-name="getExtensionFromUri"><a href="getExtensionFromUri.html">getExtensionFromUri</a></li><li data-name="GetFeatureInfoFormat"><a href="GetFeatureInfoFormat.html">GetFeatureInfoFormat</a></li><li data-name="getFilenameFromUri"><a href="getFilenameFromUri.html">getFilenameFromUri</a></li><li data-name="getImagePixels"><a href="getImagePixels.html">getImagePixels</a></li><li data-name="getTimestamp"><a href="getTimestamp.html">getTimestamp</a></li><li data-name="Globe"><a href="Globe.html">Globe</a></li><li data-name="GoogleEarthEnterpriseImageryProvider"><a href="GoogleEarthEnterpriseImageryProvider.html">GoogleEarthEnterpriseImageryProvider</a></li><li data-name="GoogleEarthEnterpriseMapsProvider"><a href="GoogleEarthEnterpriseMapsProvider.html">GoogleEarthEnterpriseMapsProvider</a></li><li data-name="GoogleEarthEnterpriseMetadata"><a href="GoogleEarthEnterpriseMetadata.html">GoogleEarthEnterpriseMetadata</a></li><li data-name="GoogleEarthEnterpriseTerrainData"><a href="GoogleEarthEnterpriseTerrainData.html">GoogleEarthEnterpriseTerrainData</a></li><li data-name="GoogleEarthEnterpriseTerrainProvider"><a href="GoogleEarthEnterpriseTerrainProvider.html">GoogleEarthEnterpriseTerrainProvider</a></li><li data-name="GregorianDate"><a href="GregorianDate.html">GregorianDate</a></li><li data-name="GridImageryProvider"><a href="GridImageryProvider.html">GridImageryProvider</a></li><li data-name="GridMaterialProperty"><a href="GridMaterialProperty.html">GridMaterialProperty</a></li><li data-name="GroundPolylineGeometry"><a href="GroundPolylineGeometry.html">GroundPolylineGeometry</a></li><li data-name="GroundPolylinePrimitive"><a href="GroundPolylinePrimitive.html">GroundPolylinePrimitive</a></li><li data-name="GroundPrimitive"><a href="GroundPrimitive.html">GroundPrimitive</a></li><li data-name="HeadingPitchRange"><a href="HeadingPitchRange.html">HeadingPitchRange</a></li><li data-name="HeadingPitchRoll"><a href="HeadingPitchRoll.html">HeadingPitchRoll</a></li><li data-name="HeightmapTerrainData"><a href="HeightmapTerrainData.html">HeightmapTerrainData</a></li><li data-name="HeightReference"><a href="HeightReference.html">HeightReference</a></li><li data-name="HermitePolynomialApproximation"><a href="HermitePolynomialApproximation.html">HermitePolynomialApproximation</a></li><li data-name="HermiteSpline"><a href="HermiteSpline.html">HermiteSpline</a></li><li data-name="HomeButton"><a href="HomeButton.html">HomeButton</a></li><li data-name="HomeButtonViewModel"><a href="HomeButtonViewModel.html">HomeButtonViewModel</a></li><li data-name="HorizontalOrigin"><a href="HorizontalOrigin.html">HorizontalOrigin</a></li><li data-name="ImageMaterialProperty"><a href="ImageMaterialProperty.html">ImageMaterialProperty</a></li><li data-name="ImageryLayer"><a href="ImageryLayer.html">ImageryLayer</a></li><li data-name="ImageryLayerCollection"><a href="ImageryLayerCollection.html">ImageryLayerCollection</a></li><li data-name="ImageryLayerFeatureInfo"><a href="ImageryLayerFeatureInfo.html">ImageryLayerFeatureInfo</a></li><li data-name="ImageryProvider"><a href="ImageryProvider.html">ImageryProvider</a></li><li data-name="ImagerySplitDirection"><a href="ImagerySplitDirection.html">ImagerySplitDirection</a></li><li data-name="IndexDatatype"><a href="IndexDatatype.html">IndexDatatype</a></li><li data-name="InfoBox"><a href="InfoBox.html">InfoBox</a></li><li data-name="InfoBoxViewModel"><a href="InfoBoxViewModel.html">InfoBoxViewModel</a></li><li data-name="InterpolationAlgorithm"><a href="InterpolationAlgorithm.html">InterpolationAlgorithm</a></li><li data-name="Intersect"><a href="Intersect.html">Intersect</a></li><li data-name="Intersections2D"><a href="Intersections2D.html">Intersections2D</a></li><li data-name="IntersectionTests"><a href="IntersectionTests.html">IntersectionTests</a></li><li data-name="Interval"><a href="Interval.html">Interval</a></li><li data-name="Ion"><a href="Ion.html">Ion</a></li><li data-name="IonGeocoderService"><a href="IonGeocoderService.html">IonGeocoderService</a></li><li data-name="IonImageryProvider"><a href="IonImageryProvider.html">IonImageryProvider</a></li><li data-name="IonResource"><a href="IonResource.html">IonResource</a></li><li data-name="IonWorldImageryStyle"><a href="IonWorldImageryStyle.html">IonWorldImageryStyle</a></li><li data-name="isArray"><a href="isArray.html">isArray</a></li><li data-name="isLeapYear"><a href="isLeapYear.html">isLeapYear</a></li><li data-name="Iso8601"><a href="Iso8601.html">Iso8601</a></li><li data-name="JulianDate"><a href="JulianDate.html">JulianDate</a></li><li data-name="KeyboardEventModifier"><a href="KeyboardEventModifier.html">KeyboardEventModifier</a></li><li data-name="KmlCamera"><a href="KmlCamera.html">KmlCamera</a></li><li data-name="KmlDataSource"><a href="KmlDataSource.html">KmlDataSource</a></li><li data-name="KmlFeatureData"><a href="KmlFeatureData.html">KmlFeatureData</a></li><li data-name="KmlLookAt"><a href="KmlLookAt.html">KmlLookAt</a></li><li data-name="KmlTour"><a href="KmlTour.html">KmlTour</a></li><li data-name="KmlTourFlyTo"><a href="KmlTourFlyTo.html">KmlTourFlyTo</a></li><li data-name="KmlTourWait"><a href="KmlTourWait.html">KmlTourWait</a></li><li data-name="Label"><a href="Label.html">Label</a></li><li data-name="LabelCollection"><a href="LabelCollection.html">LabelCollection</a></li><li data-name="LabelGraphics"><a href="LabelGraphics.html">LabelGraphics</a></li><li data-name="LabelStyle"><a href="LabelStyle.html">LabelStyle</a></li><li data-name="LabelVisualizer"><a href="LabelVisualizer.html">LabelVisualizer</a></li><li data-name="LagrangePolynomialApproximation"><a href="LagrangePolynomialApproximation.html">LagrangePolynomialApproximation</a></li><li data-name="LeapSecond"><a href="LeapSecond.html">LeapSecond</a></li><li data-name="LinearApproximation"><a href="LinearApproximation.html">LinearApproximation</a></li><li data-name="LinearSpline"><a href="LinearSpline.html">LinearSpline</a></li><li data-name="loadCRN"><a href="loadCRN.html">loadCRN</a></li><li data-name="loadKTX"><a href="loadKTX.html">loadKTX</a></li><li data-name="MapboxImageryProvider"><a href="MapboxImageryProvider.html">MapboxImageryProvider</a></li><li data-name="MapMode2D"><a href="MapMode2D.html">MapMode2D</a></li><li data-name="MapProjection"><a href="MapProjection.html">MapProjection</a></li><li data-name="Material"><a href="Material.html">Material</a></li><li data-name="MaterialAppearance"><a href="MaterialAppearance.html">MaterialAppearance</a></li><li data-name="MaterialSupport"><a href="MaterialAppearance.module_MaterialSupport.html">MaterialSupport</a></li><li data-name="MaterialProperty"><a href="MaterialProperty.html">MaterialProperty</a></li><li data-name="Math"><a href="Math.html">Math</a></li><li data-name="Matrix2"><a href="Matrix2.html">Matrix2</a></li><li data-name="Matrix3"><a href="Matrix3.html">Matrix3</a></li><li data-name="Matrix4"><a href="Matrix4.html">Matrix4</a></li><li data-name="mergeSort"><a href="mergeSort.html">mergeSort</a></li><li data-name="Model"><a href="Model.html">Model</a></li><li data-name="ModelAnimation"><a href="ModelAnimation.html">ModelAnimation</a></li><li data-name="ModelAnimationCollection"><a href="ModelAnimationCollection.html">ModelAnimationCollection</a></li><li data-name="ModelAnimationLoop"><a href="ModelAnimationLoop.html">ModelAnimationLoop</a></li><li data-name="ModelGraphics"><a href="ModelGraphics.html">ModelGraphics</a></li><li data-name="ModelMaterial"><a href="ModelMaterial.html">ModelMaterial</a></li><li data-name="ModelMesh"><a href="ModelMesh.html">ModelMesh</a></li><li data-name="ModelNode"><a href="ModelNode.html">ModelNode</a></li><li data-name="ModelVisualizer"><a href="ModelVisualizer.html">ModelVisualizer</a></li><li data-name="Moon"><a href="Moon.html">Moon</a></li><li data-name="NavigationHelpButton"><a href="NavigationHelpButton.html">NavigationHelpButton</a></li><li data-name="NavigationHelpButtonViewModel"><a href="NavigationHelpButtonViewModel.html">NavigationHelpButtonViewModel</a></li><li data-name="NearFarScalar"><a href="NearFarScalar.html">NearFarScalar</a></li><li data-name="NeverTileDiscardPolicy"><a href="NeverTileDiscardPolicy.html">NeverTileDiscardPolicy</a></li><li data-name="NodeTransformationProperty"><a href="NodeTransformationProperty.html">NodeTransformationProperty</a></li><li data-name="objectToQuery"><a href="objectToQuery.html">objectToQuery</a></li><li data-name="Occluder"><a href="Occluder.html">Occluder</a></li><li data-name="OpenCageGeocoderService"><a href="OpenCageGeocoderService.html">OpenCageGeocoderService</a></li><li data-name="OrientedBoundingBox"><a href="OrientedBoundingBox.html">OrientedBoundingBox</a></li><li data-name="OrthographicFrustum"><a href="OrthographicFrustum.html">OrthographicFrustum</a></li><li data-name="OrthographicOffCenterFrustum"><a href="OrthographicOffCenterFrustum.html">OrthographicOffCenterFrustum</a></li><li data-name="Packable"><a href="Packable.html">Packable</a></li><li data-name="PackableForInterpolation"><a href="PackableForInterpolation.html">PackableForInterpolation</a></li><li data-name="Particle"><a href="Particle.html">Particle</a></li><li data-name="ParticleBurst"><a href="ParticleBurst.html">ParticleBurst</a></li><li data-name="ParticleEmitter"><a href="ParticleEmitter.html">ParticleEmitter</a></li><li data-name="ParticleSystem"><a href="ParticleSystem.html">ParticleSystem</a></li><li data-name="PathGraphics"><a href="PathGraphics.html">PathGraphics</a></li><li data-name="PathVisualizer"><a href="PathVisualizer.html">PathVisualizer</a></li><li data-name="PeliasGeocoderService"><a href="PeliasGeocoderService.html">PeliasGeocoderService</a></li><li data-name="PerformanceWatchdog"><a href="PerformanceWatchdog.html">PerformanceWatchdog</a></li><li data-name="PerformanceWatchdogViewModel"><a href="PerformanceWatchdogViewModel.html">PerformanceWatchdogViewModel</a></li><li data-name="PerInstanceColorAppearance"><a href="PerInstanceColorAppearance.html">PerInstanceColorAppearance</a></li><li data-name="PerspectiveFrustum"><a href="PerspectiveFrustum.html">PerspectiveFrustum</a></li><li data-name="PerspectiveOffCenterFrustum"><a href="PerspectiveOffCenterFrustum.html">PerspectiveOffCenterFrustum</a></li><li data-name="PinBuilder"><a href="PinBuilder.html">PinBuilder</a></li><li data-name="PixelFormat"><a href="PixelFormat.html">PixelFormat</a></li><li data-name="Plane"><a href="Plane.html">Plane</a></li><li data-name="PlaneGeometry"><a href="PlaneGeometry.html">PlaneGeometry</a></li><li data-name="PlaneGeometryUpdater"><a href="PlaneGeometryUpdater.html">PlaneGeometryUpdater</a></li><li data-name="PlaneGraphics"><a href="PlaneGraphics.html">PlaneGraphics</a></li><li data-name="PlaneOutlineGeometry"><a href="PlaneOutlineGeometry.html">PlaneOutlineGeometry</a></li><li data-name="PointCloudShading"><a href="PointCloudShading.html">PointCloudShading</a></li><li data-name="PointGraphics"><a href="PointGraphics.html">PointGraphics</a></li><li data-name="pointInsideTriangle"><a href="pointInsideTriangle.html">pointInsideTriangle</a></li><li data-name="PointPrimitive"><a href="PointPrimitive.html">PointPrimitive</a></li><li data-name="PointPrimitiveCollection"><a href="PointPrimitiveCollection.html">PointPrimitiveCollection</a></li><li data-name="PointVisualizer"><a href="PointVisualizer.html">PointVisualizer</a></li><li data-name="PolygonGeometry"><a href="PolygonGeometry.html">PolygonGeometry</a></li><li data-name="PolygonGeometryUpdater"><a href="PolygonGeometryUpdater.html">PolygonGeometryUpdater</a></li><li data-name="PolygonGraphics"><a href="PolygonGraphics.html">PolygonGraphics</a></li><li data-name="PolygonHierarchy"><a href="PolygonHierarchy.html">PolygonHierarchy</a></li><li data-name="PolygonOutlineGeometry"><a href="PolygonOutlineGeometry.html">PolygonOutlineGeometry</a></li><li data-name="Polyline"><a href="Polyline.html">Polyline</a></li><li data-name="PolylineArrowMaterialProperty"><a href="PolylineArrowMaterialProperty.html">PolylineArrowMaterialProperty</a></li><li data-name="PolylineCollection"><a href="PolylineCollection.html">PolylineCollection</a></li><li data-name="PolylineColorAppearance"><a href="PolylineColorAppearance.html">PolylineColorAppearance</a></li><li data-name="PolylineDashMaterialProperty"><a href="PolylineDashMaterialProperty.html">PolylineDashMaterialProperty</a></li><li data-name="PolylineGeometry"><a href="PolylineGeometry.html">PolylineGeometry</a></li><li data-name="PolylineGeometryUpdater"><a href="PolylineGeometryUpdater.html">PolylineGeometryUpdater</a></li><li data-name="PolylineGlowMaterialProperty"><a href="PolylineGlowMaterialProperty.html">PolylineGlowMaterialProperty</a></li><li data-name="PolylineGraphics"><a href="PolylineGraphics.html">PolylineGraphics</a></li><li data-name="PolylineMaterialAppearance"><a href="PolylineMaterialAppearance.html">PolylineMaterialAppearance</a></li><li data-name="PolylineOutlineMaterialProperty"><a href="PolylineOutlineMaterialProperty.html">PolylineOutlineMaterialProperty</a></li><li data-name="PolylineVisualizer"><a href="PolylineVisualizer.html">PolylineVisualizer</a></li><li data-name="PolylineVolumeGeometry"><a href="PolylineVolumeGeometry.html">PolylineVolumeGeometry</a></li><li data-name="PolylineVolumeGeometryUpdater"><a href="PolylineVolumeGeometryUpdater.html">PolylineVolumeGeometryUpdater</a></li><li data-name="PolylineVolumeGraphics"><a href="PolylineVolumeGraphics.html">PolylineVolumeGraphics</a></li><li data-name="PolylineVolumeOutlineGeometry"><a href="PolylineVolumeOutlineGeometry.html">PolylineVolumeOutlineGeometry</a></li><li data-name="PositionProperty"><a href="PositionProperty.html">PositionProperty</a></li><li data-name="PositionPropertyArray"><a href="PositionPropertyArray.html">PositionPropertyArray</a></li><li data-name="PostProcessStage"><a href="PostProcessStage.html">PostProcessStage</a></li><li data-name="PostProcessStageCollection"><a href="PostProcessStageCollection.html">PostProcessStageCollection</a></li><li data-name="PostProcessStageComposite"><a href="PostProcessStageComposite.html">PostProcessStageComposite</a></li><li data-name="PostProcessStageLibrary"><a href="PostProcessStageLibrary.html">PostProcessStageLibrary</a></li><li data-name="PostProcessStageSampleMode"><a href="PostProcessStageSampleMode.html">PostProcessStageSampleMode</a></li><li data-name="Primitive"><a href="Primitive.html">Primitive</a></li><li data-name="PrimitiveCollection"><a href="PrimitiveCollection.html">PrimitiveCollection</a></li><li data-name="PrimitiveType"><a href="PrimitiveType.html">PrimitiveType</a></li><li data-name="ProjectionPicker"><a href="ProjectionPicker.html">ProjectionPicker</a></li><li data-name="ProjectionPickerViewModel"><a href="ProjectionPickerViewModel.html">ProjectionPickerViewModel</a></li><li data-name="Property"><a href="Property.html">Property</a></li><li data-name="PropertyArray"><a href="PropertyArray.html">PropertyArray</a></li><li data-name="PropertyBag"><a href="PropertyBag.html">PropertyBag</a></li><li data-name="ProviderViewModel"><a href="ProviderViewModel.html">ProviderViewModel</a></li><li data-name="QuadraticRealPolynomial"><a href="QuadraticRealPolynomial.html">QuadraticRealPolynomial</a></li><li data-name="QuantizedMeshTerrainData"><a href="QuantizedMeshTerrainData.html">QuantizedMeshTerrainData</a></li><li data-name="QuarticRealPolynomial"><a href="QuarticRealPolynomial.html">QuarticRealPolynomial</a></li><li data-name="Quaternion"><a href="Quaternion.html">Quaternion</a></li><li data-name="QuaternionSpline"><a href="QuaternionSpline.html">QuaternionSpline</a></li><li data-name="queryToObject"><a href="queryToObject.html">queryToObject</a></li><li data-name="Queue"><a href="Queue.html">Queue</a></li><li data-name="Ray"><a href="Ray.html">Ray</a></li><li data-name="Rectangle"><a href="Rectangle.html">Rectangle</a></li><li data-name="RectangleGeometry"><a href="RectangleGeometry.html">RectangleGeometry</a></li><li data-name="RectangleGeometryUpdater"><a href="RectangleGeometryUpdater.html">RectangleGeometryUpdater</a></li><li data-name="RectangleGraphics"><a href="RectangleGraphics.html">RectangleGraphics</a></li><li data-name="RectangleOutlineGeometry"><a href="RectangleOutlineGeometry.html">RectangleOutlineGeometry</a></li><li data-name="ReferenceFrame"><a href="ReferenceFrame.html">ReferenceFrame</a></li><li data-name="ReferenceProperty"><a href="ReferenceProperty.html">ReferenceProperty</a></li><li data-name="Request"><a href="Request.html">Request</a></li><li data-name="requestAnimationFrame"><a href="requestAnimationFrame.html">requestAnimationFrame</a></li><li data-name="RequestErrorEvent"><a href="RequestErrorEvent.html">RequestErrorEvent</a></li><li data-name="RequestState"><a href="RequestState.html">RequestState</a></li><li data-name="RequestType"><a href="RequestType.html">RequestType</a></li><li data-name="Resource"><a href="Resource.html">Resource</a></li><li data-name="Rotation"><a href="Rotation.html">Rotation</a></li><li data-name="RuntimeError"><a href="RuntimeError.html">RuntimeError</a></li><li data-name="SampledPositionProperty"><a href="SampledPositionProperty.html">SampledPositionProperty</a></li><li data-name="SampledProperty"><a href="SampledProperty.html">SampledProperty</a></li><li data-name="sampleTerrain"><a href="sampleTerrain.html">sampleTerrain</a></li><li data-name="sampleTerrainMostDetailed"><a href="sampleTerrainMostDetailed.html">sampleTerrainMostDetailed</a></li><li data-name="Scene"><a href="Scene.html">Scene</a></li><li data-name="SceneMode"><a href="SceneMode.html">SceneMode</a></li><li data-name="SceneModePicker"><a href="SceneModePicker.html">SceneModePicker</a></li><li data-name="SceneModePickerViewModel"><a href="SceneModePickerViewModel.html">SceneModePickerViewModel</a></li><li data-name="SceneTransforms"><a href="SceneTransforms.html">SceneTransforms</a></li><li data-name="ScreenSpaceCameraController"><a href="ScreenSpaceCameraController.html">ScreenSpaceCameraController</a></li><li data-name="ScreenSpaceEventHandler"><a href="ScreenSpaceEventHandler.html">ScreenSpaceEventHandler</a></li><li data-name="ScreenSpaceEventType"><a href="ScreenSpaceEventType.html">ScreenSpaceEventType</a></li><li data-name="SelectionIndicator"><a href="SelectionIndicator.html">SelectionIndicator</a></li><li data-name="SelectionIndicatorViewModel"><a href="SelectionIndicatorViewModel.html">SelectionIndicatorViewModel</a></li><li data-name="ShadowMap"><a href="ShadowMap.html">ShadowMap</a></li><li data-name="ShadowMode"><a href="ShadowMode.html">ShadowMode</a></li><li data-name="ShowGeometryInstanceAttribute"><a href="ShowGeometryInstanceAttribute.html">ShowGeometryInstanceAttribute</a></li><li data-name="Simon1994PlanetaryPositions"><a href="Simon1994PlanetaryPositions.html">Simon1994PlanetaryPositions</a></li><li data-name="SimplePolylineGeometry"><a href="SimplePolylineGeometry.html">SimplePolylineGeometry</a></li><li data-name="SingleTileImageryProvider"><a href="SingleTileImageryProvider.html">SingleTileImageryProvider</a></li><li data-name="SkyAtmosphere"><a href="SkyAtmosphere.html">SkyAtmosphere</a></li><li data-name="SkyBox"><a href="SkyBox.html">SkyBox</a></li><li data-name="SphereEmitter"><a href="SphereEmitter.html">SphereEmitter</a></li><li data-name="SphereGeometry"><a href="SphereGeometry.html">SphereGeometry</a></li><li data-name="SphereOutlineGeometry"><a href="SphereOutlineGeometry.html">SphereOutlineGeometry</a></li><li data-name="Spherical"><a href="Spherical.html">Spherical</a></li><li data-name="Spline"><a href="Spline.html">Spline</a></li><li data-name="StencilFunction"><a href="StencilFunction.html">StencilFunction</a></li><li data-name="StencilOperation"><a href="StencilOperation.html">StencilOperation</a></li><li data-name="StripeMaterialProperty"><a href="StripeMaterialProperty.html">StripeMaterialProperty</a></li><li data-name="StripeOrientation"><a href="StripeOrientation.html">StripeOrientation</a></li><li data-name="StyleExpression"><a href="StyleExpression.html">StyleExpression</a></li><li data-name="subdivideArray"><a href="subdivideArray.html">subdivideArray</a></li><li data-name="Sun"><a href="Sun.html">Sun</a></li><li data-name="SvgPathBindingHandler"><a href="SvgPathBindingHandler.html">SvgPathBindingHandler</a></li><li data-name="TaskProcessor"><a href="TaskProcessor.html">TaskProcessor</a></li><li data-name="TerrainData"><a href="TerrainData.html">TerrainData</a></li><li data-name="TerrainProvider"><a href="TerrainProvider.html">TerrainProvider</a></li><li data-name="TextureMagnificationFilter"><a href="TextureMagnificationFilter.html">TextureMagnificationFilter</a></li><li data-name="TextureMinificationFilter"><a href="TextureMinificationFilter.html">TextureMinificationFilter</a></li><li data-name="TileAvailability"><a href="TileAvailability.html">TileAvailability</a></li><li data-name="TileCoordinatesImageryProvider"><a href="TileCoordinatesImageryProvider.html">TileCoordinatesImageryProvider</a></li><li data-name="TileDiscardPolicy"><a href="TileDiscardPolicy.html">TileDiscardPolicy</a></li><li data-name="TileProviderError"><a href="TileProviderError.html">TileProviderError</a></li><li data-name="TilingScheme"><a href="TilingScheme.html">TilingScheme</a></li><li data-name="TimeDynamicImagery"><a href="TimeDynamicImagery.html">TimeDynamicImagery</a></li><li data-name="TimeDynamicPointCloud"><a href="TimeDynamicPointCloud.html">TimeDynamicPointCloud</a></li><li data-name="TimeInterval"><a href="TimeInterval.html">TimeInterval</a></li><li data-name="TimeIntervalCollection"><a href="TimeIntervalCollection.html">TimeIntervalCollection</a></li><li data-name="TimeIntervalCollectionPositionProperty"><a href="TimeIntervalCollectionPositionProperty.html">TimeIntervalCollectionPositionProperty</a></li><li data-name="TimeIntervalCollectionProperty"><a href="TimeIntervalCollectionProperty.html">TimeIntervalCollectionProperty</a></li><li data-name="Timeline"><a href="Timeline.html">Timeline</a></li><li data-name="TimeStandard"><a href="TimeStandard.html">TimeStandard</a></li><li data-name="ToggleButtonViewModel"><a href="ToggleButtonViewModel.html">ToggleButtonViewModel</a></li><li data-name="Transforms"><a href="Transforms.html">Transforms</a></li><li data-name="TranslationRotationScale"><a href="TranslationRotationScale.html">TranslationRotationScale</a></li><li data-name="TridiagonalSystemSolver"><a href="TridiagonalSystemSolver.html">TridiagonalSystemSolver</a></li><li data-name="TrustedServers"><a href="TrustedServers.html">TrustedServers</a></li><li data-name="UrlTemplateImageryProvider"><a href="UrlTemplateImageryProvider.html">UrlTemplateImageryProvider</a></li><li data-name="VelocityOrientationProperty"><a href="VelocityOrientationProperty.html">VelocityOrientationProperty</a></li><li data-name="VelocityVectorProperty"><a href="VelocityVectorProperty.html">VelocityVectorProperty</a></li><li data-name="VertexFormat"><a href="VertexFormat.html">VertexFormat</a></li><li data-name="VerticalOrigin"><a href="VerticalOrigin.html">VerticalOrigin</a></li><li data-name="VideoSynchronizer"><a href="VideoSynchronizer.html">VideoSynchronizer</a></li><li data-name="Viewer"><a href="Viewer.html">Viewer</a></li><li data-name="viewerCesium3DTilesInspectorMixin"><a href="viewerCesium3DTilesInspectorMixin.html">viewerCesium3DTilesInspectorMixin</a></li><li data-name="viewerCesiumInspectorMixin"><a href="viewerCesiumInspectorMixin.html">viewerCesiumInspectorMixin</a></li><li data-name="viewerDragDropMixin"><a href="viewerDragDropMixin.html">viewerDragDropMixin</a></li><li data-name="viewerPerformanceWatchdogMixin"><a href="viewerPerformanceWatchdogMixin.html">viewerPerformanceWatchdogMixin</a></li><li data-name="ViewportQuad"><a href="ViewportQuad.html">ViewportQuad</a></li><li data-name="Visibility"><a href="Visibility.html">Visibility</a></li><li data-name="Visualizer"><a href="Visualizer.html">Visualizer</a></li><li data-name="VRButton"><a href="VRButton.html">VRButton</a></li><li data-name="VRButtonViewModel"><a href="VRButtonViewModel.html">VRButtonViewModel</a></li><li data-name="VRTheWorldTerrainProvider"><a href="VRTheWorldTerrainProvider.html">VRTheWorldTerrainProvider</a></li><li data-name="WallGeometry"><a href="WallGeometry.html">WallGeometry</a></li><li data-name="WallGeometryUpdater"><a href="WallGeometryUpdater.html">WallGeometryUpdater</a></li><li data-name="WallGraphics"><a href="WallGraphics.html">WallGraphics</a></li><li data-name="WallOutlineGeometry"><a href="WallOutlineGeometry.html">WallOutlineGeometry</a></li><li data-name="WebGLConstants"><a href="WebGLConstants.html">WebGLConstants</a></li><li data-name="WebMapServiceImageryProvider"><a href="WebMapServiceImageryProvider.html">WebMapServiceImageryProvider</a></li><li data-name="WebMapTileServiceImageryProvider"><a href="WebMapTileServiceImageryProvider.html">WebMapTileServiceImageryProvider</a></li><li data-name="WebMercatorProjection"><a href="WebMercatorProjection.html">WebMercatorProjection</a></li><li data-name="WebMercatorTilingScheme"><a href="WebMercatorTilingScheme.html">WebMercatorTilingScheme</a></li><li data-name="WeightSpline"><a href="WeightSpline.html">WeightSpline</a></li><li data-name="WindingOrder"><a href="WindingOrder.html">WindingOrder</a></li></ul>
     </div>
 </div>
 

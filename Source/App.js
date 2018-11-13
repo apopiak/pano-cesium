@@ -31,39 +31,37 @@ let G = {};
     const stages = scene.postProcessStages;
 
     const addStage = (fragmentShader, imagePath) => {
-      // TODO: where do these offsets come from?
-      //       and why are they not consistent between pictures?
-      const headingOffset = 0.03;
-      const pitchOffset = 0.015;
-
-      let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
-        Cesium.Cartesian3.UNIT_Y,
-        -meta.cameraOrientation.heading + headingOffset
-      );
-      const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
-        Cesium.Cartesian3.UNIT_Z,
-        meta.cameraOrientation.pitch + pitchOffset
-      );
-      const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
-        Cesium.Cartesian3.UNIT_X,
-        -meta.cameraOrientation.roll
-      );
-      Cesium.Quaternion.multiply(
-        cameraQuaternion,
-        rollQuaternion,
-        cameraQuaternion
-      );
-      Cesium.Quaternion.multiply(
-        cameraQuaternion,
-        pitchQuaternion,
-        cameraQuaternion
-      );
-      const cameraRotation = mat4FromQuaternion(cameraQuaternion);
+      const computeCameraRotation = () => {
+        let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
+          Cesium.Cartesian3.UNIT_Y,
+          -meta.cameraOrientation.heading + G.rotationOffset.heading
+        );
+        const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
+          Cesium.Cartesian3.UNIT_Z,
+          meta.cameraOrientation.pitch + G.rotationOffset.pitch
+        );
+        const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
+          Cesium.Cartesian3.UNIT_X,
+          -meta.cameraOrientation.roll + G.rotationOffset.roll
+        );
+        Cesium.Quaternion.multiply(
+          cameraQuaternion,
+          rollQuaternion,
+          cameraQuaternion
+        );
+        Cesium.Quaternion.multiply(
+          cameraQuaternion,
+          pitchQuaternion,
+          cameraQuaternion
+        );
+        const cameraRotation = mat4FromQuaternion(cameraQuaternion);
+        return cameraRotation;
+      };
 
       const uniforms = {
         u_panorama: imagePath,
 
-        u_cameraRotation: () => cameraRotation,
+        u_cameraRotation: () => computeCameraRotation(),
         u_inverseCameraTranform: () =>
           Cesium.Matrix4.inverse(
             Cesium.Transforms.eastNorthUpToFixedFrame(
@@ -334,6 +332,24 @@ let G = {};
     }
   }
 
+  function rotateOffset(code) {
+    const defaultAmount = 0.002;
+
+    if (code === "KeyJ") {
+      G.rotationOffset.heading -= defaultAmount;
+    } else if (code === "KeyL") {
+      G.rotationOffset.heading += defaultAmount;
+    } else if (code === "KeyI") {
+      G.rotationOffset.pitch -= defaultAmount;
+    } else if (code === "KeyK") {
+      G.rotationOffset.pitch += defaultAmount;
+    } else if (code === "KeyU") {
+      G.rotationOffset.roll += defaultAmount;
+    } else if (code === "KeyO") {
+      G.rotationOffset.roll -= defaultAmount;
+    }
+  }
+
   function keyDownListener(event) {
     // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
     // [37;40] == arrow keys
@@ -341,6 +357,7 @@ let G = {};
       look(event.which);
     }
     move(event.code);
+    rotateOffset(event.code);
   }
 
   document.addEventListener("keydown", keyDownListener, false);
@@ -354,6 +371,8 @@ let G = {};
 
     // meta data for the panoramas
     metaData: processData(steinwegMetaJson),
+
+    rotationOffset: new Cesium.HeadingPitchRoll(),
 
     // cesium 3D tileset
     tileset: undefined,

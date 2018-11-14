@@ -372,6 +372,8 @@ let G = {};
     // meta data for the panoramas
     metaData: processData(steinwegMetaJson),
 
+    radarLocations: undefined,
+
     rotationOffset: new Cesium.HeadingPitchRoll(),
 
     // cesium 3D tileset
@@ -410,16 +412,6 @@ let G = {};
   // setup scene
   const scene = G.viewer.scene;
   scene.globe.show = false;
-  // scene.skyBox = new Cesium.SkyBox({
-  //   sources: {
-  //     positiveX: "cubemap/face-l.png", //'skybox_px.png',
-  //     negativeX: "cubemap/face-r.png", //'skybox_nx.png',
-  //     positiveY: "cubemap/face-f.png", //'skybox_py.png',
-  //     negativeY: "cubemap/face-b.png", //'skybox_ny.png',
-  //     positiveZ: "cubemap/face-t.png", //'skybox_pz.png',
-  //     negativeZ: "cubemap/face-d.png" //'skybox_nz.png'
-  //   }
-  // });
   // G.viewer.scene.debugShowFrustumPlanes = true; // show frustums
 
   //////////////////////////////////////////////////////////////////////////
@@ -521,24 +513,20 @@ let G = {};
     })
   );
 
+  // let tileset = G.viewer.scene.primitives.add(
+  //   new Cesium.Cesium3DTileset({
+  //     url: "http://localhost:8080/data/pointcloud_langenbeck/tileset.json",
+  //     skipLevelOfDetail: true,
+  //     baseScreenSpaceError: 1024,
+  //     skipScreenSpaceErrorFactor: 16,
+  //     skipLevels: 1
+  //   })
+  // );
   G.tileset = tileset;
 
-  // view port squad
-  // var viewportQuad = new PanoramaViewportQuad(new Cesium.BoundingRectangle(200, 200, 300, 200));
-  // viewportQuad.material.uniforms.color = new Cesium.Color(1.0, 0.0, 0.0, 1.0);
-  // G.viewer.scene.primitives.add(viewportQuad);
-  // let instance = new Cesium.GeometryInstance({
-  //   geometry: new Cesium.PlaneGeometry({
-  //     vertexFormat: Cesium.VertexFormat.ALL
-  //   })
+  // tileset.readyPromise.then(tileset => {
+  //   G.viewer.scene.camera.flyToBoundingSphere(tileset.boundingSphere);
   // });
-  // let primitive = new Cesium.Primitive({
-  //   geometryInstances: [instance],
-  //   appearance: new Cesium.DebugAppearance({
-  //     attributeName: "normal"
-  //   })
-  // });
-  // G.viewer.scene.primitives.add(primitive);
 
   // TODO: how to keep default shading and add color?
   // tileset.pointCloudShading.maximumAttenuation = 4.0; // Don't allow points larger than 8 pixels.
@@ -573,6 +561,58 @@ let G = {};
     });
   });
 
+  fetch("data/radar_gps_steinweg_filtered.json")
+    .then(res => res.json())
+    .then(radarData => {
+      // DZG files have the most inconvenient latitude longitude format ever :-/
+      // see here: https://www.manualslib.com/manual/1265713/Gssi-Sir-4000.html?page=126#manual
+      const stringToDegrees = (string, degLength, negative) => {
+        const deg = Number(string.slice(0, degLength));
+        const min = Number(string.slice(degLength));
+        const sign = negative ? -1 : 1;
+        return sign * (deg + min / 60.0);
+      };
+
+      G.radarLocations = radarData.map(datum => {
+        console.assert(datum["E or W"] === "E" || datum["E or W"] === "W", {
+          "E or W": datum["E or W"],
+          errorMsg: "must be E(ast) or W(est)"
+        });
+        console.assert(datum["N or S"] === "N" || datum["N or S"] === "S", {
+          "N or S": datum["N or S"],
+          errorMsg: "must be N(orth) or S(outh)"
+        });
+        let lon = stringToDegrees(
+          datum["Longitude"],
+          3,
+          datum["E or W"] === "W"
+        ); // example: { ... "Longitude":"00656.67239","E or W":"E" ... }
+        let lat = stringToDegrees(
+          datum["Latitude"],
+          2,
+          datum["N or S"] === "S"
+        ); // example: { ... "Latitude":"5121.66311","N or S":"N" ... }
+        const height = Number(datum["Antenna altitude"]);
+        return Cesium.Cartographic.toCartesian(
+          Cesium.Cartographic.fromDegrees(lon, lat, height)
+        );
+      });
+
+      _.sample(G.radarLocations, G.radarLocations.length / 15).forEach(
+        location => {
+          G.viewer.entities.add({
+            name: "radar datum",
+            position: location,
+            ellipsoid: {
+              radii: { x: 0.1, y: 0.1, z: 0.1 },
+              material: Cesium.Color.ORANGE
+            }
+          });
+        }
+      );
+    })
+    .catch(err => console.error(err));
+
   let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
   handler.setInputAction(e => {
     let pickedPrimitive = G.viewer.scene.pick(e.position);
@@ -583,7 +623,10 @@ let G = {};
     if (Cesium.defined(G.lastPicked)) {
       G.lastPicked.show = true;
     }
-    if (Cesium.defined(pickedEntity)) {
+    if (
+      Cesium.defined(pickedEntity) &&
+      Cesium.defined(pickedEntity.properties.index)
+    ) {
       const index = pickedEntity.properties.index.getValue();
       const meta = G.metaData[index];
       console.log("picked image: ", meta.image);

@@ -1,579 +1,321 @@
-// globals
-let G = {};
+let globals = {};
+globals = _.extend(
+  (function() {
+    "use strict";
 
-(function() {
-  "use strict";
+    ////////////////////////////
+    // Constants
+    ////////////////////////////
+    const host = "http://localhost:8080/";
+    const streetBasePath = "data/streets/";
+    const street = "steinweg";
+    const streetDirPath = streetBasePath + street + "/";
+    const panoramaImagesDirPath = streetDirPath + "G360/";
+    const radarDirPath = streetDirPath + "GPR/";
+    const tilesetPath = streetDirPath + "pointcloud/tileset.json";
 
-  ////////////////////////////
-  // Panorama Rendering
-  ////////////////////////////
+    ////////////////////////////
+    // Utility Functions
+    ////////////////////////////
 
-  const degToRad = deg => (deg * Math.PI) / 180.0;
-  const mat4FromQuaternion = quaternion =>
-    Cesium.Matrix4.fromRotationTranslation(
-      Cesium.Matrix3.fromQuaternion(quaternion, new Cesium.Matrix3()),
-      Cesium.Cartesian3.ZERO,
-      new Cesium.Matrix4()
-    );
+    const toRadians = deg => (deg * Math.PI) / 180.0;
+    const mat4FromQuaternion = quaternion =>
+      Cesium.Matrix4.fromRotationTranslation(
+        Cesium.Matrix3.fromQuaternion(quaternion, new Cesium.Matrix3()),
+        Cesium.Cartesian3.ZERO,
+        new Cesium.Matrix4()
+      );
 
-  // add a panorama rendering in post processing
-  function addOrUpdatePostProcessing(idx) {
-    const index = idx || 0;
-    const meta = G.metaData[index];
+    ////////////////////////////
+    // Panorama Rendering
+    ////////////////////////////
 
-    const destination = meta.cartesianPos;
-    const orientation = meta.cameraOrientation;
-    const duration = 0.5; // seconds
+    // add a panorama rendering in post processing
+    function addOrUpdatePostProcessing(idx) {
+      const index = idx || 0;
+      const meta = globals.metaData[index];
 
-    const scene = G.viewer.scene;
-    const camera = scene.camera;
-    const canvas = scene.canvas;
-    const stages = scene.postProcessStages;
+      const destination = meta.cartesianPos;
+      const orientation = meta.cameraOrientation;
+      const duration = 0.5; // seconds
 
-    const addStage = (fragmentShader, imagePath) => {
-      const computeCameraRotation = () => {
-        let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
-          Cesium.Cartesian3.UNIT_Y,
-          -meta.cameraOrientation.heading + G.rotationOffset.heading
-        );
-        const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
-          Cesium.Cartesian3.UNIT_Z,
-          meta.cameraOrientation.pitch + G.rotationOffset.pitch
-        );
-        const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
-          Cesium.Cartesian3.UNIT_X,
-          -meta.cameraOrientation.roll + G.rotationOffset.roll
-        );
-        Cesium.Quaternion.multiply(
-          cameraQuaternion,
-          rollQuaternion,
-          cameraQuaternion
-        );
-        Cesium.Quaternion.multiply(
-          cameraQuaternion,
-          pitchQuaternion,
-          cameraQuaternion
-        );
-        const cameraRotation = mat4FromQuaternion(cameraQuaternion);
-        return cameraRotation;
-      };
+      const scene = globals.viewer.scene;
+      const camera = scene.camera;
+      const canvas = scene.canvas;
+      const stages = scene.postProcessStages;
 
-      const uniforms = {
-        u_panorama: imagePath,
+      const addStage = (fragmentShader, imagePath) => {
+        const computeCameraRotation = () => {
+          let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
+            Cesium.Cartesian3.UNIT_Y,
+            -meta.cameraOrientation.heading + globals.rotationOffset.heading
+          );
+          const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
+            Cesium.Cartesian3.UNIT_Z,
+            meta.cameraOrientation.pitch + globals.rotationOffset.pitch
+          );
+          const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
+            Cesium.Cartesian3.UNIT_X,
+            -meta.cameraOrientation.roll + globals.rotationOffset.roll
+          );
+          Cesium.Quaternion.multiply(
+            cameraQuaternion,
+            rollQuaternion,
+            cameraQuaternion
+          );
+          Cesium.Quaternion.multiply(
+            cameraQuaternion,
+            pitchQuaternion,
+            cameraQuaternion
+          );
+          const cameraRotation = mat4FromQuaternion(cameraQuaternion);
+          return cameraRotation;
+        };
 
-        u_cameraRotation: () => computeCameraRotation(),
-        u_inverseCameraTranform: () =>
-          Cesium.Matrix4.inverse(
-            Cesium.Transforms.eastNorthUpToFixedFrame(
-              camera.positionWC,
-              Cesium.Ellipsoid.WGS84,
+        const uniforms = {
+          u_panorama: imagePath,
+
+          u_cameraRotation: () => computeCameraRotation(),
+          u_inverseCameraTranform: () =>
+            Cesium.Matrix4.inverse(
+              Cesium.Transforms.eastNorthUpToFixedFrame(
+                camera.positionWC,
+                Cesium.Ellipsoid.WGS84,
+                new Cesium.Matrix4()
+              ),
               new Cesium.Matrix4()
             ),
-            new Cesium.Matrix4()
-          ),
 
-        u_interpolation: () => G.interpolation
+          u_interpolation: () => globals.interpolation
+        };
+
+        globals.postProcessStage = stages.add(
+          new Cesium.PostProcessStage({
+            fragmentShader,
+            uniforms
+          })
+        );
       };
 
-      G.postProcessStage = stages.add(
-        new Cesium.PostProcessStage({
-          fragmentShader,
-          uniforms
-        })
+      const transitionToPanorama = (shader, imagePath) => {
+        globals.currentPanoramaImage = imagePath;
+        camera.flyTo({ destination, orientation, duration });
+        stages.removeAll();
+        addStage(shader, imagePath);
+      };
+
+      // use existing shader, if present
+      if (Cesium.defined(globals.postProcessStage)) {
+        transitionToPanorama(
+          globals.postProcessStage.fragmentShader,
+          meta.imagePath
+        );
+        return;
+      }
+
+      fetch("data/projectionShader.fs.glsl")
+        .then(res => res.text())
+        .then(shader => transitionToPanorama(shader, meta.imagePath))
+        .catch(err => console.error(err));
+    }
+
+    function addPanoramaSphere(idx) {
+      const index = idx || 0;
+      const meta = globals.metaData[index];
+      const camera = globals.viewer.scene.camera;
+
+      globals.currentPanoramaImage = meta.imagePath;
+
+      const position = meta.cartesianPos;
+
+      // TODO: check for end of array
+      const nextPos = globals.metaData[index + 1].cartesianPos;
+      // const direction = Cesium.Cartesian3.subtract(
+      //   nextPos,
+      //   position,
+      //   new Cesium.Cartesian3()
+      // );
+      // const spherical = Cesium.Spherical.fromCartesian3(direction);
+      // const hpr = new Cesium.HeadingPitchRoll(spherical.cone, spherical.clock, 0);
+      // const orientation = Cesium.Transforms.headingPitchRollQuaternion(
+      //   position,
+      //   hpr
+      // );
+      const orientation = Cesium.Quaternion.fromHeadingPitchRoll(
+        new Cesium.HeadingPitchRoll()
       );
-    };
 
-    const transitionToPanorama = (shader, imagePath) => {
-      G.currentPanoramaImage = imagePath;
-      camera.flyTo({ destination, orientation, duration });
-      stages.removeAll();
-      addStage(shader, imagePath);
-    };
+      const size = 50;
+      // remove old sphere
+      if (Cesium.defined(globals.panoramaSphere)) {
+        globals.viewer.entities.remove(globals.panoramaSphere);
+        globals.panoramaSphere = undefined;
+      }
+      globals.panoramaSphere = globals.viewer.entities.add({
+        name: meta.image,
+        position,
+        orientation,
+        ellipsoid: {
+          radii: { x: size, y: size, z: size },
+          material: new Cesium.ImageMaterialProperty({
+            image: meta.imagePath,
+            color: new Cesium.Color(1, 1, 1, 0.99)
+          })
+        },
+        properties: {
+          index
+        }
+      });
 
-    // use existing shader, if present
-    if (Cesium.defined(G.postProcessStage)) {
-      transitionToPanorama(G.postProcessStage.fragmentShader, meta.imagePath);
+      camera.flyTo({
+        destination: position,
+        orientation: meta.cameraOrientation,
+        duration: 0.5
+      });
       return;
     }
 
-    fetch("data/projectionShader.fs.glsl")
-      .then(res => res.text())
-      .then(shader => transitionToPanorama(shader, meta.imagePath))
-      .catch(err => console.error(err));
-  }
+    function addImageRectangle(idx) {
+      const index = idx || 0;
+      const meta = globals.metaData[index];
+      const camera = globals.viewer.scene.camera;
 
-  function addPanoramaSphere(idx) {
-    const index = idx || 0;
-    const meta = G.metaData[index];
-    const camera = G.viewer.scene.camera;
+      const destination = meta.cartesianPos;
+      const orientation = meta.cameraOrientation;
+      const duration = 0.5; // seconds
 
-    G.currentPanoramaImage = meta.imagePath;
+      camera.flyTo({ destination, orientation, duration });
 
-    const position = meta.cartesianPos;
+      const rect = meta.rectangle;
 
-    // TODO: check for end of array
-    const nextPos = G.metaData[index + 1].cartesianPos;
-    // const direction = Cesium.Cartesian3.subtract(
-    //   nextPos,
-    //   position,
-    //   new Cesium.Cartesian3()
-    // );
-    // const spherical = Cesium.Spherical.fromCartesian3(direction);
-    // const hpr = new Cesium.HeadingPitchRoll(spherical.cone, spherical.clock, 0);
-    // const orientation = Cesium.Transforms.headingPitchRollQuaternion(
-    //   position,
-    //   hpr
-    // );
-    const orientation = Cesium.Quaternion.fromHeadingPitchRoll(
-      new Cesium.HeadingPitchRoll()
-    );
-
-    const size = 50;
-    // remove old sphere
-    if (Cesium.defined(G.panoramaSphere)) {
-      G.viewer.entities.remove(G.panoramaSphere);
-      G.panoramaSphere = undefined;
-    }
-    G.panoramaSphere = G.viewer.entities.add({
-      name: meta.image,
-      position,
-      orientation,
-      ellipsoid: {
-        radii: { x: size, y: size, z: size },
-        material: new Cesium.ImageMaterialProperty({
-          image: meta.imagePath,
-          color: new Cesium.Color(1, 1, 1, 0.99)
-        })
-      },
-      properties: {
-        index
-      }
-    });
-
-    camera.flyTo({
-      destination: position,
-      orientation: meta.cameraOrientation,
-      duration: 0.5
-    });
-    return;
-  }
-
-  function addImageRectangle(idx) {
-    const index = idx || 0;
-    const meta = G.metaData[index];
-    const camera = G.viewer.scene.camera;
-
-    const destination = meta.cartesianPos;
-    const orientation = meta.cameraOrientation;
-    const duration = 0.5; // seconds
-
-    camera.flyTo({ destination, orientation, duration });
-
-    const rect = meta.rectangle;
-
-    const bottomCenter = Cesium.Cartesian3.midpoint(
-      rect.bottomLeft,
-      rect.bottomRight,
-      new Cesium.Cartesian3()
-    );
-    const topCenter = Cesium.Cartesian3.midpoint(
-      rect.topLeft,
-      rect.topRight,
-      new Cesium.Cartesian3()
-    );
-    const center = Cesium.Cartesian3.midpoint(
-      topCenter,
-      bottomCenter,
-      new Cesium.Cartesian3()
-    );
-
-    const v1 = Cesium.Cartesian3.subtract(
-      rect.bottomLeft,
-      rect.bottomRight,
-      new Cesium.Cartesian3()
-    );
-    const v2 = Cesium.Cartesian3.subtract(
-      rect.bottomLeft,
-      rect.topLeft,
-      new Cesium.Cartesian3()
-    );
-
-    let scratch = new Cesium.Cartesian3();
-    const normal = Cesium.Cartesian3.normalize(
-      Cesium.Cartesian3.cross(v1, v2, scratch),
-      scratch
-    );
-
-    let panoramaPlane = G.viewer.entities.add({
-      name: "Panorama plane",
-      position: center,
-      plane: {
-        plane: new Cesium.Plane(normal, 0.0),
-        dimensions: new Cesium.Cartesian2(
-          Cesium.Cartesian3.magnitude(v1),
-          Cesium.Cartesian3.magnitude(v2)
-        ),
-        material: Cesium.Color.BLUE
-      }
-    });
-  }
-
-  ///////////////////////
-  // Data Processing
-  ///////////////////////
-  function utmToCartographic(position, utmZone) {
-    const steinwegUTMzone = 32;
-    utmZone = utmZone || steinwegUTMzone;
-
-    const utm = new UTMConv.UTMCoords(steinwegUTMzone, position.x, position.y);
-    const degrees = utm.to_deg("wgs84");
-    const height = position.z;
-    return Cesium.Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
-  }
-
-  function utmToCartesian(x, y, z) {
-    return Cesium.Cartographic.toCartesian(utmToCartographic({ x, y, z }));
-  }
-
-  function origToCartographic(meta) {
-    return utmToCartographic({
-      x: meta["X-Sensor"],
-      y: meta["Y-Sensor"],
-      z: meta["Z-Sensor"]
-    });
-  }
-
-  function headingPitchRoll(meta, suffix) {
-    return Cesium.HeadingPitchRoll.fromDegrees(
-      meta["H-" + suffix],
-      meta["P-" + suffix],
-      meta["R-" + suffix]
-    );
-  }
-
-  function processData(originalJson) {
-    return _.map(originalJson, (meta, index) => {
-      const cartographicPos = origToCartographic(meta);
-      const cartesianPos = Cesium.Cartographic.toCartesian(cartographicPos);
-
-      return {
-        index,
-
-        // positioning
-        cartographicPos,
-        cartesianPos,
-        cameraOrientation: headingPitchRoll(meta, "Sensor"),
-        vehicleOrientation: headingPitchRoll(meta, "Veh"),
-
-        image: meta.ImageName,
-        imagePath: "images/" + meta.ImageName,
-
-        rectangle: {
-          bottomLeft: utmToCartesian(meta.lbx, meta.lby, meta.lbz),
-          topLeft: utmToCartesian(meta.ltx, meta.lty, meta.ltz),
-          topRight: utmToCartesian(meta.rtx, meta.rty, meta.rtz),
-          bottomRight: utmToCartesian(meta.rbx, meta.rby, meta.rbz)
-        },
-
-        orig: meta
-      };
-    });
-  }
-
-  ///////////////////////
-  // Interaction Setup
-  ///////////////////////
-  function look(which) {
-    const camera = G.viewer.scene.camera;
-    const rotation = Cesium.Math.toRadians(4.5); // degrees
-
-    if (which === 39) {
-      // right arrow
-      const worldUp = Cesium.Matrix4.multiplyByPoint(
-        camera.inverseTransform,
-        camera.positionWC,
+      const bottomCenter = Cesium.Cartesian3.midpoint(
+        rect.bottomLeft,
+        rect.bottomRight,
         new Cesium.Cartesian3()
       );
-      camera.look(worldUp, rotation);
-    } else if (which === 37) {
-      // left arrow
-      const worldUp = Cesium.Matrix4.multiplyByPoint(
-        camera.inverseTransform,
-        camera.positionWC,
+      const topCenter = Cesium.Cartesian3.midpoint(
+        rect.topLeft,
+        rect.topRight,
         new Cesium.Cartesian3()
       );
-      camera.look(worldUp, -rotation);
-    } else if (which === 38) {
-      // up arrow
-      camera.lookUp(rotation);
-    } else if (which === 40) {
-      // down arrow
-      camera.lookDown(rotation);
+      const center = Cesium.Cartesian3.midpoint(
+        topCenter,
+        bottomCenter,
+        new Cesium.Cartesian3()
+      );
+
+      const v1 = Cesium.Cartesian3.subtract(
+        rect.bottomLeft,
+        rect.bottomRight,
+        new Cesium.Cartesian3()
+      );
+      const v2 = Cesium.Cartesian3.subtract(
+        rect.bottomLeft,
+        rect.topLeft,
+        new Cesium.Cartesian3()
+      );
+
+      let scratch = new Cesium.Cartesian3();
+      const normal = Cesium.Cartesian3.normalize(
+        Cesium.Cartesian3.cross(v1, v2, scratch),
+        scratch
+      );
+
+      let panoramaPlane = globals.viewer.entities.add({
+        name: "Panorama plane",
+        position: center,
+        plane: {
+          plane: new Cesium.Plane(normal, 0.0),
+          dimensions: new Cesium.Cartesian2(
+            Cesium.Cartesian3.magnitude(v1),
+            Cesium.Cartesian3.magnitude(v2)
+          ),
+          material: Cesium.Color.BLUE
+        }
+      });
     }
-  }
 
-  function move(code) {
-    const camera = G.viewer.scene.camera;
-    const defaultSpeed = 0.12; // meters
+    ///////////////////////
+    // Data Processing
+    ///////////////////////
+    function utmToCartographic(position, utmZone) {
+      const steinwegUTMzone = 32;
+      utmZone = utmZone || steinwegUTMzone;
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
-    if (code === "KeyA") {
-      camera.moveLeft(defaultSpeed);
-    } else if (code === "KeyD") {
-      camera.moveRight(defaultSpeed);
-    } else if (code === "KeyW") {
-      camera.moveForward(defaultSpeed);
-    } else if (code === "KeyS") {
-      camera.moveBackward(defaultSpeed);
-    } else if (code === "KeyQ") {
-      camera.moveUp(defaultSpeed);
-    } else if (code === "KeyE") {
-      camera.moveDown(defaultSpeed);
+      const utm = new UTMConv.UTMCoords(
+        steinwegUTMzone,
+        position.x,
+        position.y
+      );
+      const degrees = utm.to_deg("wgs84");
+      const height = position.z;
+      return Cesium.Cartographic.fromDegrees(
+        degrees.lngd,
+        degrees.latd,
+        height
+      );
     }
-  }
 
-  function rotateOffset(code) {
-    const defaultAmount = 0.002;
-
-    if (code === "KeyJ") {
-      G.rotationOffset.heading -= defaultAmount;
-    } else if (code === "KeyL") {
-      G.rotationOffset.heading += defaultAmount;
-    } else if (code === "KeyI") {
-      G.rotationOffset.pitch -= defaultAmount;
-    } else if (code === "KeyK") {
-      G.rotationOffset.pitch += defaultAmount;
-    } else if (code === "KeyU") {
-      G.rotationOffset.roll += defaultAmount;
-    } else if (code === "KeyO") {
-      G.rotationOffset.roll -= defaultAmount;
+    function utmToCartesian(x, y, z) {
+      return Cesium.Cartographic.toCartesian(utmToCartographic({ x, y, z }));
     }
-  }
 
-  function keyDownListener(event) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
-    // [37;40] == arrow keys
-    if (event.which <= 40 && event.which >= 37) {
-      look(event.which);
+    function origToCartographic(meta) {
+      return utmToCartographic({
+        x: meta["X-Sensor"],
+        y: meta["Y-Sensor"],
+        z: meta["Z-Sensor"]
+      });
     }
-    move(event.code);
-    rotateOffset(event.code);
-  }
 
-  document.addEventListener("keydown", keyDownListener, false);
-
-  ///////////////////////
-  // Globals
-  ///////////////////////
-  G = {
-    // viewers
-    viewer: undefined,
-
-    // meta data for the panoramas
-    metaData: processData(steinwegMetaJson),
-
-    radarLocations: undefined,
-
-    rotationOffset: new Cesium.HeadingPitchRoll(),
-
-    // cesium 3D tileset
-    tileset: undefined,
-
-    // for selecting panoramas
-    lastPicked: undefined,
-    currentPanoramaImage: undefined,
-
-    // post-processing stage
-    postProcessStage: undefined,
-    // [-1, 1] how much to prioritize the pointcloud (-1) or panorama (1) when interpolating
-    interpolation: 0.2,
-
-    fn: {
-      addOrUpdatePostProcessing,
-      addPanoramaSphere,
-      addImageRectangle
+    function headingPitchRoll(meta, suffix) {
+      return Cesium.HeadingPitchRoll.fromDegrees(
+        meta["H-" + suffix],
+        meta["P-" + suffix],
+        meta["R-" + suffix]
+      );
     }
-  };
 
-  // Cesium Ion
-  Cesium.Ion.defaultAccessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZmEzMjQwMi00MjQ0LTRmZjgtODhlOS0zNDI5ZmU3NGRkODQiLCJpZCI6MTQ5MywiaWF0IjoxNTI4NzE4Mzg0fQ.4h4xuSeZTaiBGtv4sHA7WN6D1eIedRHw-6rFls9QMsQ";
+    function processMetaData(originalJson) {
+      return _.map(originalJson, (meta, index) => {
+        const cartographicPos = origToCartographic(meta);
+        const cartesianPos = Cesium.Cartographic.toCartesian(cartographicPos);
 
-  //////////////////////////////////////////////////////////////////////////
-  // Creating the Viewer
-  //////////////////////////////////////////////////////////////////////////
+        return {
+          index,
 
-  G.viewer = new Cesium.Viewer("cesiumContainer", {
-    scene3DOnly: true,
-    selectionIndicator: false,
-    baseLayerPicker: false
-  });
+          // positioning
+          cartographicPos,
+          cartesianPos,
+          cameraOrientation: headingPitchRoll(meta, "Sensor"),
+          vehicleOrientation: headingPitchRoll(meta, "Veh"),
 
-  // setup scene
-  const scene = G.viewer.scene;
-  scene.globe.show = false;
-  // G.viewer.scene.debugShowFrustumPlanes = true; // show frustums
+          image: meta.ImageName,
+          imagePath: panoramaImagesDirPath + meta.ImageName,
 
-  //////////////////////////////////////////////////////////////////////////
-  // Loading Imagery
-  //////////////////////////////////////////////////////////////////////////
+          rectangle: {
+            bottomLeft: utmToCartesian(meta.lbx, meta.lby, meta.lbz),
+            topLeft: utmToCartesian(meta.ltx, meta.lty, meta.ltz),
+            topRight: utmToCartesian(meta.rtx, meta.rty, meta.rtz),
+            bottomRight: utmToCartesian(meta.rbx, meta.rby, meta.rbz)
+          },
 
-  // Remove default base layer
-  G.viewer.imageryLayers.remove(G.viewer.imageryLayers.get(0));
-
-  // Add Sentinel-2 imagery
-  // viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
-
-  // Add Bing Maps
-  // G.viewer.imageryLayers.addImageryProvider(
-  //   new Cesium.IonImageryProvider({ assetId: 4 })
-  // );
-
-  //////////////////////////////////////////////////////////////////////////
-  // Loading Terrain
-  //////////////////////////////////////////////////////////////////////////
-
-  // Load Cesium World Terrain
-  // G.viewer.terrainProvider = Cesium.createWorldTerrain({
-  //   requestWaterMask: true, // required for water effects
-  //   requestVertexNormals: true // required for terrain lighting
-  // });
-  // Enable depth testing so things behind the terrain disappear.
-  // G.viewer.scene.globe.depthTestAgainstTerrain = true;
-
-  //////////////////////////////////////////////////////////////////////////
-  // Configuring the Scene
-  //////////////////////////////////////////////////////////////////////////
-
-  // Enable lighting based on sun/moon positions
-  G.viewer.scene.globe.enableLighting = true;
-
-  // Set the initial view
-  const birdsEye = new Cesium.Cartesian3(3961538.873, 482335.1824, 4958890.174);
-  const startOfStreetView = {
-    destination: { x: 3961452.238, y: 482230.0739, z: 4958837.392 },
-    orientation: {
-      direction: { x: 0.107284457, y: 0.92035867, z: -0.376071 },
-      up: { x: 0.6698224, y: 0.212619, z: 0.711428 }
+          orig: meta
+        };
+      });
     }
-  };
-  const homeCameraView = {
-    destination: {
-      x: 3961467.55,
-      y: 482298.086,
-      z: 4958811.655
-    },
-    orientation: {
-      direction: {
-        x: 0.0286422,
-        y: 0.9168583,
-        z: -0.398183
-      },
-      up: {
-        x: 0.6449769,
-        y: 0.2873771,
-        z: 0.7081095
-      }
+
+    // DZG files have the most inconvenient latitude longitude format ever :-/
+    // see here: https://www.manualslib.com/manual/1265713/Gssi-Sir-4000.html?page=126#manual
+    function stringToDegrees(string, degLength, negative) {
+      const deg = Number(string.slice(0, degLength));
+      const min = Number(string.slice(degLength));
+      const sign = negative ? -1 : 1;
+      return sign * (deg + min / 60.0);
     }
-  };
-  const furtherDownTheStreetView = {
-    destination: {
-      x: 3961456.72,
-      y: 482483.041,
-      z: 4958797.78
-    },
-    orientation: {
-      direction: {
-        x: 0.4530828,
-        y: 0.2137075,
-        z: -0.8654738
-      },
-      up: {
-        x: 0.864637,
-        y: 0.1310491,
-        z: 0.485004
-      }
-    }
-  };
-  G.viewer.scene.camera.flyTo({ duration: 0, ...startOfStreetView });
 
-  // Override the default home button
-  G.viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
-    e.cancel = true;
-    G.viewer.scene.camera.flyTo({ duration: 0.5, ...startOfStreetView });
-  });
-
-  let tileset = G.viewer.scene.primitives.add(
-    new Cesium.Cesium3DTileset({
-      url: "http://localhost:8080/data/pointcloud/tileset.json",
-      skipLevelOfDetail: true,
-      baseScreenSpaceError: 1024,
-      skipScreenSpaceErrorFactor: 16,
-      skipLevels: 1
-    })
-  );
-
-  // let tileset = G.viewer.scene.primitives.add(
-  //   new Cesium.Cesium3DTileset({
-  //     url: "http://localhost:8080/data/pointcloud_langenbeck/tileset.json",
-  //     skipLevelOfDetail: true,
-  //     baseScreenSpaceError: 1024,
-  //     skipScreenSpaceErrorFactor: 16,
-  //     skipLevels: 1
-  //   })
-  // );
-  G.tileset = tileset;
-
-  // tileset.readyPromise.then(tileset => {
-  //   G.viewer.scene.camera.flyToBoundingSphere(tileset.boundingSphere);
-  // });
-
-  // TODO: how to keep default shading and add color?
-  // tileset.pointCloudShading.maximumAttenuation = 4.0; // Don't allow points larger than 8 pixels.
-  // tileset.pointCloudShading.baseResolution = 0.1; // Assume an original capture resolution of 5 centimeters between neighboring points.
-  // tileset.pointCloudShading.geometricErrorScale = 1.0; // Applies to both geometric error and the base resolution.
-  // tileset.pointCloudShading.attenuation = true;
-  // tileset.pointCloudShading.eyeDomeLighting = true;
-  //
-  // tileset.style = new Cesium.Cesium3DTileStyle({
-  //   color: 'color("red")'
-  // });
-
-  // G.tileset.style.color.evaluateColor = (frameState, feature, result) => {
-  //   if (Cesium.defined(feature)) {
-  //     console.log(feature);
-  //     return Cesium.Color.clone(Cesium.Color.WHITE, result);
-  //   }
-  // };
-
-  // place spheres representing the panorama pictures
-  G.metaData.forEach(m => {
-    G.viewer.entities.add({
-      name: m.image,
-      position: m.cartesianPos,
-      ellipsoid: {
-        radii: { x: 1, y: 1, z: 1 },
-        material: Cesium.Color.DARKGREEN
-      },
-      properties: {
-        index: m.index
-      }
-    });
-  });
-
-  fetch("data/radar_gps_steinweg_filtered.json")
-    .then(res => res.json())
-    .then(radarData => {
-      // DZG files have the most inconvenient latitude longitude format ever :-/
-      // see here: https://www.manualslib.com/manual/1265713/Gssi-Sir-4000.html?page=126#manual
-      const stringToDegrees = (string, degLength, negative) => {
-        const deg = Number(string.slice(0, degLength));
-        const min = Number(string.slice(degLength));
-        const sign = negative ? -1 : 1;
-        return sign * (deg + min / 60.0);
-      };
-
-      G.radarLocations = radarData.map(datum => {
+    function processRadarData(radarData) {
+      return _.map(radarData, datum => {
         console.assert(datum["E or W"] === "E" || datum["E or W"] === "W", {
           "E or W": datum["E or W"],
           errorMsg: "must be E(ast) or W(est)"
@@ -597,10 +339,276 @@ let G = {};
           Cesium.Cartographic.fromDegrees(lon, lat, height)
         );
       });
+    }
 
-      _.sample(G.radarLocations, G.radarLocations.length / 15).forEach(
-        location => {
-          G.viewer.entities.add({
+    ///////////////////////
+    // Interaction Setup
+    ///////////////////////
+    function look(which) {
+      const camera = globals.camera;
+      const rotation = Cesium.Math.toRadians(4.5); // degrees
+
+      if (which === 39) {
+        // right arrow
+        const worldUp = Cesium.Matrix4.multiplyByPoint(
+          camera.inverseTransform,
+          camera.positionWC,
+          new Cesium.Cartesian3()
+        );
+        camera.look(worldUp, rotation);
+      } else if (which === 37) {
+        // left arrow
+        const worldUp = Cesium.Matrix4.multiplyByPoint(
+          camera.inverseTransform,
+          camera.positionWC,
+          new Cesium.Cartesian3()
+        );
+        camera.look(worldUp, -rotation);
+      } else if (which === 38) {
+        // up arrow
+        camera.lookUp(rotation);
+      } else if (which === 40) {
+        // down arrow
+        camera.lookDown(rotation);
+      }
+    }
+
+    function move(code) {
+      const camera = globals.camera;
+      const defaultSpeed = 0.12; // meters
+
+      // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
+      if (code === "KeyA") {
+        camera.moveLeft(defaultSpeed);
+      } else if (code === "KeyD") {
+        camera.moveRight(defaultSpeed);
+      } else if (code === "KeyW") {
+        camera.moveForward(defaultSpeed);
+      } else if (code === "KeyS") {
+        camera.moveBackward(defaultSpeed);
+      } else if (code === "KeyQ") {
+        camera.moveUp(defaultSpeed);
+      } else if (code === "KeyE") {
+        camera.moveDown(defaultSpeed);
+      }
+    }
+
+    function rotateOffset(code) {
+      const defaultAmount = 0.002;
+
+      if (code === "KeyJ") {
+        globals.rotationOffset.heading -= defaultAmount;
+      } else if (code === "KeyL") {
+        globals.rotationOffset.heading += defaultAmount;
+      } else if (code === "KeyI") {
+        globals.rotationOffset.pitch -= defaultAmount;
+      } else if (code === "KeyK") {
+        globals.rotationOffset.pitch += defaultAmount;
+      } else if (code === "KeyU") {
+        globals.rotationOffset.roll += defaultAmount;
+      } else if (code === "KeyO") {
+        globals.rotationOffset.roll -= defaultAmount;
+      }
+    }
+
+    function keyDownListener(event) {
+      // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
+      // [37;40] == arrow keys
+      if (event.which <= 40 && event.which >= 37) {
+        look(event.which);
+      }
+      move(event.code);
+      rotateOffset(event.code);
+    }
+    document.addEventListener("keydown", keyDownListener, false);
+
+    // --------------------------------
+
+    // Cesium Ion
+    Cesium.Ion.defaultAccessToken =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZmEzMjQwMi00MjQ0LTRmZjgtODhlOS0zNDI5ZmU3NGRkODQiLCJpZCI6MTQ5MywiaWF0IjoxNTI4NzE4Mzg0fQ.4h4xuSeZTaiBGtv4sHA7WN6D1eIedRHw-6rFls9QMsQ";
+
+    //////////////////////////////////////////////////////////////////////////
+    // Creating the Viewer
+    //////////////////////////////////////////////////////////////////////////
+
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+      scene3DOnly: true,
+      selectionIndicator: false,
+      baseLayerPicker: false
+    });
+
+    // setup scene
+    const scene = viewer.scene;
+    scene.globe.show = false;
+    // viewer.scene.debugShowFrustumPlanes = true; // show frustums
+
+    //////////////////////////////////////////////////////////////////////////
+    // Loading Imagery
+    //////////////////////////////////////////////////////////////////////////
+
+    // Remove default base layer
+    viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+
+    // Add Sentinel-2 imagery
+    // viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
+
+    // Add Bing Maps
+    // viewer.imageryLayers.addImageryProvider(
+    //   new Cesium.IonImageryProvider({ assetId: 4 })
+    // );
+
+    //////////////////////////////////////////////////////////////////////////
+    // Loading Terrain
+    //////////////////////////////////////////////////////////////////////////
+
+    // Load Cesium World Terrain
+    // viewer.terrainProvider = Cesium.createWorldTerrain({
+    //   requestWaterMask: true, // required for water effects
+    //   requestVertexNormals: true // required for terrain lighting
+    // });
+    // Enable depth testing so things behind the terrain disappear.
+    // viewer.scene.globe.depthTestAgainstTerrain = true;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Configuring the Scene
+    //////////////////////////////////////////////////////////////////////////
+
+    // Enable lighting based on sun/moon positions
+    scene.globe.enableLighting = true;
+
+    // Set the initial view
+    const camera = viewer.camera;
+    const birdsEye = new Cesium.Cartesian3(
+      3961538.873,
+      482335.1824,
+      4958890.174
+    );
+    const startOfStreetView = {
+      destination: { x: 3961452.238, y: 482230.0739, z: 4958837.392 },
+      orientation: {
+        direction: { x: 0.107284457, y: 0.92035867, z: -0.376071 },
+        up: { x: 0.6698224, y: 0.212619, z: 0.711428 }
+      }
+    };
+    const homeCameraView = {
+      destination: {
+        x: 3961467.55,
+        y: 482298.086,
+        z: 4958811.655
+      },
+      orientation: {
+        direction: {
+          x: 0.0286422,
+          y: 0.9168583,
+          z: -0.398183
+        },
+        up: {
+          x: 0.6449769,
+          y: 0.2873771,
+          z: 0.7081095
+        }
+      }
+    };
+    const furtherDownTheStreetView = {
+      destination: {
+        x: 3961456.72,
+        y: 482483.041,
+        z: 4958797.78
+      },
+      orientation: {
+        direction: {
+          x: 0.4530828,
+          y: 0.2137075,
+          z: -0.8654738
+        },
+        up: {
+          x: 0.864637,
+          y: 0.1310491,
+          z: 0.485004
+        }
+      }
+    };
+    camera.flyTo({ duration: 0, ...startOfStreetView });
+
+    // Override the default home button
+    viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
+      e.cancel = true;
+      camera.flyTo({ duration: 0.5, ...startOfStreetView });
+    });
+
+    let tileset = scene.primitives.add(
+      new Cesium.Cesium3DTileset({
+        url: host + tilesetPath,
+        skipLevelOfDetail: true,
+        baseScreenSpaceError: 1024,
+        skipScreenSpaceErrorFactor: 16,
+        skipLevels: 1
+      })
+    );
+
+    // let tileset = scene.primitives.add(
+    //   new Cesium.Cesium3DTileset({
+    //     url: "http://localhost:8080/data/pointcloud_langenbeck/tileset.json",
+    //     skipLevelOfDetail: true,
+    //     baseScreenSpaceError: 1024,
+    //     skipScreenSpaceErrorFactor: 16,
+    //     skipLevels: 1
+    //   })
+    // );
+
+    // tileset.readyPromise.then(tileset => {
+    //   camera.flyToBoundingSphere(tileset.boundingSphere);
+    // });
+
+    // TODO: how to keep default shading and add color?
+    // tileset.pointCloudShading.maximumAttenuation = 4.0; // Don't allow points larger than 8 pixels.
+    // tileset.pointCloudShading.baseResolution = 0.1; // Assume an original capture resolution of 5 centimeters between neighboring points.
+    // tileset.pointCloudShading.geometricErrorScale = 1.0; // Applies to both geometric error and the base resolution.
+    // tileset.pointCloudShading.attenuation = true;
+    // tileset.pointCloudShading.eyeDomeLighting = true;
+    //
+    // tileset.style = new Cesium.Cesium3DTileStyle({
+    //   color: 'color("red")'
+    // });
+
+    // tileset.style.color.evaluateColor = (frameState, feature, result) => {
+    //   if (Cesium.defined(feature)) {
+    //     console.log(feature);
+    //     return Cesium.Color.clone(Cesium.Color.WHITE, result);
+    //   }
+    // };
+
+    fetch(new URL(panoramaImagesDirPath + "meta.json", host))
+      .then(res => res.json())
+      .then(processMetaData)
+      .then(metaData => {
+        globals.metaData = metaData;
+        // place spheres representing the panorama pictures
+        metaData.forEach(m => {
+          viewer.entities.add({
+            name: m.image,
+            position: m.cartesianPos,
+            ellipsoid: {
+              radii: { x: 1, y: 1, z: 1 },
+              material: Cesium.Color.DARKGREEN
+            },
+            properties: {
+              index: m.index
+            }
+          });
+        });
+      })
+      .catch(err => console.error(err));
+
+    fetch(new URL(radarDirPath + "radar_gps.json", host))
+      .then(res => res.json())
+      .then(processRadarData)
+      .then(locations => {
+        globals.radarLocations = locations;
+        // TODO: draw polyline instead
+        _.sample(locations, locations.length / 15).forEach(location => {
+          viewer.entities.add({
             name: "radar datum",
             position: location,
             ellipsoid: {
@@ -608,41 +616,88 @@ let G = {};
               material: Cesium.Color.ORANGE
             }
           });
+        });
+      })
+      .catch(err => console.error(err));
+
+    function setupEntityPickHandler(handler, eventType) {
+      eventType = eventType || Cesium.ScreenSpaceEventType.LEFT_CLICK;
+      const eventHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+      eventHandler.setInputAction(event => {
+        let pickedPrimitive = globals.scene.pick(event.position);
+        let pickedEntity = Cesium.defined(pickedPrimitive)
+          ? pickedPrimitive.id
+          : undefined;
+
+        if (Cesium.defined(pickedEntity)) {
+          handler(pickedEntity, event);
         }
-      );
-    })
-    .catch(err => console.error(err));
-
-  let handler = new Cesium.ScreenSpaceEventHandler(G.viewer.scene.canvas);
-  handler.setInputAction(e => {
-    let pickedPrimitive = G.viewer.scene.pick(e.position);
-    let pickedEntity = Cesium.defined(pickedPrimitive)
-      ? pickedPrimitive.id
-      : undefined;
-
-    if (Cesium.defined(G.lastPicked)) {
-      G.lastPicked.show = true;
+      }, eventType);
+      return eventHandler;
     }
-    if (
-      Cesium.defined(pickedEntity) &&
-      Cesium.defined(pickedEntity.properties.index)
-    ) {
-      const index = pickedEntity.properties.index.getValue();
-      const meta = G.metaData[index];
-      console.log("picked image: ", meta.image);
 
-      addOrUpdatePostProcessing(index);
+    const hide = entity => {
+      if (Cesium.defined(entity)) {
+        entity.show = false;
+      }
+    };
+    // set up handler to allow clicking spheres to see their panorama
+    setupEntityPickHandler(entity => {
+      if (Cesium.defined(globals.lastPicked)) {
+        globals.lastPicked.show = true;
+      }
+      if (Cesium.defined(entity.properties.index)) {
+        const index = entity.properties.index.getValue();
+        console.log("picked image: ", globals.metaData[index].image);
 
-      // hide next spheres
-      const hide = entity => {
-        if (Cesium.defined(entity)) {
-          entity.show = false;
-        }
-      };
-      hide(pickedEntity);
-      hide(G.viewer.entities.values[index + 1]);
-      hide(G.viewer.entities.values[index + 2]);
-      G.lastPicked = pickedEntity;
-    }
-  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-})();
+        addOrUpdatePostProcessing(index);
+
+        hide(entity);
+        globals.lastPicked = entity;
+      }
+    });
+
+    // hide panorama spheres on right click
+    setupEntityPickHandler(
+      entity => hide(entity),
+      Cesium.ScreenSpaceEventType.RIGHT_CLICK
+    );
+
+    const interpolation = 0.2;
+    const rotationOffset = new Cesium.HeadingPitchRoll();
+
+    return {
+      // Cesium objects
+      viewer,
+      scene,
+      camera,
+
+      // meta data for the panoramas
+      metaData: undefined,
+
+      radarLocations: undefined,
+
+      // offset to use when rotating the panorama
+      rotationOffset,
+
+      // cesium 3D tileset
+      tileset,
+
+      // for selecting panoramas
+      lastPicked: undefined,
+      currentPanoramaImage: undefined,
+
+      // post-processing stage
+      postProcessStage: undefined,
+      // [-1, 1] how much to prioritize the pointcloud (-1) or panorama (1) when interpolating
+      interpolation,
+
+      fn: {
+        addOrUpdatePostProcessing,
+        addPanoramaSphere,
+        addImageRectangle
+      }
+    };
+  })(),
+  globals
+);

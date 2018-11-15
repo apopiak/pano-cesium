@@ -118,13 +118,14 @@ void main(void)
     vec2 uv = equirectangular(ray.xyz);
     vec4 pano = texture2D(u_panorama, uv);
 
+    float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
     // color geometry/pointcloud red for better contrast
-    color = vec4(length(color.xyz), 0.0, 0.0, 1.0);
+    // color = vec4(length(color.xyz), 0.0, 0.0, 1.0);
 
     vec4 dirColor = clamp(visualizeDirection(ray.xyz), 0.0, 1.0);
     vec4 combined = mix(pano, dirColor, 0.15);
-    float depth = texture2D(depthTexture, v_textureCoordinates).x;
+
     // interpolate between panorama and geometry based on depth and user defined value
     gl_FragColor = mix(color, combined, clamp(depth + u_interpolation, 0.0, 1.0));
 }

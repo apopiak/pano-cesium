@@ -7,4 +7,4 @@ package-lock.json
 
 # poincloud data
 images
-data/pointcloud*
+data/streets/

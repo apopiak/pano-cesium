@@ -119,122 +119,6 @@ globals = _.extend(
         .catch(err => console.error(err));
     }
 
-    function addPanoramaSphere(idx) {
-      const index = idx || 0;
-      const meta = globals.metaData[index];
-      const camera = globals.viewer.scene.camera;
-
-      globals.currentPanoramaImage = meta.imagePath;
-
-      const position = meta.cartesianPos;
-
-      // TODO: check for end of array
-      const nextPos = globals.metaData[index + 1].cartesianPos;
-      // const direction = Cesium.Cartesian3.subtract(
-      //   nextPos,
-      //   position,
-      //   new Cesium.Cartesian3()
-      // );
-      // const spherical = Cesium.Spherical.fromCartesian3(direction);
-      // const hpr = new Cesium.HeadingPitchRoll(spherical.cone, spherical.clock, 0);
-      // const orientation = Cesium.Transforms.headingPitchRollQuaternion(
-      //   position,
-      //   hpr
-      // );
-      const orientation = Cesium.Quaternion.fromHeadingPitchRoll(
-        new Cesium.HeadingPitchRoll()
-      );
-
-      const size = 50;
-      // remove old sphere
-      if (Cesium.defined(globals.panoramaSphere)) {
-        globals.viewer.entities.remove(globals.panoramaSphere);
-        globals.panoramaSphere = undefined;
-      }
-      globals.panoramaSphere = globals.viewer.entities.add({
-        name: meta.image,
-        position,
-        orientation,
-        ellipsoid: {
-          radii: { x: size, y: size, z: size },
-          material: new Cesium.ImageMaterialProperty({
-            image: meta.imagePath,
-            color: new Cesium.Color(1, 1, 1, 0.99)
-          })
-        },
-        properties: {
-          index
-        }
-      });
-
-      camera.flyTo({
-        destination: position,
-        orientation: meta.cameraOrientation,
-        duration: 0.5
-      });
-      return;
-    }
-
-    function addImageRectangle(idx) {
-      const index = idx || 0;
-      const meta = globals.metaData[index];
-      const camera = globals.viewer.scene.camera;
-
-      const destination = meta.cartesianPos;
-      const orientation = meta.cameraOrientation;
-      const duration = 0.5; // seconds
-
-      camera.flyTo({ destination, orientation, duration });
-
-      const rect = meta.rectangle;
-
-      const bottomCenter = Cesium.Cartesian3.midpoint(
-        rect.bottomLeft,
-        rect.bottomRight,
-        new Cesium.Cartesian3()
-      );
-      const topCenter = Cesium.Cartesian3.midpoint(
-        rect.topLeft,
-        rect.topRight,
-        new Cesium.Cartesian3()
-      );
-      const center = Cesium.Cartesian3.midpoint(
-        topCenter,
-        bottomCenter,
-        new Cesium.Cartesian3()
-      );
-
-      const v1 = Cesium.Cartesian3.subtract(
-        rect.bottomLeft,
-        rect.bottomRight,
-        new Cesium.Cartesian3()
-      );
-      const v2 = Cesium.Cartesian3.subtract(
-        rect.bottomLeft,
-        rect.topLeft,
-        new Cesium.Cartesian3()
-      );
-
-      let scratch = new Cesium.Cartesian3();
-      const normal = Cesium.Cartesian3.normalize(
-        Cesium.Cartesian3.cross(v1, v2, scratch),
-        scratch
-      );
-
-      let panoramaPlane = globals.viewer.entities.add({
-        name: "Panorama plane",
-        position: center,
-        plane: {
-          plane: new Cesium.Plane(normal, 0.0),
-          dimensions: new Cesium.Cartesian2(
-            Cesium.Cartesian3.magnitude(v1),
-            Cesium.Cartesian3.magnitude(v2)
-          ),
-          material: Cesium.Color.BLUE
-        }
-      });
-    }
-
     ///////////////////////
     // Data Processing
     ///////////////////////
@@ -677,11 +561,11 @@ globals = _.extend(
 
       radarLocations: undefined,
 
-      // offset to use when rotating the panorama
-      rotationOffset,
-
       // cesium 3D tileset
       tileset,
+
+      // offset to use when rotating the panorama
+      rotationOffset,
 
       // for selecting panoramas
       lastPicked: undefined,
@@ -693,9 +577,7 @@ globals = _.extend(
       interpolation,
 
       fn: {
-        addOrUpdatePostProcessing,
-        addPanoramaSphere,
-        addImageRectangle
+        addOrUpdatePostProcessing
       }
     };
   })(),

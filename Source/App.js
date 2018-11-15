@@ -8,11 +8,6 @@ globals = _.extend(
     ////////////////////////////
     const host = "http://localhost:8080/";
     const streetBasePath = "data/streets/";
-    const street = "steinweg";
-    const streetDirPath = streetBasePath + street + "/";
-    const panoramaImagesDirPath = streetDirPath + "G360/";
-    const radarDirPath = streetDirPath + "GPR/";
-    const tilesetPath = streetDirPath + "pointcloud/tileset.json";
 
     ////////////////////////////
     // Utility Functions
@@ -31,15 +26,15 @@ globals = _.extend(
     ////////////////////////////
 
     // add a panorama rendering in post processing
-    function addOrUpdatePostProcessing(idx) {
+    function addOrUpdatePostProcessing(idx, streetName) {
       const index = idx || 0;
-      const meta = globals.metaData[index];
+      const meta = globals.streets[streetName].metaData[index];
 
       const destination = meta.cartesianPos;
       const orientation = meta.cameraOrientation;
       const duration = 0.5; // seconds
 
-      const scene = globals.viewer.scene;
+      const scene = globals.scene;
       const camera = scene.camera;
       const canvas = scene.canvas;
       const stages = scene.postProcessStages;
@@ -160,7 +155,7 @@ globals = _.extend(
       );
     }
 
-    function processMetaData(originalJson) {
+    function processMetaData(originalJson, street) {
       return _.map(originalJson, (meta, index) => {
         const cartographicPos = origToCartographic(meta);
         const cartesianPos = Cesium.Cartographic.toCartesian(cartographicPos);
@@ -175,7 +170,7 @@ globals = _.extend(
           vehicleOrientation: headingPitchRoll(meta, "Veh"),
 
           image: meta.ImageName,
-          imagePath: panoramaImagesDirPath + meta.ImageName,
+          imagePath: street.panoramaDirPath + meta.ImageName,
 
           rectangle: {
             bottomLeft: utmToCartesian(meta.lbx, meta.lby, meta.lbz),
@@ -306,6 +301,21 @@ globals = _.extend(
     }
     document.addEventListener("keydown", keyDownListener, false);
 
+    function setupEntityPickHandler(canvas, handler, eventType) {
+      eventType = eventType || Cesium.ScreenSpaceEventType.LEFT_CLICK;
+      const eventHandler = new Cesium.ScreenSpaceEventHandler(canvas);
+      eventHandler.setInputAction(event => {
+        let pickedPrimitive = globals.scene.pick(event.position);
+        let pickedEntity = Cesium.defined(pickedPrimitive)
+          ? pickedPrimitive.id
+          : undefined;
+
+        if (Cesium.defined(pickedEntity)) {
+          handler(pickedEntity, event);
+        }
+      }, eventType);
+      return eventHandler;
+    }
     // --------------------------------
 
     // Cesium Ion
@@ -413,7 +423,7 @@ globals = _.extend(
         }
       }
     };
-    camera.flyTo({ duration: 0, ...startOfStreetView });
+    // camera.flyTo({ duration: 0, ...startOfStreetView });
 
     // Override the default home button
     viewer.homeButton.viewModel.command.beforeExecute.addEventListener(e => {
@@ -421,104 +431,77 @@ globals = _.extend(
       camera.flyTo({ duration: 0.5, ...startOfStreetView });
     });
 
-    let tileset = scene.primitives.add(
-      new Cesium.Cesium3DTileset({
-        url: host + tilesetPath,
-        skipLevelOfDetail: true,
-        baseScreenSpaceError: 1024,
-        skipScreenSpaceErrorFactor: 16,
-        skipLevels: 1
-      })
+    // load data for different streets
+    const streets = _.reduce(
+      ["emscher", "langenbeck", "steinweg"],
+      (streets, streetName) => {
+        const streetDirPath = streetBasePath + streetName + "/";
+        const panoramaDirPath = streetDirPath + "G360/";
+        const radarDirPath = streetDirPath + "GPR/";
+        const tilesetPath = streetDirPath + "pointcloud/tileset.json";
+
+        const street = {
+          streetDirPath,
+          panoramaDirPath,
+          radarDirPath
+        };
+        streets[streetName] = street;
+
+        street.tileset = scene.primitives.add(
+          new Cesium.Cesium3DTileset({
+            url: host + tilesetPath,
+            skipLevelOfDetail: true,
+            baseScreenSpaceError: 1024,
+            skipScreenSpaceErrorFactor: 16,
+            skipLevels: 1
+          })
+        );
+
+        fetch(new URL(panoramaDirPath + "meta.json", host))
+          .then(res => res.json())
+          .then(data => processMetaData(data, street))
+          .then(metaData => {
+            street.metaData = metaData;
+            // place spheres representing the panorama pictures
+            metaData.forEach(m => {
+              viewer.entities.add({
+                name: m.image,
+                position: m.cartesianPos,
+                ellipsoid: {
+                  radii: { x: 1, y: 1, z: 1 },
+                  material: Cesium.Color.DARKGREEN
+                },
+                properties: {
+                  index: m.index,
+                  streetName
+                }
+              });
+            });
+          })
+          .catch(err => console.error(err));
+
+        fetch(new URL(radarDirPath + "radar_gps.json", host))
+          .then(res => res.json())
+          .then(processRadarData)
+          .then(locations => {
+            street.radarLocations = locations;
+            // TODO: draw polyline instead
+            _.sample(locations, locations.length / 15).forEach(location => {
+              viewer.entities.add({
+                name: "radar datum",
+                position: location,
+                ellipsoid: {
+                  radii: { x: 0.1, y: 0.1, z: 0.1 },
+                  material: Cesium.Color.ORANGE
+                }
+              });
+            });
+          })
+          .catch(err => console.error(err));
+        return streets;
+      },
+      {}
     );
-
-    // let tileset = scene.primitives.add(
-    //   new Cesium.Cesium3DTileset({
-    //     url: "http://localhost:8080/data/pointcloud_langenbeck/tileset.json",
-    //     skipLevelOfDetail: true,
-    //     baseScreenSpaceError: 1024,
-    //     skipScreenSpaceErrorFactor: 16,
-    //     skipLevels: 1
-    //   })
-    // );
-
-    // tileset.readyPromise.then(tileset => {
-    //   camera.flyToBoundingSphere(tileset.boundingSphere);
-    // });
-
-    // TODO: how to keep default shading and add color?
-    // tileset.pointCloudShading.maximumAttenuation = 4.0; // Don't allow points larger than 8 pixels.
-    // tileset.pointCloudShading.baseResolution = 0.1; // Assume an original capture resolution of 5 centimeters between neighboring points.
-    // tileset.pointCloudShading.geometricErrorScale = 1.0; // Applies to both geometric error and the base resolution.
-    // tileset.pointCloudShading.attenuation = true;
-    // tileset.pointCloudShading.eyeDomeLighting = true;
-    //
-    // tileset.style = new Cesium.Cesium3DTileStyle({
-    //   color: 'color("red")'
-    // });
-
-    // tileset.style.color.evaluateColor = (frameState, feature, result) => {
-    //   if (Cesium.defined(feature)) {
-    //     console.log(feature);
-    //     return Cesium.Color.clone(Cesium.Color.WHITE, result);
-    //   }
-    // };
-
-    fetch(new URL(panoramaImagesDirPath + "meta.json", host))
-      .then(res => res.json())
-      .then(processMetaData)
-      .then(metaData => {
-        globals.metaData = metaData;
-        // place spheres representing the panorama pictures
-        metaData.forEach(m => {
-          viewer.entities.add({
-            name: m.image,
-            position: m.cartesianPos,
-            ellipsoid: {
-              radii: { x: 1, y: 1, z: 1 },
-              material: Cesium.Color.DARKGREEN
-            },
-            properties: {
-              index: m.index
-            }
-          });
-        });
-      })
-      .catch(err => console.error(err));
-
-    fetch(new URL(radarDirPath + "radar_gps.json", host))
-      .then(res => res.json())
-      .then(processRadarData)
-      .then(locations => {
-        globals.radarLocations = locations;
-        // TODO: draw polyline instead
-        _.sample(locations, locations.length / 15).forEach(location => {
-          viewer.entities.add({
-            name: "radar datum",
-            position: location,
-            ellipsoid: {
-              radii: { x: 0.1, y: 0.1, z: 0.1 },
-              material: Cesium.Color.ORANGE
-            }
-          });
-        });
-      })
-      .catch(err => console.error(err));
-
-    function setupEntityPickHandler(handler, eventType) {
-      eventType = eventType || Cesium.ScreenSpaceEventType.LEFT_CLICK;
-      const eventHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
-      eventHandler.setInputAction(event => {
-        let pickedPrimitive = globals.scene.pick(event.position);
-        let pickedEntity = Cesium.defined(pickedPrimitive)
-          ? pickedPrimitive.id
-          : undefined;
-
-        if (Cesium.defined(pickedEntity)) {
-          handler(pickedEntity, event);
-        }
-      }, eventType);
-      return eventHandler;
-    }
 
     const hide = entity => {
       if (Cesium.defined(entity)) {
@@ -526,15 +509,19 @@ globals = _.extend(
       }
     };
     // set up handler to allow clicking spheres to see their panorama
-    setupEntityPickHandler(entity => {
+    setupEntityPickHandler(scene.canvas, entity => {
       if (Cesium.defined(globals.lastPicked)) {
         globals.lastPicked.show = true;
       }
       if (Cesium.defined(entity.properties.index)) {
         const index = entity.properties.index.getValue();
-        console.log("picked image: ", globals.metaData[index].image);
+        const streetName = entity.properties.streetName.getValue();
+        console.log(
+          "picked image: ",
+          globals.streets[streetName].metaData[index].image
+        );
 
-        addOrUpdatePostProcessing(index);
+        addOrUpdatePostProcessing(index, streetName);
 
         hide(entity);
         globals.lastPicked = entity;
@@ -543,9 +530,17 @@ globals = _.extend(
 
     // hide panorama spheres on right click
     setupEntityPickHandler(
+      scene.canvas,
       entity => hide(entity),
       Cesium.ScreenSpaceEventType.RIGHT_CLICK
     );
+
+    streets["emscher"].tileset.readyPromise.then(tileset => {
+      camera.flyToBoundingSphere(tileset.boundingSphere);
+      tileset.style = new Cesium.Cesium3DTileStyle({
+        color: 'color("red")'
+      });
+    });
 
     const interpolation = 0.2;
     const rotationOffset = new Cesium.HeadingPitchRoll();
@@ -556,13 +551,7 @@ globals = _.extend(
       scene,
       camera,
 
-      // meta data for the panoramas
-      metaData: undefined,
-
-      radarLocations: undefined,
-
-      // cesium 3D tileset
-      tileset,
+      streets,
 
       // offset to use when rotating the panorama
       rotationOffset,

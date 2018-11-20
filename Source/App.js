@@ -535,7 +535,8 @@ globals = _.extend(
       Cesium.ScreenSpaceEventType.RIGHT_CLICK
     );
 
-    streets["emscher"].tileset.readyPromise.then(tileset => {
+    const startStreet = streets["steinweg"];
+    startStreet.tileset.readyPromise.then(tileset => {
       camera.flyToBoundingSphere(tileset.boundingSphere);
       tileset.style = new Cesium.Cesium3DTileStyle({
         color: 'color("red")'
@@ -543,6 +544,8 @@ globals = _.extend(
     });
 
     const interpolation = 0.2;
+    const emscherOffset = new Cesium.HeadingPitchRoll(0.028, -0.03, -0.048);
+    const steinwegStartOffset = new Cesium.HeadingPitchRoll(0.028, 0.016, 0.002);
     const rotationOffset = new Cesium.HeadingPitchRoll();
 
     return {

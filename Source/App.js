@@ -1,24 +1,24 @@
-const {
-  Cartesian3,
-  Cartographic,
-  Cesium3DTileset,
-  Color,
-  Ellipsoid,
-  HeadingPitchRoll,
-  Matrix3,
-  Matrix4,
-  PostProcessStage,
-  Quaternion,
-  ScreenSpaceEventHandler,
-  ScreenSpaceEventType,
-  Transforms,
-  Viewer
-} = Cesium;
-
 let globals = {};
 globals = _.extend(
   (function() {
     "use strict";
+
+    const {
+      Cartesian3,
+      Cartographic,
+      Cesium3DTileset,
+      Color,
+      Ellipsoid,
+      HeadingPitchRoll,
+      Matrix3,
+      Matrix4,
+      PostProcessStage,
+      Quaternion,
+      ScreenSpaceEventHandler,
+      ScreenSpaceEventType,
+      Transforms,
+      Viewer
+    } = Cesium;
 
     ////////////////////////////
     // Constants
@@ -90,10 +90,9 @@ globals = _.extend(
           u_cameraRotation: () => computeCameraRotation(),
           u_inverseCameraTranform: () =>
             Matrix4.inverse(
-              Transforms.eastNorthUpToFixedFrame(
+              Transforms.headingPitchRollToFixedFrame(
                 camera.positionWC,
-                Ellipsoid.WGS84,
-                new Matrix4()
+                new HeadingPitchRoll()
               ),
               new Matrix4()
             ),

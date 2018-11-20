@@ -1,4 +1,6 @@
 #!/bin/bash
+set -ex
+
 IMAGEPATH=$1
 CSV=$2
 

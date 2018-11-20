@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
 
+# convert from panorama meta data in csv to json
+
 IMAGEPATH=$1
 CSV=$2
 

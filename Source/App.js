@@ -1,3 +1,20 @@
+const {
+  Cartesian3,
+  Cartographic,
+  Cesium3DTileset,
+  Color,
+  Ellipsoid,
+  HeadingPitchRoll,
+  Matrix3,
+  Matrix4,
+  PostProcessStage,
+  Quaternion,
+  ScreenSpaceEventHandler,
+  ScreenSpaceEventType,
+  Transforms,
+  Viewer
+} = Cesium;
+
 let globals = {};
 globals = _.extend(
   (function() {
@@ -15,10 +32,10 @@ globals = _.extend(
 
     const toRadians = deg => (deg * Math.PI) / 180.0;
     const mat4FromQuaternion = quaternion =>
-      Cesium.Matrix4.fromRotationTranslation(
-        Cesium.Matrix3.fromQuaternion(quaternion, new Cesium.Matrix3()),
-        Cesium.Cartesian3.ZERO,
-        new Cesium.Matrix4()
+      Matrix4.fromRotationTranslation(
+        Matrix3.fromQuaternion(quaternion, new Matrix3()),
+        Cartesian3.ZERO,
+        new Matrix4()
       );
 
     ////////////////////////////
@@ -41,24 +58,24 @@ globals = _.extend(
 
       const addStage = (fragmentShader, imagePath) => {
         const computeCameraRotation = () => {
-          let cameraQuaternion = Cesium.Quaternion.fromAxisAngle(
-            Cesium.Cartesian3.UNIT_Y,
+          let cameraQuaternion = Quaternion.fromAxisAngle(
+            Cartesian3.UNIT_Y,
             -meta.cameraOrientation.heading + globals.rotationOffset.heading
           );
-          const pitchQuaternion = Cesium.Quaternion.fromAxisAngle(
-            Cesium.Cartesian3.UNIT_Z,
+          const pitchQuaternion = Quaternion.fromAxisAngle(
+            Cartesian3.UNIT_Z,
             meta.cameraOrientation.pitch + globals.rotationOffset.pitch
           );
-          const rollQuaternion = Cesium.Quaternion.fromAxisAngle(
-            Cesium.Cartesian3.UNIT_X,
+          const rollQuaternion = Quaternion.fromAxisAngle(
+            Cartesian3.UNIT_X,
             -meta.cameraOrientation.roll + globals.rotationOffset.roll
           );
-          Cesium.Quaternion.multiply(
+          Quaternion.multiply(
             cameraQuaternion,
             rollQuaternion,
             cameraQuaternion
           );
-          Cesium.Quaternion.multiply(
+          Quaternion.multiply(
             cameraQuaternion,
             pitchQuaternion,
             cameraQuaternion
@@ -72,20 +89,20 @@ globals = _.extend(
 
           u_cameraRotation: () => computeCameraRotation(),
           u_inverseCameraTranform: () =>
-            Cesium.Matrix4.inverse(
-              Cesium.Transforms.eastNorthUpToFixedFrame(
+            Matrix4.inverse(
+              Transforms.eastNorthUpToFixedFrame(
                 camera.positionWC,
-                Cesium.Ellipsoid.WGS84,
-                new Cesium.Matrix4()
+                Ellipsoid.WGS84,
+                new Matrix4()
               ),
-              new Cesium.Matrix4()
+              new Matrix4()
             ),
 
           u_interpolation: () => globals.interpolation
         };
 
         globals.postProcessStage = stages.add(
-          new Cesium.PostProcessStage({
+          new PostProcessStage({
             fragmentShader,
             uniforms
           })
@@ -128,15 +145,11 @@ globals = _.extend(
       );
       const degrees = utm.to_deg("wgs84");
       const height = position.z;
-      return Cesium.Cartographic.fromDegrees(
-        degrees.lngd,
-        degrees.latd,
-        height
-      );
+      return Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
     }
 
     function utmToCartesian(x, y, z) {
-      return Cesium.Cartographic.toCartesian(utmToCartographic({ x, y, z }));
+      return Cartographic.toCartesian(utmToCartographic({ x, y, z }));
     }
 
     function origToCartographic(meta) {
@@ -148,7 +161,7 @@ globals = _.extend(
     }
 
     function headingPitchRoll(meta, suffix) {
-      return Cesium.HeadingPitchRoll.fromDegrees(
+      return HeadingPitchRoll.fromDegrees(
         meta["H-" + suffix],
         meta["P-" + suffix],
         meta["R-" + suffix]
@@ -158,7 +171,7 @@ globals = _.extend(
     function processMetaData(originalJson, street) {
       return _.map(originalJson, (meta, index) => {
         const cartographicPos = origToCartographic(meta);
-        const cartesianPos = Cesium.Cartographic.toCartesian(cartographicPos);
+        const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
         return {
           index,
@@ -214,8 +227,8 @@ globals = _.extend(
           datum["N or S"] === "S"
         ); // example: { ... "Latitude":"5121.66311","N or S":"N" ... }
         const height = Number(datum["Antenna altitude"]);
-        return Cesium.Cartographic.toCartesian(
-          Cesium.Cartographic.fromDegrees(lon, lat, height)
+        return Cartographic.toCartesian(
+          Cartographic.fromDegrees(lon, lat, height)
         );
       });
     }
@@ -229,18 +242,18 @@ globals = _.extend(
 
       if (which === 39) {
         // right arrow
-        const worldUp = Cesium.Matrix4.multiplyByPoint(
+        const worldUp = Matrix4.multiplyByPoint(
           camera.inverseTransform,
           camera.positionWC,
-          new Cesium.Cartesian3()
+          new Cartesian3()
         );
         camera.look(worldUp, rotation);
       } else if (which === 37) {
         // left arrow
-        const worldUp = Cesium.Matrix4.multiplyByPoint(
+        const worldUp = Matrix4.multiplyByPoint(
           camera.inverseTransform,
           camera.positionWC,
-          new Cesium.Cartesian3()
+          new Cartesian3()
         );
         camera.look(worldUp, -rotation);
       } else if (which === 38) {
@@ -302,8 +315,8 @@ globals = _.extend(
     document.addEventListener("keydown", keyDownListener, false);
 
     function setupEntityPickHandler(canvas, handler, eventType) {
-      eventType = eventType || Cesium.ScreenSpaceEventType.LEFT_CLICK;
-      const eventHandler = new Cesium.ScreenSpaceEventHandler(canvas);
+      eventType = eventType || ScreenSpaceEventType.LEFT_CLICK;
+      const eventHandler = new ScreenSpaceEventHandler(canvas);
       eventHandler.setInputAction(event => {
         let pickedPrimitive = globals.scene.pick(event.position);
         let pickedEntity = Cesium.defined(pickedPrimitive)
@@ -326,7 +339,7 @@ globals = _.extend(
     // Creating the Viewer
     //////////////////////////////////////////////////////////////////////////
 
-    const viewer = new Cesium.Viewer("cesiumContainer", {
+    const viewer = new Viewer("cesiumContainer", {
       scene3DOnly: true,
       selectionIndicator: false,
       baseLayerPicker: false
@@ -373,11 +386,7 @@ globals = _.extend(
 
     // Set the initial view
     const camera = viewer.camera;
-    const birdsEye = new Cesium.Cartesian3(
-      3961538.873,
-      482335.1824,
-      4958890.174
-    );
+    const birdsEye = new Cartesian3(3961538.873, 482335.1824, 4958890.174);
     const startOfStreetView = {
       destination: { x: 3961452.238, y: 482230.0739, z: 4958837.392 },
       orientation: {
@@ -448,7 +457,7 @@ globals = _.extend(
         streets[streetName] = street;
 
         street.tileset = scene.primitives.add(
-          new Cesium.Cesium3DTileset({
+          new Cesium3DTileset({
             url: host + tilesetPath,
             skipLevelOfDetail: true,
             baseScreenSpaceError: 1024,
@@ -469,7 +478,7 @@ globals = _.extend(
                 position: m.cartesianPos,
                 ellipsoid: {
                   radii: { x: 1, y: 1, z: 1 },
-                  material: Cesium.Color.DARKGREEN
+                  material: Color.DARKGREEN
                 },
                 properties: {
                   index: m.index,
@@ -492,7 +501,7 @@ globals = _.extend(
                 position: location,
                 ellipsoid: {
                   radii: { x: 0.1, y: 0.1, z: 0.1 },
-                  material: Cesium.Color.ORANGE
+                  material: Color.ORANGE
                 }
               });
             });
@@ -532,21 +541,21 @@ globals = _.extend(
     setupEntityPickHandler(
       scene.canvas,
       entity => hide(entity),
-      Cesium.ScreenSpaceEventType.RIGHT_CLICK
+      ScreenSpaceEventType.RIGHT_CLICK
     );
 
     const startStreet = streets["steinweg"];
     startStreet.tileset.readyPromise.then(tileset => {
       camera.flyToBoundingSphere(tileset.boundingSphere);
-      tileset.style = new Cesium.Cesium3DTileStyle({
+      tileset.style = new Cesium3DTileStyle({
         color: 'color("red")'
       });
     });
 
     const interpolation = 0.2;
-    const emscherOffset = new Cesium.HeadingPitchRoll(0.028, -0.03, -0.048);
-    const steinwegStartOffset = new Cesium.HeadingPitchRoll(0.028, 0.016, 0.002);
-    const rotationOffset = new Cesium.HeadingPitchRoll();
+    const emscherOffset = new HeadingPitchRoll(0.028, -0.03, -0.048);
+    const steinwegStartOffset = new HeadingPitchRoll(0.028, 0.016, 0.002);
+    const rotationOffset = new HeadingPitchRoll();
 
     return {
       // Cesium objects

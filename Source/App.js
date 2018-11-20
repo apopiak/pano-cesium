@@ -12,6 +12,7 @@ globals = _.extend(
       HeadingPitchRoll,
       Matrix3,
       Matrix4,
+      PolylineCollection,
       PostProcessStage,
       Quaternion,
       ScreenSpaceEventHandler,
@@ -493,16 +494,18 @@ globals = _.extend(
           .then(processRadarData)
           .then(locations => {
             street.radarLocations = locations;
-            // TODO: draw polyline instead
-            _.sample(locations, locations.length / 15).forEach(location => {
-              viewer.entities.add({
-                name: "radar datum",
-                position: location,
-                ellipsoid: {
-                  radii: { x: 0.1, y: 0.1, z: 0.1 },
-                  material: Color.ORANGE
-                }
-              });
+            // hacky way of deduplicating the radar locations
+            street.filteredRadarLocations = _.unique(locations, false, loc =>
+              loc.toString()
+            );
+
+            street.polyline = viewer.entities.add({
+              name: streetName + "radar locations",
+              polyline: {
+                positions: street.filteredRadarLocations,
+                width: 2,
+                material: Color.ORANGE
+              }
             });
           })
           .catch(err => console.error(err));

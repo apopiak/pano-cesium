@@ -17,3 +17,14 @@ Cesium.HeadingPitchRoll.add = function(left, right, result) {
   result.roll = left.roll + right.roll;
   return result;
 };
+
+Cesium.Cartesian3.prototype.add = function(other, result) {
+  if (!Cesium.defined(result)) {
+    result = new Cesium.Cartesian3();
+  }
+  return Cesium.Cartesian3.add(this, other, result);
+};
+
+Cesium.Cartesian3.prototype.multiplyByScalar = function(scalar) {
+  return Cesium.Cartesian3.multiplyByScalar(this, scalar, this);
+}

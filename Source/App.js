@@ -319,6 +319,35 @@ globals = _.extend(
       }
     }
 
+    function visualizeCamera(code) {
+      if (code === "KeyC") {
+        const viewer = globals.viewer;
+        const camera = globals.camera;
+
+        const directionArray = (dir, pos) => {
+          const start = pos || camera.position.clone();
+          const end = start.add(dir.clone().multiplyByScalar(3));
+          return [start, end];
+        };
+
+        const visualizeDirection = (dir, color) => {
+          color = color || Color.WHITE;
+          return viewer.entities.add({
+            polyline: {
+              positions: directionArray(dir),
+              followSurface: false,
+              width: 3,
+              material: color
+            }
+          });
+        };
+
+        const camDirLine = visualizeDirection(camera.direction, Color.VIOLET);
+        const camDirRight = visualizeDirection(camera.right, Color.YELLOW);
+        const camDirUp = visualizeDirection(camera.up, Color.LIGHTBLUE);
+      }
+    }
+
     function keyDownListener(event) {
       // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/which
       // [37;40] == arrow keys
@@ -327,6 +356,7 @@ globals = _.extend(
       }
       move(event.code);
       rotateOffset(event.code);
+      visualizeCamera(event.code);
     }
     document.addEventListener("keydown", keyDownListener, false);
 

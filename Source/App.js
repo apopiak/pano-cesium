@@ -7,6 +7,7 @@ globals = _.extend(
       Cartesian3,
       Cartographic,
       Cesium3DTileset,
+      Cesium3DTileStyle,
       Color,
       Ellipsoid,
       HeadingPitchRoll,
@@ -61,7 +62,7 @@ globals = _.extend(
         const computeCameraRotation = () => {
           let cameraQuaternion = Quaternion.fromAxisAngle(
             Cartesian3.UNIT_Y,
-            -meta.cameraOrientation.heading + globals.rotationOffset.heading
+            meta.cameraOrientation.heading + globals.rotationOffset.heading
           );
           const pitchQuaternion = Quaternion.fromAxisAngle(
             Cartesian3.UNIT_Z,
@@ -69,7 +70,7 @@ globals = _.extend(
           );
           const rollQuaternion = Quaternion.fromAxisAngle(
             Cartesian3.UNIT_X,
-            -meta.cameraOrientation.roll + globals.rotationOffset.roll
+            meta.cameraOrientation.roll + globals.rotationOffset.roll
           );
           Quaternion.multiply(
             cameraQuaternion,
@@ -81,19 +82,34 @@ globals = _.extend(
             pitchQuaternion,
             cameraQuaternion
           );
-          const cameraRotation = mat4FromQuaternion(cameraQuaternion);
-          return cameraRotation;
+          return Matrix4.inverse(
+            mat4FromQuaternion(cameraQuaternion),
+            new Matrix4()
+          );
+        };
+
+        const computeVehicleRotation = () => {
+          let vehicleQuaternion = Quaternion.fromAxisAngle(
+            Cartesian3.UNIT_Y,
+            meta.vehicleOrientation.heading
+          );
+          return Matrix4.inverse(
+            mat4FromQuaternion(vehicleQuaternion),
+            new Matrix4()
+          );
         };
 
         const uniforms = {
           u_panorama: imagePath,
 
           u_cameraRotation: () => computeCameraRotation(),
-          u_inverseCameraTranform: () =>
+          u_vehicleRotation: () => computeVehicleRotation(),
+          u_inverseCameraTransform: () =>
             Matrix4.inverse(
-              Transforms.headingPitchRollToFixedFrame(
+              Transforms.eastNorthUpToFixedFrame(
                 camera.positionWC,
-                new HeadingPitchRoll()
+                Ellipsoid.WGS84,
+                new Matrix4()
               ),
               new Matrix4()
             ),

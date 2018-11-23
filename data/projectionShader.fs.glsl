@@ -12,8 +12,9 @@ varying vec2 v_textureCoordinates;
 // custom uniforms
 uniform sampler2D u_panorama;
 
+uniform mat4 u_vehicleRotation;
 uniform mat4 u_cameraRotation;
-uniform mat4 u_inverseCameraTranform;
+uniform mat4 u_inverseCameraTransform;
 
 uniform float u_interpolation;
 
@@ -107,7 +108,7 @@ void main(void)
     vec4 worldPos = czm_inverseView * eyePos;
 
     // transform coordinates to camera reference frame
-    vec4 modelPos = u_inverseCameraTranform * worldPos;
+    vec4 modelPos = u_inverseCameraTransform * worldPos;
 
     // correct the rotation of the model position
     modelPos = rotate(modelPos);

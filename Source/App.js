@@ -250,28 +250,79 @@ globals = _.extend(
     }
 
     ///////////////////////
+    // Debugging
+    ///////////////////////
+    function visualizeDirection(dir, color, length, name) {
+      const directionArray = (dir, length, pos) => {
+        const start = pos || globals.camera.position.clone();
+        let array = [start];
+        let prev = start;
+        let current = null;
+        for (let i = 0; i < length - 1; i++) {
+          current = prev.add(dir);
+          array.push(current);
+          prev = current;
+        }
+        const end = prev.add(dir);
+        array.push(end);
+        return array;
+      };
+
+      color = color || Color.WHITE;
+      length = length || 4;
+      name = name || dir.toString();
+      return globals.viewer.entities.add({
+        name,
+        polyline: {
+          positions: directionArray(dir, length),
+          followSurface: false,
+          width: 3,
+          material: color
+        }
+      });
+    }
+
+    function visualizePosition(position, color, name) {
+      color = color || Color.WHITE;
+      name = name || position.toString();
+      globals.viewer.entities.add({
+        name,
+        position,
+        ellipsoid: {
+          radii: { x: 1.5, y: 1.5, z: 1.5 },
+          material: color
+        }
+      });
+    }
+
+    ///////////////////////
     // Interaction Setup
     ///////////////////////
+    function worldUp(camera) {
+      return Matrix4.multiplyByPoint(
+        camera.inverseTransform,
+        camera.positionWC,
+        new Cartesian3()
+      );
+    }
+
+    function geographicNorth(camPos) {
+      const north = Cartographic.fromCartesian(camPos);
+      north.latitude += 0.00001;
+      const cartNorth = Cartographic.toCartesian(north);
+      return [cartNorth, cartNorth.subtract(camPos)];
+    }
+
     function look(which) {
       const camera = globals.camera;
       const rotation = Cesium.Math.toRadians(4.5); // degrees
 
       if (which === 39) {
         // right arrow
-        const worldUp = Matrix4.multiplyByPoint(
-          camera.inverseTransform,
-          camera.positionWC,
-          new Cartesian3()
-        );
-        camera.look(worldUp, rotation);
+        camera.look(worldUp(camera), rotation);
       } else if (which === 37) {
         // left arrow
-        const worldUp = Matrix4.multiplyByPoint(
-          camera.inverseTransform,
-          camera.positionWC,
-          new Cartesian3()
-        );
-        camera.look(worldUp, -rotation);
+        camera.look(worldUp(camera), -rotation);
       } else if (which === 38) {
         // up arrow
         camera.lookUp(rotation);
@@ -324,27 +375,13 @@ globals = _.extend(
         const viewer = globals.viewer;
         const camera = globals.camera;
 
-        const directionArray = (dir, pos) => {
-          const start = pos || camera.position.clone();
-          const end = start.add(dir.clone().multiplyByScalar(3));
-          return [start, end];
-        };
-
-        const visualizeDirection = (dir, color) => {
-          color = color || Color.WHITE;
-          return viewer.entities.add({
-            polyline: {
-              positions: directionArray(dir),
-              followSurface: false,
-              width: 3,
-              material: color
-            }
-          });
-        };
-
         const camDirLine = visualizeDirection(camera.direction, Color.VIOLET);
         const camDirRight = visualizeDirection(camera.right, Color.YELLOW);
         const camDirUp = visualizeDirection(camera.up, Color.LIGHTBLUE);
+
+        const [northPos, northDir] = geographicNorth(camera.position.clone());
+        visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere");
+        visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1);
       }
     }
 
@@ -573,12 +610,58 @@ globals = _.extend(
       if (Cesium.defined(entity.properties.index)) {
         const index = entity.properties.index.getValue();
         const streetName = entity.properties.streetName.getValue();
-        console.log(
-          "picked image: ",
-          globals.streets[streetName].metaData[index].image
-        );
+        const meta = globals.streets[streetName].metaData[index];
+        console.log("picked image: ", meta.image);
 
-        addOrUpdatePostProcessing(index, streetName);
+        const destination = meta.cartesianPos;
+        const orientation = meta.cameraOrientation;
+        const duration = 0.5; // seconds
+
+        camera.flyTo({
+          destination,
+          orientation,
+          duration,
+          complete: () => {
+            const up = worldUp(camera);
+
+            const cameraPosition = camera.position.clone();
+            const [northPos, northDir] = geographicNorth(cameraPosition);
+            visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere");
+            visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1);
+
+            const visualizeVector = (angle, name, color) => {
+              name = name || "vector visualization";
+              color = color || Color.WHITE;
+              const rot = Matrix3.fromQuaternion(
+                Quaternion.fromAxisAngle(up, -angle)
+              );
+              const direction = rot.multiplyByVector(northDir);
+              visualizeDirection(direction, color, 1);
+              const position = cameraPosition.add(direction);
+              visualizePosition(position, color, name);
+            };
+
+            visualizeVector(
+              meta.cameraOrientation.heading,
+              "Panorama Direction Sphere",
+              Color.FUCHSIA
+            );
+            visualizeVector(
+              meta.vehicleOrientation.heading,
+              "Vehicle Direction Sphere",
+              Color.HONEYDEW
+            );
+            visualizeVector(
+              (meta.vehicleOrientation.heading +
+                meta.cameraOrientation.heading) %
+                (2 * Math.PI),
+              "Vehicle + Panorama Direction Sphere",
+              Color.GOLD
+            );
+          }
+        });
+
+        // addOrUpdatePostProcessing(index, streetName);
 
         hide(entity);
         globals.lastPicked = entity;

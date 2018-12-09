@@ -44,10 +44,10 @@ let globals = {};
     let result = Quaternion.fromAxisAngle(UNIT_Y, hpr.heading);
     // positive around X is pitch UP
     const pitch = Quaternion.fromAxisAngle(UNIT_X, hpr.pitch);
+    Quaternion.multiply(result, pitch, result);
     // positive around Z is roll RIGHT
     const roll = Quaternion.fromAxisAngle(UNIT_Z, hpr.roll);
     Quaternion.multiply(result, roll, result);
-    Quaternion.multiply(result, pitch, result);
     return result;
   }
   // convert Quaternion to Matrix4

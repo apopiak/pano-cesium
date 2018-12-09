@@ -78,11 +78,11 @@ let globals = {};
           meta.cameraOrientation.heading + globals.rotationOffset.heading
         );
         const pitchQuaternion = Quaternion.fromAxisAngle(
-          Cartesian3.UNIT_Z,
+          Cartesian3.UNIT_X, // positive around X is pitch UP
           meta.cameraOrientation.pitch + globals.rotationOffset.pitch
         );
         const rollQuaternion = Quaternion.fromAxisAngle(
-          Cartesian3.UNIT_X,
+          Cartesian3.UNIT_Z, // positive around Z is roll RIGHT
           meta.cameraOrientation.roll + globals.rotationOffset.roll
         );
         Quaternion.multiply(cameraQuaternion, rollQuaternion, cameraQuaternion);
@@ -691,16 +691,19 @@ let globals = {};
     ScreenSpaceEventType.RIGHT_CLICK
   );
 
-  const startStreet = streets["steinweg"];
+  const startStreet = streets["langenbeck"];
   startStreet.tileset.readyPromise.then(tileset => {
     camera.flyToBoundingSphere(tileset.boundingSphere);
-    // tileset.style = new Cesium3DTileStyle({
-    //   color: 'color("red")'
-    // });
+    tileset.style = new Cesium3DTileStyle({
+      color: 'color("yellow")'
+    });
   });
 
   const interpolation = 0.2;
-  const rotationOffset = new HeadingPitchRoll();
+  // emscher offset    {heading: -0.0260, pitch: 0, roll: 0}
+  // steinweg offset   {heading: -0.0300, pitch: 0, roll: 0}
+  // langenbeck offset {heading: -0.0270, pitch: 0, roll: 0}
+  const rotationOffset = new HeadingPitchRoll(-0.027, 0, 0);
 
   globals = _.extend(
     {

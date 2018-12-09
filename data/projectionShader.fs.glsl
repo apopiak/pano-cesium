@@ -12,7 +12,6 @@ varying vec2 v_textureCoordinates;
 // custom uniforms
 uniform sampler2D u_panorama;
 
-uniform mat4 u_vehicleRotation;
 uniform mat4 u_cameraRotation;
 uniform mat4 u_inverseCameraTransform;
 
@@ -90,12 +89,6 @@ vec4 visualizeDirection(vec3 ray)
 }
 // </debugging>
 
-vec4 rotate(vec4 ray)
-{
-    mat4 rot = rotationMatrix(X_AXIS, radians(-90.0));
-    return u_cameraRotation * rot * ray;
-}
-
 void main(void)
 {
     // gl_FragCoord coordinates are in pixels (for x and y) --> transform to [0, 1]
@@ -110,8 +103,12 @@ void main(void)
     // transform coordinates to camera reference frame
     vec4 modelPos = u_inverseCameraTransform * worldPos;
 
-    // correct the rotation of the model position
-    modelPos = rotate(modelPos);
+    // fix rotation issue where the bottom is in front
+    const mat4 rot = rotationMatrix(X_AXIS, radians(-90.0));
+    modelPos = rot * modelPos;
+
+    // rotate by the inverse of the camera rotation
+    modelPos = u_cameraRotation * modelPos;
 
     vec3 ray = normalize(modelPos.xyz);
 

@@ -240,6 +240,21 @@ let globals = {};
   ///////////////////////
   // Debugging
   ///////////////////////
+  function track(entity) {
+    if (defined(entity)) {
+      globals._tracked.push(entity);
+    } else {
+      console.error("cannot track: entity is undefined");
+    }
+  }
+
+  function clearTracked() {
+    _.filter(globals._tracked).forEach(entity => {
+      globals.viewer.entities.remove(entity);
+    });
+    globals._tracked = [];
+  }
+
   function visualizeDirection(
     dir,
     color = Color.WHITE,
@@ -276,7 +291,7 @@ let globals = {};
     color = Color.WHITE,
     name = position.toString()
   ) {
-    globals.viewer.entities.add({
+    return globals.viewer.entities.add({
       name,
       position,
       ellipsoid: {
@@ -363,15 +378,17 @@ let globals = {};
 
   function visualizeCamera(code) {
     if (code === "KeyC") {
+      clearTracked();
+
       const camera = globals.camera;
 
-      const camDirLine = visualizeDirection(camera.direction, Color.VIOLET);
-      const camDirRight = visualizeDirection(camera.right, Color.YELLOW);
-      const camDirUp = visualizeDirection(camera.up, Color.LIGHTBLUE);
+      track(visualizeDirection(camera.direction, Color.VIOLET));
+      track(visualizeDirection(camera.right, Color.YELLOW));
+      track(visualizeDirection(camera.up, Color.LIGHTBLUE));
 
       const [northPos, northDir] = geographicNorth(camera.position.clone());
-      visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere");
-      visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1);
+      track(visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere"));
+      track(visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1));
     }
   }
 
@@ -625,12 +642,14 @@ let globals = {};
         orientation,
         duration,
         complete: () => {
+          clearTracked();
+
           const up = worldUp(camera);
 
           const cameraPosition = camera.position.clone();
           const [northPos, northDir] = geographicNorth(cameraPosition);
-          visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere");
-          visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1);
+          track(visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere"));
+          track(visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1));
 
           const visualizeVector = (
             angle,
@@ -645,9 +664,9 @@ let globals = {};
               northDir,
               new Cartesian3()
             );
-            visualizeDirection(direction, color, 1);
+            track(visualizeDirection(direction, color, 1));
             const position = addC3(cameraPosition, direction);
-            visualizePosition(position, color, name);
+            track(visualizePosition(position, color, name));
           };
 
           visualizeVector(
@@ -717,7 +736,9 @@ let globals = {};
       // post-processing stage
       postProcessStage: undefined,
       // [-1, 1] how much to prioritize the pointcloud (-1) or panorama (1) when interpolating
-      interpolation
+      interpolation,
+
+      _tracked: []
     },
     globals
   );

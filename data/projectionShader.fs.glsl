@@ -12,7 +12,7 @@ varying vec2 v_textureCoordinates;
 // custom uniforms
 uniform sampler2D u_panorama;
 
-uniform mat4 u_cameraRotation;
+uniform mat4 u_inverseCameraRotation;
 uniform mat4 u_inverseCameraTransform;
 
 uniform float u_interpolation;
@@ -104,11 +104,11 @@ void main(void)
     vec4 modelPos = u_inverseCameraTransform * worldPos;
 
     // fix rotation issue where the bottom is in front
-    const mat4 rot = rotationMatrix(X_AXIS, radians(-90.0));
+    mat4 rot = rotationMatrix(X_AXIS, radians(-90.0));
     modelPos = rot * modelPos;
 
     // rotate by the inverse of the camera rotation
-    modelPos = u_cameraRotation * modelPos;
+    modelPos = u_inverseCameraRotation * modelPos;
 
     vec3 ray = normalize(modelPos.xyz);
 

@@ -25,6 +25,8 @@ let globals = {};
     Viewer
   } = Cesium;
 
+  const { UNIT_X, UNIT_Y, UNIT_Z } = Cartesian3;
+
   ////////////////////////////
   // Constants
   ////////////////////////////
@@ -35,18 +37,36 @@ let globals = {};
   // Utility Functions
   ////////////////////////////
 
-  const mat4FromQuaternion = quaternion =>
-    Matrix4.fromRotationTranslation(
+  // custom implementation to create a Quaternion from HeadingPitchRoll
+  // necessary to get the right rotation matrix for the shader
+  function customQuatFromHPR(hpr) {
+    // positive around Y is heading RIGHT
+    let result = Quaternion.fromAxisAngle(UNIT_Y, hpr.heading);
+    // positive around X is pitch UP
+    const pitch = Quaternion.fromAxisAngle(UNIT_X, hpr.pitch);
+    // positive around Z is roll RIGHT
+    const roll = Quaternion.fromAxisAngle(UNIT_Z, hpr.roll);
+    Quaternion.multiply(result, roll, result);
+    Quaternion.multiply(result, pitch, result);
+    return result;
+  }
+  // convert Quaternion to Matrix4
+  function mat4FromQuat(quaternion) {
+    return Matrix4.fromRotationTranslation(
       Matrix3.fromQuaternion(quaternion),
       Cartesian3.ZERO,
       new Matrix4()
     );
+  }
+  // add 2 Cartesian3 instances; allocates
   function addC3(left, right) {
     return Cartesian3.add(left, right, new Cartesian3());
   }
+  // subtract 2 Cartesian3 instances; allocates
   function subC3(left, right) {
     return Cartesian3.subtract(left, right, new Cartesian3());
   }
+  // add 2 HeadingPitchRoll instances; allocates
   function addHPR(left, right) {
     let result = new HeadingPitchRoll();
     result.heading = left.heading + right.heading;
@@ -72,47 +92,17 @@ let globals = {};
     const stages = scene.postProcessStages;
 
     const addStage = (fragmentShader, imagePath) => {
-      const computeCameraRotation = () => {
-        let cameraQuaternion = Quaternion.fromAxisAngle(
-          Cartesian3.UNIT_Y,
-          meta.cameraOrientation.heading + globals.rotationOffset.heading
+      const computeInverseCameraRotation = () => {
+        const cameraQuaternion = customQuatFromHPR(
+          addHPR(orientation, globals.rotationOffset)
         );
-        const pitchQuaternion = Quaternion.fromAxisAngle(
-          Cartesian3.UNIT_X, // positive around X is pitch UP
-          meta.cameraOrientation.pitch + globals.rotationOffset.pitch
-        );
-        const rollQuaternion = Quaternion.fromAxisAngle(
-          Cartesian3.UNIT_Z, // positive around Z is roll RIGHT
-          meta.cameraOrientation.roll + globals.rotationOffset.roll
-        );
-        Quaternion.multiply(cameraQuaternion, rollQuaternion, cameraQuaternion);
-        Quaternion.multiply(
-          cameraQuaternion,
-          pitchQuaternion,
-          cameraQuaternion
-        );
-        return Matrix4.inverse(
-          mat4FromQuaternion(cameraQuaternion),
-          new Matrix4()
-        );
-      };
-
-      const computeVehicleRotation = () => {
-        let vehicleQuaternion = Quaternion.fromAxisAngle(
-          Cartesian3.UNIT_Y,
-          meta.vehicleOrientation.heading
-        );
-        return Matrix4.inverse(
-          mat4FromQuaternion(vehicleQuaternion),
-          new Matrix4()
-        );
+        return Matrix4.inverse(mat4FromQuat(cameraQuaternion), new Matrix4());
       };
 
       const uniforms = {
         u_panorama: imagePath,
 
-        u_cameraRotation: () => computeCameraRotation(),
-        u_vehicleRotation: () => computeVehicleRotation(),
+        u_inverseCameraRotation: () => computeInverseCameraRotation(),
         u_inverseCameraTransform: () =>
           Matrix4.inverse(
             Transforms.eastNorthUpToFixedFrame(

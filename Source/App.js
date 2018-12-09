@@ -101,7 +101,10 @@ let globals = {};
 
       const uniforms = {
         u_panorama: imagePath,
-
+        u_frontRotation: () =>
+          mat4FromQuat(
+            Quaternion.fromAxisAngle(UNIT_X, Cesium.Math.toRadians(90.0))
+          ),
         u_inverseCameraRotation: () => computeInverseCameraRotation(),
         u_inverseCameraTransform: () =>
           Matrix4.inverse(
@@ -341,7 +344,7 @@ let globals = {};
   }
 
   function rotateOffset(code) {
-    const defaultAmount = 0.002;
+    const defaultAmount = 0.001;
 
     if (code === "KeyJ") {
       globals.rotationOffset.heading -= defaultAmount;

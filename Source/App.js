@@ -218,23 +218,18 @@ let globals = {};
     return sign * (deg + min / 60.0);
   }
 
-  function processRadarData(radarData) {
-    return _.map(radarData, datum => {
-      console.assert(
-        datum["E or W"] === "E" || datum["E or W"] === "W",
-        "must be E(ast) or W(est)"
-      );
-      console.assert(
-        datum["N or S"] === "N" || datum["N or S"] === "S",
-        "must be N(orth) or S(outh)"
-      );
-      let lon = stringToDegrees(datum["Longitude"], 3, datum["E or W"] === "W"); // example: { ... "Longitude":"00656.67239","E or W":"E" ... }
-      let lat = stringToDegrees(datum["Latitude"], 2, datum["N or S"] === "S"); // example: { ... "Latitude":"5121.66311","N or S":"N" ... }
-      const height = Number(datum["Antenna altitude"]);
-      return Cartographic.toCartesian(
-        Cartographic.fromDegrees(lon, lat, height)
-      );
-    });
+  function parseRadarCSV(csv) {
+    const lines = csv.match(/[^\r\n]+/g);
+    // The first content line starts with a $ sign, e.g. '$GPGPA'
+    if (lines[0].trim()[0] != "$") {
+      lines.shift(); // remove csv header
+    }
+    // the `Parse` function uses `this` and expects it to be `GPS`...
+    return _.map(lines, l => GPS.Parse.call(GPS, l)).map(datum =>
+      Cartographic.toCartesian(
+        Cartographic.fromDegrees(datum.lon, datum.lat, datum.alt)
+      )
+    );
   }
 
   ///////////////////////
@@ -590,25 +585,27 @@ let globals = {};
         })
         .catch(err => console.error(err));
 
-      fetch(new URL(radarDirPath + "radar_gps.json", host))
-        .then(res => res.json())
-        .then(processRadarData)
-        .then(locations => {
-          street.radarLocations = locations;
-          // hacky way of deduplicating the radar locations
-          street.filteredRadarLocations = _.unique(locations, false, loc =>
-            loc.toString()
-          );
+      const filterAndVisualizeLocations = locations => {
+        street.radarLocations = locations;
+        // hacky way of deduplicating the radar locations
+        street.filteredRadarLocations = _.unique(locations, false, loc =>
+          loc.toString()
+        );
 
-          street.polyline = viewer.entities.add({
-            name: streetName + "radar locations",
-            polyline: {
-              positions: street.filteredRadarLocations,
-              width: 2,
-              material: Color.ORANGE
-            }
-          });
-        })
+        street.polyline = viewer.entities.add({
+          name: streetName + "radar locations",
+          polyline: {
+            positions: street.filteredRadarLocations,
+            width: 2,
+            material: Color.ORANGE
+          }
+        });
+      };
+
+      fetch(new URL(radarDirPath + "radar_gps.csv", host))
+        .then(res => res.text())
+        .then(parseRadarCSV)
+        .then(filterAndVisualizeLocations)
         .catch(err => console.error(err));
 
       streets[streetName] = street;
@@ -648,7 +645,9 @@ let globals = {};
 
           const cameraPosition = camera.position.clone();
           const [northPos, northDir] = geographicNorth(cameraPosition);
-          track(visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere"));
+          track(
+            visualizePosition(northPos, Color.CORNFLOWERBLUE, "North Sphere")
+          );
           track(visualizeDirection(northDir, Color.CORNFLOWERBLUE, 1));
 
           const visualizeVector = (

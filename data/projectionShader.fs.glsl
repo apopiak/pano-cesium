@@ -74,20 +74,20 @@ vec2 equirectangular(vec3 ray)
 // }
 
 // <debugging>
-int digit(float value, int dig) {
-  int x1 = int(abs(value) * pow(10.0, float(dig)));
-  int x2 = int(float(x1) / pow(10.0, float(dig - 1)));
-  return x1 - (x2 * 10);
-}
-
-vec4 visualizeDirection(vec3 ray)
-{
-  vec4 debug = vec4(0.8 * ray, 1.0);
-  if (digit(debug.x, 2) == 0) debug.x = 1.0;
-  if (digit(debug.y, 2) == 0) debug.y = 1.0;
-  if (digit(debug.z, 2) == 0) debug.z = 1.0;
-  return debug;
-}
+// int digit(float value, int dig) {
+//   int x1 = int(abs(value) * pow(10.0, float(dig)));
+//   int x2 = int(float(x1) / pow(10.0, float(dig - 1)));
+//   return x1 - (x2 * 10);
+// }
+//
+// vec4 visualizeDirection(vec3 ray)
+// {
+//   vec4 debug = vec4(0.8 * ray, 1.0);
+//   if (digit(debug.x, 2) == 0) debug.x = 1.0;
+//   if (digit(debug.y, 2) == 0) debug.y = 1.0;
+//   if (digit(debug.z, 2) == 0) debug.z = 1.0;
+//   return debug;
+// }
 // </debugging>
 
 void main(void)
@@ -118,12 +118,7 @@ void main(void)
 
     float depth = texture2D(depthTexture, v_textureCoordinates).x;
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
-    // color geometry/pointcloud red for better contrast
-    // color = vec4(length(color.xyz), 0.0, 0.0, 1.0);
-
-    vec4 dirColor = clamp(visualizeDirection(ray.xyz), 0.0, 1.0);
-    vec4 combined = mix(pano, dirColor, 0.15);
 
     // interpolate between panorama and geometry based on depth and user defined value
-    gl_FragColor = mix(color, combined, clamp(depth + u_interpolation, 0.0, 1.0));
+    gl_FragColor = mix(color, pano, clamp(depth + u_interpolation, 0.0, 1.0));
 }

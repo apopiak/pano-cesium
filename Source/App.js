@@ -80,7 +80,7 @@ let globals = {};
   ////////////////////////////
 
   // add a panorama rendering in post processing
-  function addOrUpdatePostProcessing(streetName = "steinweg", index = 0) {
+  function addOrUpdatePostProcessing(streetName = "Steinweg", index = 0) {
     const meta = globals.streets[streetName].metaData[index];
 
     const destination = meta.cartesianPos;
@@ -152,7 +152,7 @@ let globals = {};
   ///////////////////////
   // Data Processing
   ///////////////////////
-  const defaultUTMzone = 32; // steinweg utm zone
+  const defaultUTMzone = 32; // Steinweg utm zone
   function utmToCartographic(position, utmZone = defaultUTMzone) {
     const utm = new UTMConv.UTMCoords(utmZone, position.x, position.y);
     const degrees = utm.to_deg("wgs84");
@@ -530,7 +530,7 @@ let globals = {};
 
   // load data for different streets
   const streets = _.reduce(
-    ["emscher", "langenbeck", "steinweg"],
+    ["Emscherstr", "Langenbeckstr", "Steinweg"],
     (streets, streetName) => {
       const streetDirPath = streetBasePath + streetName + "/";
       const panoramaDirPath = streetDirPath + "G360/";
@@ -702,7 +702,7 @@ let globals = {};
     ScreenSpaceEventType.RIGHT_CLICK
   );
 
-  const startStreet = streets["langenbeck"];
+  const startStreet = streets["Emscherstr"];
   startStreet.tileset.readyPromise.then(tileset => {
     camera.flyToBoundingSphere(tileset.boundingSphere);
     tileset.style = new Cesium3DTileStyle({
@@ -711,9 +711,6 @@ let globals = {};
   });
 
   const interpolation = 0.2;
-  // emscher offset    {heading: -0.0260, pitch: 0, roll: 0}
-  // steinweg offset   {heading: -0.0300, pitch: 0, roll: 0}
-  // langenbeck offset {heading: -0.0270, pitch: 0, roll: 0}
   const rotationOffset = new HeadingPitchRoll(-0.027, 0, 0);
 
   globals = _.extend(

@@ -164,25 +164,19 @@ let globals = {};
     return Cartographic.toCartesian(utmToCartographic({ x, y, z }));
   }
 
-  function origToCartographic(meta) {
-    return utmToCartographic({
-      x: meta["X-Sensor"],
-      y: meta["Y-Sensor"],
-      z: meta["Z-Sensor"]
-    });
-  }
-
-  function headingPitchRoll(meta, suffix) {
-    return HeadingPitchRoll.fromDegrees(
-      meta["H-" + suffix],
-      meta["P-" + suffix],
-      meta["R-" + suffix]
-    );
-  }
-
   function processMetaData(originalJson, street) {
+    const headingPitchRoll = (meta, suffix) => HeadingPitchRoll.fromDegrees(
+        meta["H-" + suffix],
+        meta["P-" + suffix],
+        meta["R-" + suffix]
+    );
+
     return _.map(originalJson, (meta, index) => {
-      const cartographicPos = origToCartographic(meta);
+      const cartographicPos = utmToCartographic({
+          x: meta["X-Sensor"],
+          y: meta["Y-Sensor"],
+          z: meta["Z-Sensor"]
+      });
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
       return {
@@ -203,6 +197,36 @@ let globals = {};
           topRight: utmToCartesian(meta.rtx, meta.rty, meta.rtz),
           bottomRight: utmToCartesian(meta.rbx, meta.rby, meta.rbz)
         },
+
+        orig: meta
+      };
+    });
+  }
+
+  function processWroclawMetaData(originalJson, street) {
+    const wroclawUtmZone = 33;
+    return _.map(originalJson, (meta, index) => {
+      const cartographicPos = utmToCartographic({ x: meta.east, y: meta.north, z: meta.altitude}, wroclawUtmZone);
+      const cartesianPos = Cartographic.toCartesian(cartographicPos);
+
+      const heading = meta["attitude(z)=pan"];
+      const pitch = meta["attitude(y)=pitch"];
+      const roll = meta["attitude(x)=roll"];
+      const cameraOrientation = HeadingPitchRoll.fromDegrees(heading, pitch, roll);
+
+      return {
+        index,
+
+        // positioning
+        cartographicPos,
+        cartesianPos,
+        cameraOrientation,
+        vehicleOrientation: new HeadingPitchRoll(),
+
+        image: meta.file_name,
+        imagePath: street.panoramaDirPath + meta.file_name,
+
+        rectangle: {},
 
         orig: meta
       };
@@ -436,7 +460,7 @@ let globals = {};
 
   // setup scene
   const scene = viewer.scene;
-  scene.globe.show = false;
+  // scene.globe.show = false;
   // viewer.scene.debugShowFrustumPlanes = true; // show frustums
 
   //////////////////////////////////////////////////////////////////////////
@@ -530,12 +554,12 @@ let globals = {};
 
   // load data for different streets
   const streets = _.reduce(
-    ["Emscherstr", "Langenbeckstr", "Steinweg"],
+    ["Wroclaw", "Emscherstr", "Steinweg"], // removed for now: "Langenbeckstr",
     (streets, streetName) => {
       const streetDirPath = streetBasePath + streetName + "/";
       const panoramaDirPath = streetDirPath + "G360/";
       const radarDirPath = streetDirPath + "GPR/";
-      const tilesetPath = streetDirPath + "pointcloud/tileset.json";
+      const tilesetPath = (streetName === "Wroclaw") ? streetDirPath + "points/tileset.json" : streetDirPath + "pointcloud/tileset.json";
 
       const tileset = scene.primitives.add(
         new Cesium3DTileset({
@@ -564,7 +588,11 @@ let globals = {};
 
       fetch(new URL(panoramaDirPath + "meta.json", host))
         .then(res => res.json())
-        .then(data => processMetaData(data, street))
+        .then(data => {
+          if (streetName === "Wroclaw") {
+            return processWroclawMetaData(data, street);
+          }
+          return processMetaData(data, street); })
         .then(processedData => {
           street.metaData = processedData;
           // place spheres representing the panorama pictures
@@ -602,11 +630,13 @@ let globals = {};
         });
       };
 
-      fetch(new URL(radarDirPath + "radar_gps.csv", host))
-        .then(res => res.text())
-        .then(parseRadarCSV)
-        .then(filterAndVisualizeLocations)
-        .catch(err => console.error(err));
+      if (streetName !== "Wroclaw") {
+        fetch(new URL(radarDirPath + "radar_gps.csv", host))
+          .then(res => res.text())
+          .then(parseRadarCSV)
+          .then(filterAndVisualizeLocations)
+          .catch(err => console.error(err));
+      }
 
       streets[streetName] = street;
       return streets;
@@ -702,7 +732,7 @@ let globals = {};
     ScreenSpaceEventType.RIGHT_CLICK
   );
 
-  const startStreet = streets["Emscherstr"];
+  const startStreet = streets["Wroclaw"];
   startStreet.tileset.readyPromise.then(tileset => {
     camera.flyToBoundingSphere(tileset.boundingSphere);
     tileset.style = new Cesium3DTileStyle({

@@ -484,9 +484,9 @@ let globals = {};
   // viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({ assetId: 3954 }));
 
   // Add Bing Maps
-  // viewer.imageryLayers.addImageryProvider(
-  //   new Cesium.IonImageryProvider({ assetId: 4 })
-  // );
+  viewer.imageryLayers.addImageryProvider(
+    new Cesium.IonImageryProvider({ assetId: 4 })
+  );
 
   //////////////////////////////////////////////////////////////////////////
   // Loading Terrain
@@ -751,7 +751,7 @@ let globals = {};
   });
 
   const interpolation = 0.2;
-  const rotationOffset = new HeadingPitchRoll(-0.027, 0, 0);
+  const rotationOffset = new HeadingPitchRoll(); //new HeadingPitchRoll(-0.027, 0, 0);
 
   globals = _.extend(
     {

@@ -153,15 +153,14 @@ let globals = {};
   // Data Processing
   ///////////////////////
   const defaultUTMzone = 32; // Steinweg utm zone
-  function utmToCartographic(position, utmZone = defaultUTMzone) {
-    const utm = new UTMConv.UTMCoords(utmZone, position.x, position.y);
+  function utmToCartographic({east, north, altitude}, utmZone = defaultUTMzone) {
+    const utm = new UTMConv.UTMCoords(utmZone, east, north);
     const degrees = utm.to_deg("wgs84");
-    const height = position.z;
-    return Cartographic.fromDegrees(degrees.lngd, degrees.latd, height);
+    return Cartographic.fromDegrees(degrees.lngd, degrees.latd, altitude);
   }
 
-  function utmToCartesian(x, y, z) {
-    return Cartographic.toCartesian(utmToCartographic({ x, y, z }));
+  function utmToCartesian(east, north, altitude) {
+    return Cartographic.toCartesian(utmToCartographic({ east, north, altitude }));
   }
 
   function processMetaData(originalJson, street) {
@@ -173,9 +172,9 @@ let globals = {};
 
     return _.map(originalJson, (meta, index) => {
       const cartographicPos = utmToCartographic({
-          x: meta["X-Sensor"],
-          y: meta["Y-Sensor"],
-          z: meta["Z-Sensor"]
+          east: meta["X-Sensor"],
+          north: meta["Y-Sensor"],
+          altitude: meta["Z-Sensor"]
       });
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
@@ -206,7 +205,8 @@ let globals = {};
   function processWroclawMetaData(originalJson, street) {
     const wroclawUtmZone = 33;
     return _.map(originalJson, (meta, index) => {
-      const cartographicPos = utmToCartographic({ x: meta.east, y: meta.north, z: meta.altitude}, wroclawUtmZone);
+      const { east, north, altitude } = meta;
+      const cartographicPos = utmToCartographic({ east: east * 0.1, north, altitude }, wroclawUtmZone);
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
       const heading = meta["attitude(z)=pan"];

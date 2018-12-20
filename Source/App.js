@@ -27,6 +27,11 @@ let globals = {};
 
   const { UNIT_X, UNIT_Y, UNIT_Z } = Cartesian3;
 
+  // define projections
+  proj4.defs("EPSG:2177","+proj=tmerc +lat_0=0 +lon_0=18 +k=0.999923 +x_0=6500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+
+
+
   ////////////////////////////
   // Constants
   ////////////////////////////
@@ -159,6 +164,11 @@ let globals = {};
     return Cartographic.fromDegrees(degrees.lngd, degrees.latd, altitude);
   }
 
+  function epsg2177ToCartographic({east, north, altitude}) {
+    const [longitude, latitude] = proj4("EPSG:2177", "WGS84", [east, north]);
+    return Cartographic.fromDegrees(longitude, latitude, altitude);
+  }
+
   function utmToCartesian(east, north, altitude) {
     return Cartographic.toCartesian(utmToCartographic({ east, north, altitude }));
   }
@@ -206,13 +216,13 @@ let globals = {};
     const wroclawUtmZone = 33;
     return _.map(originalJson, (meta, index) => {
       const { east, north, altitude } = meta;
-      const cartographicPos = utmToCartographic({ east: east * 0.1, north, altitude }, wroclawUtmZone);
+      const cartographicPos = epsg2177ToCartographic({ east, north, altitude });
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
       const heading = meta["attitude(z)=pan"];
       const pitch = meta["attitude(y)=pitch"];
       const roll = meta["attitude(x)=roll"];
-      const cameraOrientation = HeadingPitchRoll.fromDegrees(heading, pitch, roll);
+      const cameraOrientation = HeadingPitchRoll.fromDegrees(heading, pitch, 180 - roll);
 
       return {
         index,

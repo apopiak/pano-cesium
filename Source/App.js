@@ -37,6 +37,13 @@ let globals = {};
   // Utility Functions
   ////////////////////////////
 
+  // convert Cesium/when.js promise to ES6 Promise
+  function wrapPromise(whenPromise) {
+    return new Promise((resolve, reject) => {
+      whenPromise.then(resolve, reject);
+    });
+  }
+
   // custom implementation to create a Quaternion from HeadingPitchRoll
   // necessary to get the right rotation matrix for the shader
   function customQuatFromHPR(hpr) {

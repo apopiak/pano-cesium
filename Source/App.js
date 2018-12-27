@@ -256,15 +256,6 @@ let globals = {};
     });
   }
 
-  // DZG files have the most inconvenient latitude longitude format ever :-/
-  // see here: https://www.manualslib.com/manual/1265713/Gssi-Sir-4000.html?page=126#manual
-  function stringToDegrees(string, degLength, negative) {
-    const deg = Number(string.slice(0, degLength));
-    const min = Number(string.slice(degLength));
-    const sign = negative ? -1 : 1;
-    return sign * (deg + min / 60.0);
-  }
-
   function parseRadarCSV(csv) {
     const lines = csv.match(/[^\r\n]+/g);
     // The first content line starts with a $ sign, e.g. '$GPGPA'

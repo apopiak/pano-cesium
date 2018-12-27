@@ -12,6 +12,7 @@
     "compression": "^1.6.2",
     "express": "^4.15",
     "gps": "^0.4.7",
+    "proj4": "^2.5.0",
     "request": "^2.79.0",
     "underscore": "^1.9.1",
     "yargs": "^8.0.1"

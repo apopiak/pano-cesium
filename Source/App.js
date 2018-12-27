@@ -28,9 +28,10 @@ let globals = {};
   const { UNIT_X, UNIT_Y, UNIT_Z } = Cartesian3;
 
   // define projections
-  proj4.defs("EPSG:2177","+proj=tmerc +lat_0=0 +lon_0=18 +k=0.999923 +x_0=6500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-
-
+  proj4.defs(
+    "EPSG:2177",
+    "+proj=tmerc +lat_0=0 +lon_0=18 +k=0.999923 +x_0=6500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+  );
 
   ////////////////////////////
   // Constants
@@ -170,19 +171,24 @@ let globals = {};
   // Data Processing
   ///////////////////////
   const defaultUTMzone = 32; // Steinweg utm zone
-  function utmToCartographic({east, north, altitude}, utmZone = defaultUTMzone) {
+  function utmToCartographic(
+    { east, north, altitude },
+    utmZone = defaultUTMzone
+  ) {
     const utm = new UTMConv.UTMCoords(utmZone, east, north);
     const degrees = utm.to_deg("wgs84");
     return Cartographic.fromDegrees(degrees.lngd, degrees.latd, altitude);
   }
 
-  function epsg2177ToCartographic({east, north, altitude}) {
+  function epsg2177ToCartographic({ east, north, altitude }) {
     const [longitude, latitude] = proj4("EPSG:2177", "WGS84", [east, north]);
     return Cartographic.fromDegrees(longitude, latitude, altitude);
   }
 
   function utmToCartesian(east, north, altitude) {
-    return Cartographic.toCartesian(utmToCartographic({ east, north, altitude }));
+    return Cartographic.toCartesian(
+      utmToCartographic({ east, north, altitude })
+    );
   }
 
   function processMetaData(originalJson, street) {
@@ -193,13 +199,22 @@ let globals = {};
         meta["R-" + suffix]
       );
 
-    return _.map(originalJson, (meta, index) => {
+    const parseIndex = imageName => {
+      const [name] = imageName.split(".jpg");
+      const parts = name.split("_");
+      return Number(parts[parts.length - 1]);
+    };
+
+    return _.map(originalJson, meta => {
       const cartographicPos = utmToCartographic({
-          east: meta["X-Sensor"],
-          north: meta["Y-Sensor"],
-          altitude: meta["Z-Sensor"]
+        east: meta["X-Sensor"],
+        north: meta["Y-Sensor"],
+        altitude: meta["Z-Sensor"]
       });
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
+
+      const image = meta.ImageName;
+      const index = parseIndex(image);
 
       return {
         index,
@@ -210,8 +225,8 @@ let globals = {};
         cameraOrientation: headingPitchRoll(meta, "Sensor"),
         vehicleOrientation: headingPitchRoll(meta, "Veh"),
 
-        image: meta.ImageName,
-        imagePath: street.panoramaDirPath + meta.ImageName,
+        image,
+        imagePath: street.panoramaDirPath + image,
 
         rectangle: {
           bottomLeft: utmToCartesian(meta.lbx, meta.lby, meta.lbz),
@@ -235,7 +250,11 @@ let globals = {};
       const heading = meta["attitude(z)=pan"];
       const pitch = meta["attitude(y)=pitch"];
       const roll = meta["attitude(x)=roll"];
-      const cameraOrientation = HeadingPitchRoll.fromDegrees(heading, pitch, 180 - roll);
+      const cameraOrientation = HeadingPitchRoll.fromDegrees(
+        heading,
+        pitch,
+        180 - roll
+      );
 
       return {
         index,
@@ -604,10 +623,10 @@ let globals = {};
       const imageTileset = scene.primitives.add(
         new Cesium3DTileset({
           url: HOST + panoramaDirPath + "tileset.json",
-          skipLevelOfDetail: true,
-          baseScreenSpaceError: 1024,
-          skipScreenSpaceErrorFactor: 16,
-          skipLevels: 1,
+          // skipLevelOfDetail: true,
+          // baseScreenSpaceError: 1024,
+          // skipScreenSpaceErrorFactor: 16,
+          // skipLevels: 1,
 
           debugShowBoundingVolume: true,
           debugShowContentBoundingVolume: true,
@@ -615,7 +634,7 @@ let globals = {};
         })
       );
 
-      let metaData = null;
+      let metaData = {};
       let radarLocations = null;
       let filteredRadarLocations = null;
       let polyline = null;
@@ -633,47 +652,61 @@ let globals = {};
         ready: false
       };
 
-      // fetch(new URL(panoramaDirPath + "meta.json", HOST))
-      // const imagePromise = new Promise((resolve, reject) => {
-      //   .then(resolve, reject);
-      // });
+      const getExtrasMeta = tileset => {
+        if (!defined(tileset.extras)) {
+          throw Error("image tileset does not contain extras");
+        }
+        if (!defined(tileset.extras.metaData)) {
+          throw Error("image tileset does not contain metaData");
+        }
+        return tileset.extras.metaData;
+      };
+      const process = data => {
+        if (streetName === WROCLAW) {
+          return processWroclawMetaData(data, street);
+        }
+        return processMetaData(data, street);
+      };
+      const addData = processedData =>
+        _.forEach(processedData, meta => {
+          street.metaData[meta.index] = meta;
+        });
+
       promises.push(
         wrapPromise(imageTileset.readyPromise)
-          .then(tileset => {
-            if (!defined(tileset.extras)) {
-              throw Error("image tileset does not contain extras");
-            }
-            if (!defined(tileset.extras.metaData)) {
-              throw Error("image tileset does not contain metaData");
-            }
-            return tileset.extras.metaData;
-          })
-          .then(data => {
-            if (streetName === WROCLAW) {
-              return processWroclawMetaData(data, street);
-            }
-            return processMetaData(data, street);
-          })
-          .then(processedData => {
-            street.metaData = processedData;
-            // place spheres representing the panorama pictures
-            _.forEach(street.metaData, meta => {
-              viewer.entities.add({
-                name: meta.image,
-                position: meta.cartesianPos,
-                ellipsoid: {
-                  radii: { x: 1, y: 1, z: 1 },
-                  material: Color.DARKGREEN
-                },
-                properties: {
-                  index: meta.index,
-                  streetName
-                }
-              });
-            });
-          })
+          .then(getExtrasMeta)
+          .then(process)
+          .then(addData)
           .catch(console.error)
       );
+
+      imageTileset.tileLoad.addEventListener(tile => {
+        try {
+          const metaData = getExtrasMeta(tile);
+          const processed = process(metaData);
+          addData(processed);
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      imageTileset.allTilesLoaded.addEventListener(() => {
+        // place spheres representing the panorama pictures
+        _.forEach(street.metaData, meta =>
+          viewer.entities.add({
+            name: meta.image,
+            position: meta.cartesianPos,
+            ellipsoid: {
+              radii: { x: 1, y: 1, z: 1 },
+              material: Color.DARKGREEN
+            },
+            properties: {
+              index: meta.index,
+              streetName
+            }
+          })
+        );
+      });
 
       const filterAndVisualizeLocations = locations => {
         street.radarLocations = locations;

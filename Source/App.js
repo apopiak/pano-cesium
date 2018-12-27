@@ -30,8 +30,12 @@ let globals = {};
   ////////////////////////////
   // Constants
   ////////////////////////////
-  const host = "http://localhost:8080/";
-  const streetBasePath = "data/streets/";
+  const EMSCHER = "Emscherstr";
+  const STEINWEG = "Steinweg";
+  const LANGENBECK = "Langenbeckstr";
+  const WROCLAW = "Wroclaw";
+  const HOST = "http://localhost:8080/";
+  const STREET_BASE_PATH = "data/streets/";
 
   ////////////////////////////
   // Utility Functions
@@ -87,8 +91,9 @@ let globals = {};
   ////////////////////////////
 
   // add a panorama rendering in post processing
-  function addOrUpdatePostProcessing(streetName = "Steinweg", index = 0) {
-    const meta = globals.streets[streetName].metaData[index];
+  function addOrUpdatePostProcessing(streetName, index) {
+    const street = globals.streets[streetName];
+    const meta = street.metaData[index];
 
     const destination = meta.cartesianPos;
     const orientation = meta.cameraOrientation;
@@ -101,7 +106,7 @@ let globals = {};
     const addStage = (fragmentShader, imagePath) => {
       const computeInverseCameraRotation = () => {
         const cameraQuaternion = customQuatFromHPR(
-          addHPR(orientation, globals.rotationOffset)
+          addHPR(orientation, street.rotationOffset)
         );
         return Matrix4.inverse(mat4FromQuat(cameraQuaternion), new Matrix4());
       };
@@ -153,7 +158,7 @@ let globals = {};
     fetch("data/projectionShader.fs.glsl")
       .then(res => res.text())
       .then(shader => transitionToPanorama(shader, meta.imagePath))
-      .catch(err => console.error(err));
+      .catch(console.error);
   }
 
   ///////////////////////
@@ -172,17 +177,18 @@ let globals = {};
   }
 
   function processMetaData(originalJson, street) {
-    const headingPitchRoll = (meta, suffix) => HeadingPitchRoll.fromDegrees(
+    const headingPitchRoll = (meta, suffix) =>
+      HeadingPitchRoll.fromDegrees(
         meta["H-" + suffix],
         meta["P-" + suffix],
         meta["R-" + suffix]
-    );
+      );
 
     return _.map(originalJson, (meta, index) => {
       const cartographicPos = utmToCartographic({
-          x: meta["X-Sensor"],
-          y: meta["Y-Sensor"],
-          z: meta["Z-Sensor"]
+        x: meta["X-Sensor"],
+        y: meta["Y-Sensor"],
+        z: meta["Z-Sensor"]
       });
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
@@ -213,13 +219,20 @@ let globals = {};
   function processWroclawMetaData(originalJson, street) {
     const wroclawUtmZone = 33;
     return _.map(originalJson, (meta, index) => {
-      const cartographicPos = utmToCartographic({ x: meta.east, y: meta.north, z: meta.altitude}, wroclawUtmZone);
+      const cartographicPos = utmToCartographic(
+        { x: meta.east, y: meta.north, z: meta.altitude },
+        wroclawUtmZone
+      );
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
 
       const heading = meta["attitude(z)=pan"];
       const pitch = meta["attitude(y)=pitch"];
       const roll = meta["attitude(x)=roll"];
-      const cameraOrientation = HeadingPitchRoll.fromDegrees(heading, pitch, roll);
+      const cameraOrientation = HeadingPitchRoll.fromDegrees(
+        heading,
+        pitch,
+        roll
+      );
 
       return {
         index,
@@ -388,17 +401,17 @@ let globals = {};
     const defaultAmount = 0.001;
 
     if (code === "KeyJ") {
-      globals.rotationOffset.heading -= defaultAmount;
+      globals.currentStreet.rotationOffset.heading -= defaultAmount;
     } else if (code === "KeyL") {
-      globals.rotationOffset.heading += defaultAmount;
+      globals.currentStreet.rotationOffset.heading += defaultAmount;
     } else if (code === "KeyI") {
-      globals.rotationOffset.pitch -= defaultAmount;
+      globals.currentStreet.rotationOffset.pitch -= defaultAmount;
     } else if (code === "KeyK") {
-      globals.rotationOffset.pitch += defaultAmount;
+      globals.currentStreet.rotationOffset.pitch += defaultAmount;
     } else if (code === "KeyU") {
-      globals.rotationOffset.roll += defaultAmount;
+      globals.currentStreet.rotationOffset.roll += defaultAmount;
     } else if (code === "KeyO") {
-      globals.rotationOffset.roll -= defaultAmount;
+      globals.currentStreet.rotationOffset.roll -= defaultAmount;
     }
   }
 
@@ -561,20 +574,50 @@ let globals = {};
 
   // load data for different streets
   const streets = _.reduce(
-    ["Wroclaw", "Emscherstr", "Steinweg"], // removed for now: "Langenbeckstr",
+    [EMSCHER], // removed for now: "Langenbeckstr", "Wroclaw", STEINWEG
     (streets, streetName) => {
-      const streetDirPath = streetBasePath + streetName + "/";
+      const streetDirPath = STREET_BASE_PATH + streetName + "/";
       const panoramaDirPath = streetDirPath + "G360/";
       const radarDirPath = streetDirPath + "GPR/";
-      const tilesetPath = (streetName === "Wroclaw") ? streetDirPath + "points/tileset.json" : streetDirPath + "pointcloud/tileset.json";
+      const tilesetPath =
+        streetName === WROCLAW
+          ? streetDirPath + "points/tileset.json"
+          : streetDirPath + "pointcloud/tileset.json";
 
+      const rotationOffset = _.any(
+        [EMSCHER, STEINWEG, LANGENBECK],
+        name => name === streetName
+      )
+        ? new HeadingPitchRoll(-0.027, 0, 0)
+        : new HeadingPitchRoll();
+
+      let promises = [];
       const tileset = scene.primitives.add(
         new Cesium3DTileset({
-          url: host + tilesetPath,
+          url: HOST + tilesetPath,
           skipLevelOfDetail: true,
           baseScreenSpaceError: 1024,
           skipScreenSpaceErrorFactor: 16,
           skipLevels: 1
+
+          // debugShowBoundingVolume: true,
+          // debugShowContentBoundingVolume: true,
+          // debugShowViewerRequestVolume: true
+        })
+      );
+      promises.push(wrapPromise(tileset.readyPromise));
+
+      const imageTileset = scene.primitives.add(
+        new Cesium3DTileset({
+          url: HOST + panoramaDirPath + "tileset.json",
+          skipLevelOfDetail: true,
+          baseScreenSpaceError: 1024,
+          skipScreenSpaceErrorFactor: 16,
+          skipLevels: 1,
+
+          debugShowBoundingVolume: true,
+          debugShowContentBoundingVolume: true,
+          debugShowViewerRequestVolume: true
         })
       );
 
@@ -590,35 +633,53 @@ let globals = {};
         metaData,
         radarLocations,
         filteredRadarLocations,
-        polyline
+        polyline,
+        rotationOffset,
+        imageTileset,
+        ready: false
       };
 
-      fetch(new URL(panoramaDirPath + "meta.json", host))
-        .then(res => res.json())
-        .then(data => {
-          if (streetName === "Wroclaw") {
-            return processWroclawMetaData(data, street);
-          }
-          return processMetaData(data, street); })
-        .then(processedData => {
-          street.metaData = processedData;
-          // place spheres representing the panorama pictures
-          _.forEach(street.metaData, meta => {
-            viewer.entities.add({
-              name: meta.image,
-              position: meta.cartesianPos,
-              ellipsoid: {
-                radii: { x: 1, y: 1, z: 1 },
-                material: Color.DARKGREEN
-              },
-              properties: {
-                index: meta.index,
-                streetName
-              }
+      // fetch(new URL(panoramaDirPath + "meta.json", HOST))
+      // const imagePromise = new Promise((resolve, reject) => {
+      //   .then(resolve, reject);
+      // });
+      promises.push(
+        wrapPromise(imageTileset.readyPromise)
+          .then(tileset => {
+            if (!defined(tileset.extras)) {
+              throw Error("image tileset does not contain extras");
+            }
+            if (!defined(tileset.extras.metaData)) {
+              throw Error("image tileset does not contain metaData");
+            }
+            return tileset.extras.metaData;
+          })
+          .then(data => {
+            if (streetName === WROCLAW) {
+              return processWroclawMetaData(data, street);
+            }
+            return processMetaData(data, street);
+          })
+          .then(processedData => {
+            street.metaData = processedData;
+            // place spheres representing the panorama pictures
+            _.forEach(street.metaData, meta => {
+              viewer.entities.add({
+                name: meta.image,
+                position: meta.cartesianPos,
+                ellipsoid: {
+                  radii: { x: 1, y: 1, z: 1 },
+                  material: Color.DARKGREEN
+                },
+                properties: {
+                  index: meta.index,
+                  streetName
+                }
+              });
             });
-          });
-        })
-        .catch(err => console.error(err));
+          })
+          .catch(console.error)
+      );
 
       const filterAndVisualizeLocations = locations => {
         street.radarLocations = locations;
@@ -637,14 +698,20 @@ let globals = {};
         });
       };
 
-      if (streetName !== "Wroclaw") {
-        fetch(new URL(radarDirPath + "radar_gps.csv", host))
-          .then(res => res.text())
-          .then(parseRadarCSV)
-          .then(filterAndVisualizeLocations)
-          .catch(err => console.error(err));
+      if (streetName !== WROCLAW) {
+        promises.push(
+          fetch(new URL(radarDirPath + "radar_gps.csv", HOST))
+            .then(res => res.text())
+            .then(parseRadarCSV)
+            .then(filterAndVisualizeLocations)
+            .catch(console.error)
+        );
       }
 
+      street.readyPromise = Promise.all(promises).then(_ => {
+        street.ready = true;
+        return street;
+      });
       streets[streetName] = street;
       return streets;
     },
@@ -710,18 +777,6 @@ let globals = {};
             "Panorama Direction Sphere",
             Color.FUCHSIA
           );
-          // visualizeVector(
-          //   meta.vehicleOrientation.heading,
-          //   "Vehicle Direction Sphere",
-          //   Color.HONEYDEW
-          // );
-          // visualizeVector(
-          //   (meta.vehicleOrientation.heading +
-          //     meta.cameraOrientation.heading) %
-          //     (2 * Math.PI),
-          //   "Vehicle + Panorama Direction Sphere",
-          //   Color.GOLD
-          // );
         }
       });
 
@@ -739,16 +794,17 @@ let globals = {};
     ScreenSpaceEventType.RIGHT_CLICK
   );
 
-  const startStreet = streets["Wroclaw"];
-  startStreet.tileset.readyPromise.then(tileset => {
-    camera.flyToBoundingSphere(tileset.boundingSphere);
-    tileset.style = new Cesium3DTileStyle({
-      color: 'color("yellow")'
-    });
-  });
+  const currentStreet = streets[EMSCHER];
+  wrapPromise(currentStreet.tileset.readyPromise)
+    .then(tileset => {
+      camera.flyToBoundingSphere(tileset.boundingSphere);
+      tileset.style = new Cesium3DTileStyle({
+        color: 'color("yellow")'
+      });
+    })
+    .catch(console.error);
 
   const interpolation = 0.2;
-  const rotationOffset = new HeadingPitchRoll(-0.027, 0, 0);
 
   globals = _.extend(
     {
@@ -758,9 +814,7 @@ let globals = {};
       camera,
 
       streets,
-
-      // offset to use when rotating the panorama
-      rotationOffset,
+      currentStreet,
 
       // for selecting panoramas
       lastPicked: undefined,

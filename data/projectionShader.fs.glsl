@@ -120,5 +120,8 @@ void main(void)
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
 
     // interpolate between panorama and geometry based on depth and user defined value
-    gl_FragColor = mix(color, pano, clamp(depth + u_interpolation, 0.0, 1.0));
+    // depth-based blending
+    // gl_FragColor = mix(color, pano, clamp(depth + u_interpolation, 0.0, 1.0));
+    // depth cutoff "blending"
+    gl_FragColor = mix(color, pano, depth < u_interpolation ? 0.0 : 1.0);
 }

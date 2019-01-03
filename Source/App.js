@@ -191,6 +191,12 @@ let globals = {};
     );
   }
 
+  function parseIndex(imageName) {
+    const [name] = imageName.split(".jpg");
+    const parts = name.split("_");
+    return Number(parts[parts.length - 1]);
+  }
+
   function processMetaData(originalJson, street) {
     const headingPitchRoll = (meta, suffix) =>
       HeadingPitchRoll.fromDegrees(
@@ -198,12 +204,6 @@ let globals = {};
         meta["P-" + suffix],
         meta["R-" + suffix]
       );
-
-    const parseIndex = imageName => {
-      const [name] = imageName.split(".jpg");
-      const parts = name.split("_");
-      return Number(parts[parts.length - 1]);
-    };
 
     return _.map(originalJson, meta => {
       const cartographicPos = utmToCartographic({
@@ -242,7 +242,7 @@ let globals = {};
 
   function processWroclawMetaData(originalJson, street) {
     const wroclawUtmZone = 33;
-    return _.map(originalJson, (meta, index) => {
+    return _.map(originalJson, meta => {
       const { east, north, altitude } = meta;
       const cartographicPos = epsg2177ToCartographic({ east, north, altitude });
       const cartesianPos = Cartographic.toCartesian(cartographicPos);
@@ -255,6 +255,8 @@ let globals = {};
         pitch,
         180 - roll
       );
+      const image = meta.file_name;
+      const index = parseIndex(image);
 
       return {
         index,
@@ -265,8 +267,8 @@ let globals = {};
         cameraOrientation,
         vehicleOrientation: new HeadingPitchRoll(),
 
-        image: meta.file_name,
-        imagePath: street.panoramaDirPath + meta.file_name,
+        image,
+        imagePath: street.panoramaDirPath + image,
 
         rectangle: {},
 
@@ -587,7 +589,7 @@ let globals = {};
 
   // load data for different streets
   const streets = _.reduce(
-    [EMSCHER], // removed for now: "Langenbeckstr", "Wroclaw", STEINWEG
+    [WROCLAW], // removed for now: "Langenbeckstr", "Wroclaw", STEINWEG,
     (streets, streetName) => {
       const streetDirPath = STREET_BASE_PATH + streetName + "/";
       const panoramaDirPath = streetDirPath + "G360/";
@@ -671,28 +673,8 @@ let globals = {};
         _.forEach(processedData, meta => {
           street.metaData[meta.index] = meta;
         });
-
-      promises.push(
-        wrapPromise(imageTileset.readyPromise)
-          .then(getExtrasMeta)
-          .then(process)
-          .then(addData)
-          .catch(console.error)
-      );
-
-      imageTileset.tileLoad.addEventListener(tile => {
-        try {
-          const metaData = getExtrasMeta(tile);
-          const processed = process(metaData);
-          addData(processed);
-        } catch (e) {
-          console.error(e);
-        }
-      });
-
-      imageTileset.allTilesLoaded.addEventListener(() => {
-        // place spheres representing the panorama pictures
-        _.forEach(street.metaData, meta =>
+      const addSpheres = data =>
+        _.forEach(data, meta =>
           viewer.entities.add({
             name: meta.image,
             position: meta.cartesianPos,
@@ -706,6 +688,32 @@ let globals = {};
             }
           })
         );
+
+      promises.push(
+        wrapPromise(imageTileset.readyPromise)
+          .then(getExtrasMeta)
+          .then(process)
+          .then(addData)
+          .then(addSpheres)
+          .catch(console.error)
+      );
+
+      imageTileset.tileLoad.addEventListener(tile => {
+        try {
+          Promise.resolve(tile)
+            .then(getExtrasMeta)
+            .then(process)
+            .then(addData)
+            .then(addSpheres)
+            .catch(console.error);
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      imageTileset.allTilesLoaded.addEventListener(() => {
+        // place spheres representing the panorama pictures
+        console.info("all tiles loaded");
       });
 
       const filterAndVisualizeLocations = locations => {
@@ -759,7 +767,7 @@ let globals = {};
       const index = entity.properties.index.getValue();
       const streetName = entity.properties.streetName.getValue();
       const meta = globals.streets[streetName].metaData[index];
-      console.log("picked image: ", meta.image);
+      console.info("picked image: ", meta.image);
 
       const destination = meta.cartesianPos;
       const orientation = meta.cameraOrientation;
@@ -821,7 +829,7 @@ let globals = {};
     ScreenSpaceEventType.RIGHT_CLICK
   );
 
-  const currentStreet = streets[EMSCHER];
+  const currentStreet = streets[WROCLAW];
   wrapPromise(currentStreet.tileset.readyPromise)
     .then(tileset => {
       camera.flyToBoundingSphere(tileset.boundingSphere);

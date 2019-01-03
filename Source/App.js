@@ -92,6 +92,22 @@ let globals = {};
     return result;
   }
 
+  function geocentricToGeodeticError(p) {
+    var p2 = new Cartesian3();
+    Cartesian3.multiplyComponents(p, p, p2);
+    Cartesian3.multiplyComponents(p2, Ellipsoid.WGS84._oneOverRadii, p2);
+    Cartesian3.multiplyComponents(p2, Ellipsoid.WGS84._oneOverRadii, p2);
+
+    // Compute the squared ellipsoid norm.
+    var squaredNorm = p2.x + p2.y + p2.z;
+    var ratio = Math.sqrt(1.0 / squaredNorm);
+
+    return (
+      Ellipsoid.WGS84.cartesianToCartographic(p).height -
+      Cartesian3.magnitude(p) * (1 - ratio)
+    );
+  }
+
   ////////////////////////////
   // Panorama Rendering
   ////////////////////////////
@@ -833,9 +849,50 @@ let globals = {};
   wrapPromise(currentStreet.tileset.readyPromise)
     .then(tileset => {
       camera.flyToBoundingSphere(tileset.boundingSphere);
-      tileset.style = new Cesium3DTileStyle({
-        color: 'color("yellow")'
-      });
+
+      const intervalOffset = 0;
+      const intervalRepeat = true;
+      const intervalHeight = 4;
+      let style = {};
+
+      // from CesiumViewer.js
+      var interval = intervalHeight;
+      const northEast = tileset._root._boundingVolume.northeastCornerCartesian;
+      const southWest = tileset._root._boundingVolume.southwestCornerCartesian;
+      var mediumDistanceError =
+        (geocentricToGeodeticError(northEast) +
+          geocentricToGeodeticError(southWest)) /
+        2.0;
+
+      var radiiSquared = Ellipsoid.WGS84._oneOverRadiiSquared;
+
+      // prettier-ignore
+      var p2 =
+        "${POSITION_ABSOLUTE}.x * ${POSITION_ABSOLUTE}.x * " + radiiSquared.x + " + " +
+        "${POSITION_ABSOLUTE}.y * ${POSITION_ABSOLUTE}.y * " + radiiSquared.y + " + " +
+        "${POSITION_ABSOLUTE}.z * ${POSITION_ABSOLUTE}.z * " + radiiSquared.z;
+
+      // prettier-ignore
+      var distanceToEllipsoid =
+        "(length(${POSITION_ABSOLUTE}) * (1 - sqrt(1 / (" + p2 + "))) - " +
+        (mediumDistanceError + intervalOffset) + ")";
+
+      if (intervalRepeat) {
+        // prettier-ignore
+        style["color"] = "1.0 - abs(" + distanceToEllipsoid + " % " + 2 * interval +
+          " - " + interval + ") / " + interval + " * vec4(1.0, 1.0, 1.0, 0)";
+      } else {
+        style["color"] = {
+          conditions: [
+            [distanceToEllipsoid + " < 0", "vec4(0.0)"],
+            [distanceToEllipsoid + " >= " + interval, "vec4(1.0)"],
+            [true, "(${POSITION_ABSOLUTE}.z * vec4(1.0, 1.0, 1.0, 0)"]
+            //[true, '(' + distanceToEllipsoid + ' % ' + interval + ') / ' + interval + ' * vec4(1.0, 1.0, 1.0, 0)']
+          ]
+        };
+      }
+
+      tileset.style = new Cesium3DTileStyle(style);
     })
     .catch(console.error);
 

@@ -186,10 +186,10 @@ let globals = {};
   ///////////////////////
   // Data Processing
   ///////////////////////
-  const defaultUTMzone = 32; // Steinweg utm zone
+  const DEFAULT_UTM_ZONE = 32; // Steinweg utm zone
   function utmToCartographic(
     { east, north, altitude },
-    utmZone = defaultUTMzone
+    utmZone = DEFAULT_UTM_ZONE
   ) {
     const utm = new UTMConv.UTMCoords(utmZone, east, north);
     const degrees = utm.to_deg("wgs84");

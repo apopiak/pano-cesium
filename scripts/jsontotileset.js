@@ -32,6 +32,20 @@ function newNode(region, metaData, geometricError = 0, otherKeys = {}) {
   };
 }
 
+const DEFAULT_UTM_ZONE = 32; // Steinweg utm zone
+function utmToCartographic(
+  { east, north, altitude },
+  utmZone = DEFAULT_UTM_ZONE
+) {
+  const utmProj = `+proj=utm +zone=${utmZone}`;
+  const [longitude, latitude] = proj4(utmProj, "WGS84", [east, north]);
+  return {
+    longitude: Math.radians(longitude),
+    latitude: Math.radians(latitude),
+    height: altitude
+  };
+}
+
 function epsg2177ToCartographic({ east, north, altitude }) {
   const [longitude, latitude] = proj4("EPSG:2177", "WGS84", [east, north]);
   return {
@@ -42,12 +56,26 @@ function epsg2177ToCartographic({ east, north, altitude }) {
 }
 
 function calculateRegion(metaDataArray) {
-  const cartographics = metaDataArray
-    .map(o => {
-      const { east, north, altitude } = o;
-      return { east, north, altitude };
-    })
-    .map(epsg2177ToCartographic);
+  const cartographics = metaDataArray.map(meta => {
+    // TODO: find better way to determine meta data format
+    if (meta.file_name) {
+      // wroclaw
+      const { east, north, altitude } = meta;
+      return epsg2177ToCartographic({ east, north, altitude });
+    } else if (meta.ImageName) {
+      // emscher, steinweg, langenbeck
+      return utmToCartographic({
+        east: meta["X-Sensor"],
+        north: meta["Y-Sensor"],
+        altitude: meta["Z-Sensor"]
+      });
+    } else {
+      console.assert(
+        false,
+        "Meta data format not supported. Only 'Wroclaw' and 'Steinweg' formats supported."
+      );
+    }
+  });
 
   const maxLon = cartographics.reduce(
     (max, cur) => (cur.longitude > max ? cur.longitude : max),
@@ -92,21 +120,46 @@ let tileset = {
     version: "1.0"
   },
   geometricError: 100,
-  root: newNode(wholeRegion, [], 80, { refine: "ADD", children: [] }),
+  root: newNode(wholeRegion, [json.shift()], 80, {
+    refine: "ADD",
+    children: []
+  }),
   extras: {
     metaData: []
   }
 };
-tileset.extras.metaData.push(json.shift());
 
-console.log(JSON.stringify(tileset));
+console.log(JSON.stringify(tileset, undefined, 2));
 
-while (json.length > 15) {
-  const slice = json.splice(0, 14);
-  const region = calculateRegion(slice);
-  tileset.root.children.push(newNode(region, slice));
+const BRANCHING_FACTOR = 4;
+const LEAF_SIZE = 5;
+const MAX_LEAF_SIZE = BRANCHING_FACTOR * LEAF_SIZE - 1;
+
+function splitAndInsert(array, parent) {
+  console.assert(array.length > 0, "cannot work with empty array");
+  const region = calculateRegion(array);
+  if (array.length <= MAX_LEAF_SIZE) {
+    parent.children.push(newNode(region, array));
+  } else {
+    // TODO: make the geometric error calculation more sophisticated
+    const geometricError = Math.max(0, parent.geometricError - 10);
+    const node = newNode(region, [array.shift()], geometricError, {
+      children: []
+    });
+    parent.children.push(node);
+    for (let i = 0; i < BRANCHING_FACTOR - 1; i++) {
+      console.assert(array.length > 0, "cannot splice empty array");
+      const size = Math.max(LEAF_SIZE, Math.floor(array.length / BRANCHING_FACTOR));
+      const slice = array.splice(0, size);
+      splitAndInsert(slice, node);
+    }
+    // this should always be true, but better safe than sorry
+    if (array.length > 0) {
+      splitAndInsert(array, node);
+    }
+  }
 }
-const region = calculateRegion(json);
-tileset.root.children.push(newNode(region, json));
 
-fs.writeFileSync(destination, JSON.stringify(tileset), "utf8");
+splitAndInsert(json, tileset.root);
+
+fs.writeFileSync(destination, JSON.stringify(tileset, undefined, 2), "utf8");

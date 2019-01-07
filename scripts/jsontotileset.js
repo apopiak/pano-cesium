@@ -105,6 +105,20 @@ function calculateRegion(metaDataArray) {
   // [west, south, east, north, minimum height, maximum height]
   return [minLon, minLat, maxLon, maxLat, minHeight, maxHeight];
 }
+
+// returns the distance between points on earth via the Haversine formula
+// adapted from here: https://stackoverflow.com/a/27943/6597519
+// coordinates in radians
+function distance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Radius of the earth in m
+  const dLat = lat2 - lat1;
+  const dLon = lon2 - lon1;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in m
+}
 // <\function>
 
 const args = process.argv.slice(2);
@@ -114,13 +128,16 @@ const [source, destination] = args;
 const text = fs.readFileSync(source, "utf8");
 const json = JSON.parse(text);
 
-const wholeRegion = calculateRegion(json);
+const rootRegion = calculateRegion(json);
+const [minLon, minLat, maxLon, maxLat, ...rest] = rootRegion;
+// use the size of the region as geometric error
+const geometricError = distance(minLat, minLon, maxLat, maxLon);
 let tileset = {
   asset: {
     version: "1.0"
   },
-  geometricError: 100,
-  root: newNode(wholeRegion, [json.shift()], 80, {
+  geometricError,
+  root: newNode(rootRegion, [json.shift()], geometricError, {
     refine: "ADD",
     children: []
   }),
@@ -141,15 +158,22 @@ function splitAndInsert(array, parent) {
   if (array.length <= MAX_LEAF_SIZE) {
     parent.children.push(newNode(region, array));
   } else {
-    // TODO: make the geometric error calculation more sophisticated
-    const geometricError = Math.max(0, parent.geometricError - 10);
+    const [minLon, minLat, maxLon, maxLat, ...rest] = region;
+    // use the size of the region as geometric error
+    const geometricError = Math.min(
+      parent.geometricError,
+      distance(minLat, minLon, maxLat, maxLon)
+    );
     const node = newNode(region, [array.shift()], geometricError, {
       children: []
     });
     parent.children.push(node);
     for (let i = 0; i < BRANCHING_FACTOR - 1; i++) {
       console.assert(array.length > 0, "cannot splice empty array");
-      const size = Math.max(LEAF_SIZE, Math.floor(array.length / BRANCHING_FACTOR));
+      const size = Math.max(
+        LEAF_SIZE,
+        Math.floor(array.length / BRANCHING_FACTOR)
+      );
       const slice = array.splice(0, size);
       splitAndInsert(slice, node);
     }

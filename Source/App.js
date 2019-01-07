@@ -191,9 +191,9 @@ let globals = {};
     { east, north, altitude },
     utmZone = DEFAULT_UTM_ZONE
   ) {
-    const utm = new UTMConv.UTMCoords(utmZone, east, north);
-    const degrees = utm.to_deg("wgs84");
-    return Cartographic.fromDegrees(degrees.lngd, degrees.latd, altitude);
+    const utmProj = `+proj=utm +zone=${utmZone}`;
+    const [longitude, latitude] = proj4(utmProj, "WGS84", [east, north]);
+    return Cartographic.fromDegrees(longitude, latitude, altitude);
   }
 
   function epsg2177ToCartographic({ east, north, altitude }) {
@@ -605,7 +605,7 @@ let globals = {};
 
   // load data for different streets
   const streets = _.reduce(
-    [WROCLAW], // removed for now: "Langenbeckstr", "Wroclaw", STEINWEG,
+    [EMSCHER, STEINWEG, LANGENBECK],
     (streets, streetName) => {
       const streetDirPath = STREET_BASE_PATH + streetName + "/";
       const panoramaDirPath = streetDirPath + "G360/";
@@ -845,7 +845,7 @@ let globals = {};
     ScreenSpaceEventType.RIGHT_CLICK
   );
 
-  const currentStreet = streets[WROCLAW];
+  const currentStreet = streets[EMSCHER];
   wrapPromise(currentStreet.tileset.readyPromise)
     .then(tileset => {
       camera.flyToBoundingSphere(tileset.boundingSphere);

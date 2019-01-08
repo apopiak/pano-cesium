@@ -186,93 +186,24 @@ let globals = {};
   ///////////////////////
   // Data Processing
   ///////////////////////
-  const DEFAULT_UTM_ZONE = 32; // Steinweg utm zone
-  function utmToCartographic(
-    { east, north, altitude },
-    utmZone = DEFAULT_UTM_ZONE
-  ) {
-    const utmProj = `+proj=utm +zone=${utmZone}`;
-    const [longitude, latitude] = proj4(utmProj, "WGS84", [east, north]);
-    return Cartographic.fromDegrees(longitude, latitude, altitude);
-  }
 
-  function epsg2177ToCartographic({ east, north, altitude }) {
-    const [longitude, latitude] = proj4("EPSG:2177", "WGS84", [east, north]);
-    return Cartographic.fromDegrees(longitude, latitude, altitude);
-  }
-
-  function utmToCartesian(east, north, altitude) {
-    return Cartographic.toCartesian(
-      utmToCartographic({ east, north, altitude })
-    );
-  }
-
-  function parseIndex(imageName) {
-    const [name] = imageName.split(".jpg");
-    const parts = name.split("_");
-    return Number(parts[parts.length - 1]);
-  }
-
-  function processMetaData(originalJson, street) {
-    const headingPitchRoll = (meta, suffix) =>
-      HeadingPitchRoll.fromDegrees(
-        meta["H-" + suffix],
-        meta["P-" + suffix],
-        meta["R-" + suffix]
-      );
-
-    return _.map(originalJson, meta => {
-      const cartographicPos = utmToCartographic({
-        east: meta["X-Sensor"],
-        north: meta["Y-Sensor"],
-        altitude: meta["Z-Sensor"]
-      });
-      const cartesianPos = Cartographic.toCartesian(cartographicPos);
-
-      const image = meta.ImageName;
-      const index = parseIndex(image);
-
-      return {
-        index,
-
-        // positioning
-        cartographicPos,
-        cartesianPos,
-        cameraOrientation: headingPitchRoll(meta, "Sensor"),
-        vehicleOrientation: headingPitchRoll(meta, "Veh"),
-
-        image,
-        imagePath: street.panoramaDirPath + image,
-
-        rectangle: {
-          bottomLeft: utmToCartesian(meta.lbx, meta.lby, meta.lbz),
-          topLeft: utmToCartesian(meta.ltx, meta.lty, meta.ltz),
-          topRight: utmToCartesian(meta.rtx, meta.rty, meta.rtz),
-          bottomRight: utmToCartesian(meta.rbx, meta.rby, meta.rbz)
-        },
-
-        orig: meta
-      };
-    });
-  }
-
-  function processWroclawMetaData(originalJson, street) {
-    const wroclawUtmZone = 33;
-    return _.map(originalJson, meta => {
-      const { east, north, altitude } = meta;
-      const cartographicPos = epsg2177ToCartographic({ east, north, altitude });
-      const cartesianPos = Cartographic.toCartesian(cartographicPos);
-
-      const heading = meta["attitude(z)=pan"];
-      const pitch = meta["attitude(y)=pitch"];
-      const roll = meta["attitude(x)=roll"];
+  function enrichMetaData(data, street) {
+    return _.map(data, meta => {
+      const { heading, pitch, roll } = meta.orientation;
       const cameraOrientation = HeadingPitchRoll.fromDegrees(
         heading,
         pitch,
-        180 - roll
+        roll
       );
-      const image = meta.file_name;
-      const index = parseIndex(image);
+      const { longitude, latitude, height } = meta.position;
+      const cartographicPos = Cartographic.fromDegrees(
+        longitude,
+        latitude,
+        height
+      );
+      const cartesianPos = Cartographic.toCartesian(cartographicPos);
+      const image = meta.fileName;
+      const { index, _original } = meta;
 
       return {
         index,
@@ -281,14 +212,11 @@ let globals = {};
         cartographicPos,
         cartesianPos,
         cameraOrientation,
-        vehicleOrientation: new HeadingPitchRoll(),
 
         image,
         imagePath: street.panoramaDirPath + image,
 
-        rectangle: {},
-
-        orig: meta
+        _original
       };
     });
   }
@@ -679,12 +607,7 @@ let globals = {};
         }
         return tileset.extras.metaData;
       };
-      const process = data => {
-        if (streetName === WROCLAW) {
-          return processWroclawMetaData(data, street);
-        }
-        return processMetaData(data, street);
-      };
+      const process = data => enrichMetaData(data, street);
       const addData = processedData =>
         _.forEach(processedData, meta => {
           street.metaData[meta.index] = meta;

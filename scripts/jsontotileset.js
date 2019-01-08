@@ -134,7 +134,8 @@ const [minLon, minLat, maxLon, maxLat, ...rest] = rootRegion;
 const geometricError = distance(minLat, minLon, maxLat, maxLon);
 let tileset = {
   asset: {
-    version: "1.0"
+    version: "1.0",
+    tilesetVersion: "0.1"
   },
   geometricError,
   root: newNode(rootRegion, [json.shift()], geometricError, {
@@ -145,8 +146,6 @@ let tileset = {
     metaData: []
   }
 };
-
-console.log(JSON.stringify(tileset, undefined, 2));
 
 const BRANCHING_FACTOR = 4;
 const LEAF_SIZE = 5;
@@ -186,4 +185,4 @@ function splitAndInsert(array, parent) {
 
 splitAndInsert(json, tileset.root);
 
-fs.writeFileSync(destination, JSON.stringify(tileset, undefined, 2), "utf8");
+fs.writeFileSync(destination, JSON.stringify(tileset), "utf8");

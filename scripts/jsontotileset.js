@@ -1,13 +1,7 @@
 "use strict";
 
 const fs = require("fs");
-const proj4 = require("../node_modules/proj4/dist/proj4.js");
-proj4.defs(
-  "EPSG:2177",
-  "+proj=tmerc +lat_0=0 +lon_0=18 +k=0.999923 +x_0=6500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
-);
 
-// <functions>
 // Converts from degrees to radians.
 Math.radians = function(degrees) {
   return (degrees * Math.PI) / 180;
@@ -17,6 +11,52 @@ Math.radians = function(degrees) {
 Math.degrees = function(radians) {
   return (radians * 180) / Math.PI;
 };
+
+const BRANCHING_FACTOR = 4;
+const LEAF_SIZE = 5;
+
+////////////////////////////////
+// script
+
+const args = process.argv.slice(2);
+console.assert(args.length === 2, "provide exactly 2 arguments");
+const [source, destination] = args;
+
+const json = JSON.parse(fs.readFileSync(source, "utf8"));
+
+const rootRegion = calculateRegion(json);
+const [minLon, minLat, maxLon, maxLat, ...rest] = rootRegion;
+// use the size of the region as geometric error
+const geometricError = distance(minLat, minLon, maxLat, maxLon);
+let tileset = {
+  asset: {
+    version: "1.0",
+    tilesetVersion: "0.2"
+  },
+  geometricError,
+  root: newNode(rootRegion, [json.shift()], geometricError, {
+    refine: "ADD",
+    children: []
+  }),
+  extras: {
+    metaData: []
+  }
+};
+
+splitAndInsert(json, tileset.root);
+
+writeJson(tileset, destination, true);
+
+////////////////////////////////
+// functions
+
+function writeJson(json, destination, pretty) {
+  if (pretty) {
+    fs.writeFileSync(destination, JSON.stringify(json, undefined, 2), "utf8");
+  } else {
+    fs.writeFileSync(destination, JSON.stringify(json), "utf8");
+  }
+}
 
 function newNode(region, metaData, geometricError = 0, otherKeys = {}) {
   return {
@@ -32,50 +72,18 @@ function newNode(region, metaData, geometricError = 0, otherKeys = {}) {
   };
 }
 
-const DEFAULT_UTM_ZONE = 32; // Steinweg utm zone
-function utmToCartographic(
-  { east, north, altitude },
-  utmZone = DEFAULT_UTM_ZONE
-) {
-  const utmProj = `+proj=utm +zone=${utmZone}`;
-  const [longitude, latitude] = proj4(utmProj, "WGS84", [east, north]);
+function degreesToRadianPosition({ longitude, latitude, height }) {
   return {
     longitude: Math.radians(longitude),
     latitude: Math.radians(latitude),
-    height: altitude
-  };
-}
-
-function epsg2177ToCartographic({ east, north, altitude }) {
-  const [longitude, latitude] = proj4("EPSG:2177", "WGS84", [east, north]);
-  return {
-    longitude: Math.radians(longitude),
-    latitude: Math.radians(latitude),
-    height: altitude
+    height
   };
 }
 
 function calculateRegion(metaDataArray) {
-  const cartographics = metaDataArray.map(meta => {
-    // TODO: find better way to determine meta data format
-    if (meta.file_name) {
-      // wroclaw
-      const { east, north, altitude } = meta;
-      return epsg2177ToCartographic({ east, north, altitude });
-    } else if (meta.ImageName) {
-      // emscher, steinweg, langenbeck
-      return utmToCartographic({
-        east: meta["X-Sensor"],
-        north: meta["Y-Sensor"],
-        altitude: meta["Z-Sensor"]
-      });
-    } else {
-      console.assert(
-        false,
-        "Meta data format not supported. Only 'Wroclaw' and 'Steinweg' formats supported."
-      );
-    }
-  });
+  const cartographics = metaDataArray.map(meta =>
+    degreesToRadianPosition(meta.position)
+  );
 
   const maxLon = cartographics.reduce(
     (max, cur) => (cur.longitude > max ? cur.longitude : max),
@@ -119,42 +127,19 @@ function distance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in m
 }
-// <\function>
 
-const args = process.argv.slice(2);
-console.assert(args.length === 2);
-const [source, destination] = args;
-
-const text = fs.readFileSync(source, "utf8");
-const json = JSON.parse(text);
-
-const rootRegion = calculateRegion(json);
-const [minLon, minLat, maxLon, maxLat, ...rest] = rootRegion;
-// use the size of the region as geometric error
-const geometricError = distance(minLat, minLon, maxLat, maxLon);
-let tileset = {
-  asset: {
-    version: "1.0",
-    tilesetVersion: "0.1"
-  },
-  geometricError,
-  root: newNode(rootRegion, [json.shift()], geometricError, {
-    refine: "ADD",
-    children: []
-  }),
-  extras: {
-    metaData: []
-  }
-};
-
-const BRANCHING_FACTOR = 4;
-const LEAF_SIZE = 5;
-const MAX_LEAF_SIZE = BRANCHING_FACTOR * LEAF_SIZE - 1;
-
-function splitAndInsert(array, parent) {
+function splitAndInsert(
+  array,
+  parent,
+  {
+    branchingFactor = BRANCHING_FACTOR,
+    leafSize = LEAF_SIZE
+  } = {}
+) {
+  const maxLeafSize = branchingFactor * leafSize - 1;
   console.assert(array.length > 0, "cannot work with empty array");
   const region = calculateRegion(array);
-  if (array.length <= MAX_LEAF_SIZE) {
+  if (array.length <= maxLeafSize) {
     parent.children.push(newNode(region, array));
   } else {
     const [minLon, minLat, maxLon, maxLat, ...rest] = region;
@@ -167,11 +152,11 @@ function splitAndInsert(array, parent) {
       children: []
     });
     parent.children.push(node);
-    for (let i = 0; i < BRANCHING_FACTOR - 1; i++) {
+    for (let i = 0; i < branchingFactor - 1; i++) {
       console.assert(array.length > 0, "cannot splice empty array");
       const size = Math.max(
-        LEAF_SIZE,
-        Math.floor(array.length / BRANCHING_FACTOR)
+        leafSize,
+        Math.floor(array.length / branchingFactor)
       );
       const slice = array.splice(0, size);
       splitAndInsert(slice, node);
@@ -182,7 +167,3 @@ function splitAndInsert(array, parent) {
     }
   }
 }
-
-splitAndInsert(json, tileset.root);
-
-fs.writeFileSync(destination, JSON.stringify(tileset), "utf8");

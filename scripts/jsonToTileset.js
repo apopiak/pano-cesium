@@ -45,7 +45,7 @@ let tileset = {
 
 splitAndInsert(json, tileset.root);
 
-writeJson(tileset, destination, true);
+writeJson(tileset, destination);
 
 ////////////////////////////////
 // functions

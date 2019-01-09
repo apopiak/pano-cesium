@@ -27,12 +27,6 @@ let globals = {};
 
   const { UNIT_X, UNIT_Y, UNIT_Z } = Cartesian3;
 
-  // define projections
-  proj4.defs(
-    "EPSG:2177",
-    "+proj=tmerc +lat_0=0 +lon_0=18 +k=0.999923 +x_0=6500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
-  );
-
   ////////////////////////////
   // Constants
   ////////////////////////////
